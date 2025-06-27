@@ -1,0 +1,116 @@
+<table id="example1" class="table table-bordered table-striped">
+    <thead>
+    <tr class="text-center">
+        <th class="bg-primary-light1">Nº</th>
+        <th class="bg-primary-light1">Comprobante</th>
+        <th class="bg-primary-light1">Tipo Comprobante</th>
+        <th class="bg-primary-light1">Estado</th>
+        <th class="bg-primary-light1">Fecha Documento</th>
+        <th class="bg-primary-light1">Moneda</th>
+        <th class="bg-primary-light1">Cambio</th>
+        <th class="bg-primary-light1">Total</th>
+        <th class="bg-success-light2">NC</th>
+        <th class="bg-success-light2">TOTAL</th>
+        <th class="bg-success-light2">EMISION</th>
+        <th class="bg-success-light1" colspan="2">ACCIONES</th>
+    </tr>
+    </thead>
+    <tbody id="order_list">
+    {% for o in order_set %}
+        <tr class="text-center" order="{{ o.id }}">
+            <td class="align-middle p-1 bg-primary-light1">{{ o.number }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.invoice_number }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.get_doc_display }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.get_status_display }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.date_document|date:'d-m-Y' }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.get_coin_display|safe }}</td>
+            <td class="align-middle p-1 bg-primary-light1">{{ o.change|safe }}</td>
+            <td class="text-right align-middle p-1 bg-primary-light1">{{ o.total|safe }}</td>
+
+            <td class="text-right align-middle p-1 bg-success-light2">
+                {% if o.order_set.exists and o.order_set.all.last.status == 'N' %}
+                    {{ o.order_set.all.last.invoice_number }}{% endif %}</td>
+            <td class="text-right align-middle p-1 bg-success-light2">
+                {% if o.order_set.exists and o.order_set.all.last.status == 'N' %}
+                    {{ o.order_set.all.last.total|safe }}{% endif %}</td>
+            <td class="text-right align-middle p-1 bg-success-light2">
+                {% if o.order_set.exists and o.order_set.all.last.status == 'N' %}
+                    {{ o.order_set.all.last.date_document|date:'d-m-Y' }}{% endif %}</td>
+
+            <td class="align-middle p-1 bg-success-light1">
+
+                {% if o.order_set.exists and o.order_set.all.last.status == 'G' %}
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-sm btn-light w-100"
+                                onclick="DownloadGuideReturn({{ o.order_set.all.last.id }})">
+                            <i class="icon-arrow-down-circle"></i> Guia
+                            {{ o.order_set.all.last.guide_serial }}-{{ o.order_set.all.last.guide_number }}
+                        </button>
+                        <button type="button" value="{{ o.id }}" data-toggle="modal" data-target="#purchaseModal"
+                                class="btn btn-success btn-block btn-sm show-items"><i class="icon-list"></i> Crear Nota
+                            Credito
+                        </button>
+                    </div>
+                {% elif o.order_set.exists and o.order_set.all.last.status == 'N' %}
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-sm btn-light w-100"
+                                onclick="DownloadGuideReturn({{ o.order_set.all.last.id }})">
+                            <i class="icon-arrow-down-circle"></i> Guia
+                            {{ o.order_set.all.last.guide_serial }}-{{ o.order_set.all.last.guide_number }}
+                        </button>
+                        <button type="button" value="{{ o.order_set.all.last.id }}" data-toggle="modal"
+                                data-target="#creditNoteModal"
+                                class="btn btn-danger btn-sm btn-block show-credit-note-items"><i class="icon-list"></i>
+                            Ver Nota Credito
+                        </button>
+                    </div>
+                {% else %}
+                    <button type="button" value="{{ o.id }}"
+                            class="btn btn-primary btn-block btn-sm create-guide"><i class="icon-list"></i> Crear
+                        Guia
+                    </button>
+                {% endif %}
+
+                {#                        {% if o.order_set.exists and o.order_set.all.last.status == 'N' %}#}
+                {#                            <button type="button" value="{{ o.order_set.all.last.id }}" data-toggle="modal"#}
+                {#                                    data-target="#creditNoteModal"#}
+                {#                                    class="btn btn-danger btn-block show-credit-note-items"><i class="icon-list"></i>#}
+                {#                                Ver Nota Credito#}
+                {#                            </button>#}
+                {#                            {% if o.order_set.all.last.add == 'G' %}#}
+                {#                                <button type="button" class="btn btn-light w-100"#}
+                {#                                        onclick="DownloadGuideReturn({{ o.order_set.all.last.id }})">#}
+                {#                                    <i class="icon-arrow-down-circle"></i> Ver Guia#}
+                {#                                    {{ o.order_set.all.last.guide_serial }}-{{ o.order_set.all.last.guide_number }}#}
+                {#                                </button>#}
+                {#                            {% else %}#}
+                {#                                <button type="button" value="{{ o.order_set.all.last.id }}"#}
+                {#                                        class="btn btn-primary btn-block create-guide"><i class="icon-list"></i> Crear#}
+                {#                                    Guia#}
+                {#                                </button>#}
+                {#                            {% endif %}#}
+                {#                        {% else %}#}
+                {#                            <button type="button" value="{{ o.id }}" data-toggle="modal" data-target="#purchaseModal"#}
+                {#                                    class="btn btn-success btn-block show-items"><i class="icon-list"></i> Crear Nota#}
+                {#                                Credito#}
+                {#                            </button>#}
+                {#                            <button type="button" value="{{ o.id }}"#}
+                {#                                    class="btn btn-primary btn-block create-guide"><i class="icon-list"></i> Crear#}
+                {#                                Guia#}
+                {#                            </button>#}
+                {#                        {% endif %}#}
+            </td>
+            <td class="align-middle p-1 bg-success-light1">
+                <button type="button" value="{{ o.id }}" data-toggle="modal" data-target="#showPurchaseModal"
+                        class="btn btn-secondary btn-block show-purchase-items"><i class="icon-list"></i>
+                    Ver Compra
+                </button>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="12"><p class="text-warning">No existen resultados</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

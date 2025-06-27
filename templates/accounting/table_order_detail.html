@@ -1,0 +1,56 @@
+<div class="tableDetailFixHead">
+    <table class="table cab table-hover m-0 table-bordered">
+        <thead class="cab">
+        <tr class="text-center">
+            <th class="cab">Codigo</th>
+            <th class="cab">Detalle</th>
+            <th class="cab">Cantidad</th>
+            <th class="cab">Precio</th>
+            <th class="cab">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in detail_set %}
+            <tr pk="{{ d.id }}" class="text-center">
+                <td class="align-middle p-1 cab">{{ d.product.code }}</td>
+                <td class="align-middle p-1 cab text-left" style="white-space: normal; word-wrap: break-word">
+                    <p class="m-0">{{ d.product.name }}</p></td>
+                <td class="align-middle cab p-1">{{ d.quantity|safe }}</td>
+                <td class="align-middle cab p-1 text-right">{{ d.price|safe }}</td>
+                <td class="align-middle cab p-1 text-right">{{ d.amount|safe }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td class="cab" colspan="5"><p class="text-white">No existen resultados</p></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .tableDetailFixHead {
+        overflow: auto;
+        height: 500px;
+    }
+
+    .tableDetailFixHead thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Just common table stuff. Really. */
+    table.cab {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th.cab, td.cab {
+        padding: 8px 16px;
+    }
+
+    th.cab {
+        background: #7e2f2f;
+    }
+</style>

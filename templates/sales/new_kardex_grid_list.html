@@ -1,0 +1,147 @@
+{% if kardex_dict %}
+    <div class="card text-center">
+        <div class="card-header mt-2 d-flex justify-content-between align-items-center">
+            <h4 class="text-center flex-grow-1">{{ product.name }} {{ product.measure }}</h4>
+{#            <a href="{% url 'sales:kardex_excel' %}" class="btn btn-success">#}
+{#                Descargar Reporte Excel#}
+{#            </a>#}
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-10">
+                    <table class="table table-bordered table-sm table-striped roboto-condensed-regular text-uppercase" style="font-size: 11px">
+                        <thead>
+                        <tr style="background-color: #0B3040" class="text-white">
+                            <th rowspan="2" class="align-middle text-center small">Fecha Emisión</th>
+                            <th rowspan="2" class="align-middle text-center small">TC</th>
+                            <th rowspan="2" class="align-middle text-center small">Serie</th>
+                            <th rowspan="2" class="align-middle text-center small">Numero</th>
+                            {#            <th rowspan="2" class="align-middle text-center small">Ruc</th>#}
+                            <th rowspan="2" class="align-middle text-center small">Detalle</th>
+                            <th rowspan="2" class="align-middle text-center small">T.O.</th>
+                            <th colspan="3" class="align-middle text-center small">Fisico</th>
+                            <th colspan="3" class="align-middle text-center small">Valores</th>
+                            <th rowspan="2" class="align-middle text-center small">Costo Promedio</th>
+                        </tr>
+                        <tr style="background-color: #0B3040" class="text-white">
+                            <th class="align-middle text-center small">Entradas</th>
+                            <th class="align-middle text-center small">Salidas</th>
+                            <th class="align-middle text-center small">Saldo</th>
+                            <th class="align-middle text-center small">Ingreso</th>
+                            <th class="align-middle text-center small">Egreso</th>
+                            <th class="align-middle text-center small">Saldo</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for k in kardex_dict %}
+                            <tr class="detail {% if k.operation == 'C' %} bg-danger{% endif %}" ps="{{ k.product }}" k_id="{{ k.id }}" order="{{ k.order }}">
+                                <td class="align-middle text-center">{{ k.date }}</td>
+                                <td class="align-middle text-center">{{ k.type_document }}</td>
+                                <td class="align-middle text-center">{{ k.serial }}</td>
+                                <td class="align-middle text-center">{{ k.number }}</td>
+                                {#            <td class="align-middle text-center">0</td>#}
+                                <td class="align-middle text-center">{{ k.detail }}</td>
+                                <td class="align-middle text-center">{{ k.type_operation }}</td>
+
+                                <td class="align-middle text-center">
+                                    {% if k.operation == 'E' or k.operation == 'C' %}{{ k.quantity }}{% else %}-{% endif %}</td>
+                                <td class="align-middle text-center">
+                                    {% if k.operation == 'S' %}{{ k.quantity }}{% else %}-{% endif %}</td>
+                                <td class="align-middle text-center">{{ k.remaining_quantity }}</td>
+
+                                <td class="align-middle text-center">
+                                    {% if k.operation == 'E' or k.operation == 'C' %}{{ k.total_cost }}{% else %}-{% endif %}</td>
+                                <td class="align-middle text-center">
+                                    {% if k.operation == 'S' %}{{ k.total_cost }}{% else %}-{% endif %}</td>
+                                <td class="align-middle text-center">{{ k.remaining_price_total }}</td>
+                                <td class="align-middle text-center">{{ k.remaining_price }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td class="align-middle text-center font-weight-bold">Total</td>
+                            <td class="align-middle text-center" colspan="5"></td>
+                            <td class="align-middle text-center font-weight-bold">{{ sum_quantities_entries }}</td>
+                            <td class="align-middle text-center font-weight-bold">{{ sum_quantities_exits }}</td>
+                            <td class="align-middle text-center "></td>
+                            <td class="align-middle text-center font-weight-bold">{{ sum_total_cost_entries }}</td>
+                            <td class="align-middle text-center font-weight-bold">{{ sum_total_cost_exits }}</td>
+                            {#            <td class="align-middle text-center font-weight-bold">{{ sum_remaining_quantity }}</td>#}
+                            {#            <td class="align-middle text-center font-weight-bold">{{ sum_remaining_price }}</td>#}
+                            {#            <td class="align-middle text-center font-weight-bold">{{ sum_remaining_price_total }}</td>#}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-sm-2">
+                    <div class="card">
+                        <table class="table table-bordered table-sm table-striped roboto-condensed-regular text-uppercase"
+                               style="background-color: #0B3040">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th class="align-middle text-left small">FISICO</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td class="align-middle text-left small">Saldo Inicial</td>
+                                <td class="align-middle text-right small">{{ last_month_remaining_quantity }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">+ Compras</td>
+                                <td class="align-middle text-right small">{{ sum_quantities_entries }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">- Inv. Final</td>
+                                <td class="align-middle text-right small text-danger">
+                                    -{{ last_remaining_quantity }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">Venta Unid.</td>
+                                <td class="align-middle text-right small">{{ sell_unit }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <table class="table table-bordered table-sm table-striped roboto-condensed-regular text-uppercase"
+                               style="background-color: #0B3040">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th class="align-middle text-left small">VALORES</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td class="align-middle text-left small">Saldo Inicial</td>
+                                <td class="align-middle text-right small">{{ last_month_remaining_price_total }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">+ Compras</td>
+                                <td class="align-middle text-right small">{{ sum_total_cost_entries }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">- Inv. Final</td>
+                                <td class="align-middle text-right small text-danger">
+                                    -{{ last_remaining_price_total }}</td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle text-left small">Costo de venta</td>
+                                <td class="align-middle text-right small">{{ cost_sale }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+        <strong>Atencion!</strong> El producto no cuenta operaciones registradas en la sede y almacen seleccionados.
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endif %}

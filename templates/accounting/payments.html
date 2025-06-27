@@ -1,0 +1,1286 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Pago de ordenes
+{% endblock title %}
+
+{% block body %}
+    <div class="card" style="background-color: #c6c7c18a">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-2 p-1">
+                    <label for="order" class="form-label mb-0">Nº Orden</label>
+                    <div class="position-relative has-icon-left">
+                        <input type="text" id="order" class="form-control input-shadow"
+                               placeholder="Nº orden" autocomplete="off">
+                        <div class="form-control-position">
+                            <i class="icon-magnifier"></i>
+                        </div>
+                    </div>
+                    <input type="hidden" class="form-control" id="id-order" name="id-order"
+                           value=""/>
+                </div>
+                <div class="col-md-2 p-1">
+                    <label for="client-number" class="form-label mb-0">N° Documento</label>
+                    <input type="text" maxlength="15" class="form-control" id="client-number"
+                           placeholder="Numero documento"
+                           value="">
+                    <input type="hidden" value="" id="client-pk" name="client-pk">
+                </div>
+                <div class="col-md-3 p-1">
+                    <label for="client-names" class="form-label mb-0">Nombres/Rason Social</label>
+                    <input type="text" class="form-control" id="client-names"
+                           placeholder="Razón social, nombres y apellidos" value="" disabled>
+                </div>
+                <div class="col-md-4 p-1">
+                    <label for="client-address" class="form-label mb-0">Dirección</label>
+                    <input type="text" class="form-control" id="client-address"
+                           placeholder="Dirección..." value="" maxlength="300">
+                </div>
+                <div class="col-md-1 p-1">
+                    <label for="user-sell" class="form-label mb-0">Usuario</label>
+                    <input type="text" class="form-control text-center" id="user-sell"
+                           value="" maxlength="300" disabled>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-1 bg-dark-light">
+            <div class="card m-0">
+                <div class="card-body p-1">
+                    <div class="row">
+                        <div class="col-md-10 table-responsive">
+                            <table class="table" id="id-table-payment"
+                                   style="width: 100%;">
+                                <thead class="text-center">
+                                <tr class="text-center p-1">
+                                    <th style="width: 3%;">Nº</th>
+                                    <th style="width: 18%;">Fecha
+                                    </th>
+                                    <th style="width: 20%;">
+                                        Modalidad
+                                    </th>
+                                    <th style="width: 25%;">
+                                        Caja/Cuenta
+                                    </th>
+                                    <th style="width: 17%;">Monto
+                                    </th>
+                                    <th style="width: 14%;">
+                                        Codigo
+                                    </th>
+                                    <th style="width: 3%;"><i class="icon-close"></i></th>
+                                </tr>
+                                </thead>
+                                <tbody id="payments_detail" style="font-size: 16px;">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td class="align-middle p-1 text-center">
+                                        <button type="button" class="btn btn-warning btn-block"
+                                                onclick="OrderEmptyMas()"><i
+                                                class="icon-magnifier-add"></i> Agregar
+                                        </button>
+                                    </td>
+                                    <td class="align-middle p-1 text-center">
+                                        <button type="button" class="btn btn-primary btn-block"
+                                                onclick="CasingCloseModal()"><i
+                                                class="icon-printer"></i> Cierre caja
+                                        </button>
+                                    </td>
+                                    <td class="align-middle p-1 text-center">
+                                        <button type="button" class="btn btn-primary btn-block"
+                                                onclick="CasingReportModal()"><i
+                                                class="icon-printer"></i> Reporte
+                                        </button>
+                                    </td>
+                                    <td class="align-middle p-1 text-right">
+                                        <div class="row content-center">
+                                            <label class="col-sm-4 col-form-label mt-1"
+                                                   for="basic-icon">Total</label>
+                                            <div class="col-md-8">
+                                                <input
+                                                        type="text"
+                                                        id="total-payment"
+                                                        name="total-payment"
+                                                        class="form-control text-warning text-right font-weight-bold"
+                                                        placeholder="0.00"
+                                                        value=""
+                                                        aria-label="Total"
+                                                        readonly
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle p-1 text-right">
+                                        <div class="row content-center">
+                                            <label class="col-sm-4 col-form-label mt-1"
+                                                   for="basic-icon">Suma</label>
+                                            <div class="col-sm-8">
+                                                <input
+                                                        type="text"
+                                                        id="sum-payment"
+                                                        name="sum-payment"
+                                                        class="form-control text-right  font-weight-bold"
+                                                        placeholder="0.00"
+                                                        aria-label="Total"
+                                                        readonly
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle p-1 text-right" colspan="2">
+                                        <div class="row content-center">
+                                            <label class="col-sm-6 col-form-label mt-1"
+                                                   for="basic-icon">reembolso</label>
+                                            <div class="col-md-6">
+                                                <input
+                                                        type="text"
+                                                        id="total-refund"
+                                                        name="total-refund"
+                                                        class="form-control text-right font-weight-bold"
+                                                        placeholder="0.00"
+                                                        value=""
+                                                        readonly
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <div class="row">
+                                <table class="table table-sm" style="width: 100%">
+                                    <thead>
+                                    <tr class="text-center p-1">
+                                        <th style="width: 5%">Nº</th>
+                                        <th style="width: 35%">Producto</th>
+                                        <th style="width: 10%">Medida</th>
+                                        <th style="width: 10%">Cantidad</th>
+                                        <th style="width: 10%">Unidad</th>
+                                        <th style="width: 10%">Precio</th>
+                                        <th style="width: 10%">Importe</th>
+                                        <th style="width: 10%">Factura</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="order_detail">
+                                    </tbody>
+                                    <tfoot>
+                                    <tr class="text-warning" style="font-size: 16px">
+                                        <td class="align-middle p-1"></td>
+                                        <td class="align-middle p-1">
+                                        </td>
+                                        <td class="align-middle p-1" colspan="3"></td>
+                                        <td class="align-middle p-1 text-right">TOTAL</td>
+                                        <td class="align-middle text-right p-1">S/. <b
+                                                id="invoice-total">0.00</b>
+                                        </td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group align-self-center mb-0">
+                                <div class="form-group align-self-center mb-0">
+                                    <label for="date-invoice" class="form-label mb-0">Fecha</label>
+                                    <input class="form-control" type="date" value="{{ date_now }}" id="date-invoice"
+                                           name="date-invoice">
+                                </div>
+                                <div class="form-group align-self-center mb-0" id="form-check">
+                                    <hr class="my-1"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input"
+                                               id="radioSuccess1" checked>
+                                        <label class="form-check-label" for="radioSuccess1">Ninguna
+                                        </label>
+                                    </div>
+                                    <hr class="my-0"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input" id="radioSuccess2">
+                                        <label class="form-check-label" for="radioSuccess2">Factura
+                                        </label>
+                                    </div>
+                                    <hr class="my-0"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input" id="radioSuccess3">
+                                        <label class="form-check-label" for="radioSuccess3">Boleta
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0 parent-order d-none">
+                                    <div class="row">
+                                        <div class="col">
+                                            <label class="col-form-label mb-0 mt-0 text-success"
+                                                   for="total_parent" style="font-size: 11px">Orden Nº:
+                                                <span id="number-parent"></span>
+                                            </label>
+                                            <input
+                                                    type="text"
+                                                    id="total_parent"
+                                                    name="total-parent"
+                                                    class="form-control text-right font-weight-bold"
+                                                    disabled
+                                                    value="0"
+                                                    style="background-color: #99590d" />
+                                        </div>
+                                        <div class="col text-right difference d-none">
+                                            <label class="col-form-label mb-0 mt-0"
+                                                   for="total_difference" style="font-size: 11px">
+                                            </label>
+                                            <input
+                                                    type="text"
+                                                    id="total_difference"
+                                                    name="total-difference"
+                                                    class="form-control text-right font-weight-bold"
+                                                    disabled
+                                                    value="0"
+                                            />
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label mb-0 mt-0"
+                                           for="basic-icon">Total Dinero</label>
+                                    <input
+                                            type="text"
+                                            id="total-paid"
+                                            name="total-paid"
+                                            autocomplete="off"
+                                            class="form-control text-right  font-weight-bold"
+                                            placeholder="S/. 0.00"
+                                            value=""
+                                            style="font-size: 20px"
+                                    />
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="col-form-label mb-0 mt-1"
+                                           for="basic-icon">Total Vuelto</label>
+                                    <input
+                                            type="text"
+                                            id="total-turned"
+                                            name="total-turned"
+                                            class="form-control text-right  font-weight-bold"
+                                            placeholder="S/. 0.00"
+                                            disabled
+                                            style="font-size: 20px"
+                                    />
+                                </div>
+                                <div class="form-group mb-0">
+                                    <button type="button" class="btn btn-success w-100" onclick="SavePayments()"><i
+                                            class="icon-energy"></i>Registrar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group align-self-center mb-0">
+                                <div class="form-group align-self-center mb-0 mt-2">
+                                    <label for="date-invoice" class="form-label mb-0 text-warning">Autorización
+                                        Usuarios</label>
+                                    <select class="form-control" id="id-authorization">
+                                        <option value="0">Seleccione</option>
+                                        {% for u in user_set %}
+                                            <option value="{{ u.user_id }}"
+                                                    {% if u.auth_boolean == True %}style="color: #0aa60f" {% endif %}
+                                            >
+                                                {{ u.user_name }} ------ {{ u.auth }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mb-0 mt-2">
+                                    <button type="button" class="btn btn-warning w-100" onclick="AuthorizationUser()"><i
+                                            class="icon-check"></i>Aplicar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group align-self-center mb-0 mt-3">
+                                <div class="form-row">
+                                    <div class="col">
+                                        <button type="button" class="btn w-100" style="background-color: #98da9d"
+                                                onclick="RePrint()"><i
+                                                class="icon-printer"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <button type="button" class="btn w-100" style="background-color: #8ea0ed"
+                                                onclick="Download()"><i
+                                                class="icon-cloud-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-casing" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-report" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $('#order').focus()
+        let _reprint_codeText;
+        let _doc;
+        let _number;
+
+        var payments_set =
+            [
+                {% for p in type_payment_set %}
+                    [
+                        '{{ p.0 }}',
+                        '{{ p.1 }}'
+                    ],
+                {% endfor %}
+            ];
+        var casing_set =
+            [
+                {% for c in casing_set %}
+                    [
+                        '{{ c.id }}',
+                        '{{ c.name }}'
+                    ],
+                {% endfor %}
+            ];
+        var bank_set =
+            [
+                {% for b in bank_set %}
+                    [
+                        '{{ b.id }}',
+                        '{{ b.name }}'
+                    ],
+                {% endfor %}
+            ];
+        TotalPayment()
+
+
+        function UpdateOrderDetail(od, value) {
+            $.ajax({
+                url: '/sales/update_order_detail/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'od': od, 'value': value},
+                success: function (response) {
+                    if (response.status) {
+                        toastr.success(response.message)
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error de operación!');
+                }
+            });
+        }
+
+        function AddRow(i, d, date, type, casing, amount, operation) {
+            let inputDate;
+            if (date.length > 0) {
+                inputDate = '<input type="date" class="form-control value-date" value="' + date + '">'
+            } else {
+                inputDate = '<input type="date" class="form-control value-date" value="{{ date_now }}">'
+            }
+            return new Promise((resolve, reject) => {
+                let options = '<option value="0">Seleccione</option>';
+                for (let i = 0; i < payments_set.length; i++) {
+                    if (type === payments_set[i][0]) {
+                        options = options + '<option selected value="' + payments_set[i][0] + '">' + payments_set[i][1] + '</option>'
+                    } else {
+                        options = options + '<option value="' + payments_set[i][0] + '">' + payments_set[i][1] + '</option>'
+                    }
+                }
+                resolve(options)
+            }).then(async (options) => {
+                let account;
+                if (type === 'E') {
+                    account = '<option value="0">Seleccione</option>';
+                    for (let i = 0; i < casing_set.length; i++) {
+                        if (parseInt(casing_set[i][0]) == casing) {
+                            account = account + '<option selected value="' + casing_set[i][0] + '">' + casing_set[i][1] + '</option>'
+                        } else {
+                            account = account + '<option value="' + casing_set[i][0] + '">' + casing_set[i][1] + '</option>'
+                        }
+                    }
+                } else if (type === 'D') {
+                    account = '<option value="0">Seleccione</option>';
+                    for (let i = 0; i < bank_set.length; i++) {
+                        if (parseInt(bank_set[i][0]) == casing) {
+                            account = account + '<option selected value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>'
+                        } else {
+                            account = account + '<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>'
+                        }
+                    }
+                } else if (type === 'C') {
+                    account = '<option value="C">Cuota</option>';
+                } else {
+                    account = '<option value="0">Seleccione</option>';
+                }
+
+                await $('tbody#payments_detail').append(
+                    '<tr class="text-uppercase text-center p-0 item-row" pk="' + d + '" i="' + i + '">' +
+                    '<td class="align-middle p-1 item-number">' + i + '</td>' +
+                    '<td class="align-middle p-1 item-date">' + inputDate + '</td>' +
+                    '<td class="align-middle p-1 item-type">' + '<select class="form-control value-type">' + options + '</td>' +
+                    '<td class="align-middle p-1 item-account">' + '<select class="form-control value-account">' + account + '</td>' +
+                    '<td class="align-middle p-1 item-amount">' + '<input type="number" step="0.01" min="0.00" class="form-control text-right value-amount" value="' + parseFloat(amount).toFixed(2) + '" placeholder="0.00">' + '</td>' +
+                    '<td class="align-middle p-1 item-code">' + '<input type="text" class="form-control value-code" value="' + operation + '" placeholder="Operación">' + '</td>' +
+                    '<td class="align-middle p-1 item-option">' +
+                    '<button type="button" class="btn btn-light value-delete">' +
+                    '<i class="icon-trash"></i>' +
+                    '</button>' +
+                    '</td>' +
+                    '</tr>'
+                );
+                CountPayment();
+                TotalPayment()
+            })
+        }
+
+        function CountPayment() {
+            let index = 1;
+            $('tbody#payments_detail tr').each(function () {
+                $(this).attr('i', index);
+                let pk = $(this).attr('pk');
+                $(this).children('td:first').text(index);
+                $(this).find('td.item-option button.value-delete').attr('onclick', 'DeletePayment(' + index + ',' + pk + ')')
+                index++;
+            });
+        };
+
+        function DeletePayment(i, pk) {
+            let rows = $('tbody#payments_detail').find("tr[i=" + i + "]")
+            if (pk != '0' || pk != 0) {
+                let r = confirm('¿Esta seguro de eliminar el pago?');
+                if (r == true) {
+                    $.ajax({
+                        url: '/accounting/delete_payment/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'pk': pk},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                                rows.remove();
+                                CountPayment();
+                                TotalPayment()
+                            } else {
+                                toastr.error(response.message)
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error('Error de operación!');
+                        }
+                    });
+                } else {
+                    return false
+                }
+            } else {
+                rows.remove();
+                CountPayment();
+                TotalPayment()
+            }
+
+        }
+
+        function TotalPayment() {
+            let t = parseFloat('0.00')
+            $('tbody#payments_detail tr td.item-amount input.value-amount').each(function () {
+                let v = $(this).val()
+                if (isNaN(v) || v == '') {
+                    v = parseFloat('0.00')
+                } else {
+                    v = parseFloat($(this).val())
+                }
+                t = t + v;
+            });
+            $('#sum-payment').val(t.toFixed(2));
+        };
+
+        async function printSocketCash($data) {
+
+            socket = await new WebSocket("ws://localhost:5000/ws");
+            socket.onopen = async function (data) {
+                console.log("Socket connected");
+                await socket.send($data);
+                await socket.close();
+            };
+            socket.onmessage = function (data) {
+                console.log("Socket message received: " + data.data);
+            };
+            socket.onclose = function (data) {
+                console.log("Socket closed");
+            };
+        }
+
+        async function printSocketCashNew($data) {
+
+            const socket = new WebSocket("ws://localhost:5000/ws");
+            socket.onopen = () => {
+                console.log("✅ Conectado al servidor WebSocket");
+                socket.send($data); // Enviar el texto del input
+                console.log("📤 Mensaje enviado:", $data);
+
+                // Cerrar la conexión inmediatamente después del envío
+                socket.close();
+            };
+
+            socket.onerror = (error) => {
+                console.error("❌ Error en el WebSocket:", error);
+            };
+
+            socket.onclose = (event) => {
+                console.log("🔌 Conexión cerrada:", event);
+            };
+        }
+
+
+        function SavePayments() {
+            let option = '0'
+            let number = $('#client-number').val();
+            let total_payment = parseFloat($('#total-payment').val())
+            let total_invoice = parseFloat($('#invoice-total').text())
+            if (total_invoice <= 0) {
+                toastr.warning('Es necesario chekear almenos un item')
+                return false
+            }
+            let none = $('#radioSuccess1').is(":checked")
+            if (none) {
+                option = '0'
+            }
+            let invoice = $('#radioSuccess2').is(":checked")
+            if (invoice) {
+                option = '1'
+                if (number.length === 6) {
+                    toastr.warning('El numero de digitos debe ser 11 para el RUC')
+                    return false
+                }
+            }
+            let ticket = $('#radioSuccess3').is(":checked")
+            if (ticket) {
+                option = '2'
+                {#if (number.length >= 0 && number.length <= 8) {#}
+                {#    toastr.warning('El numero de digitos debe ser 8 para el DNI')#}
+                {#    return false#}
+                {# }#}
+            }
+
+            let Payment = {
+                "Detail": [],
+                "order": $('#id-order').val(),
+                "date": $('#date-invoice').val(),
+                "person": $('#client-pk').val(),
+                "voucher": option,
+                "total": total_payment,
+                "total_invoice": total_invoice,
+                "total_paid": $('#total-paid').val(),
+                "total_refund": $('#total-refund').val()
+            };
+            let validate = true
+            let payment_type = true
+            $("tbody#payments_detail tr").each(function () {
+                let row = $(this)
+                let date = row.find('td.item-date input.value-date').val()
+                if (date === '' || date === '0') {
+                    toastr.warning('Ingrese la fecha en la fila = ' + row.attr('i'))
+                    validate = false
+                    return validate
+                }
+                let type = row.find('td.item-type select.value-type').val()
+                if (type === '' || type === '0') {
+                    toastr.warning('Seleccione la modalidad de pago en la fila = ' + row.attr('i'))
+                    validate = false
+                    return validate
+                }
+                if (type === 'C') {
+                    payment_type = false
+                }
+                let account = row.find('td.item-account select.value-account').val()
+                if (account === '' || account === '0') {
+                    toastr.warning('Seleccione la cuenta en la fila = ' + row.attr('i'))
+                    validate = false
+                    return validate
+                }
+                let amount = row.find('td.item-amount input.value-amount').val()
+                if (amount === '' || parseFloat(amount) === 0) {
+                    toastr.warning('Ingrese el monto en la fila = ' + row.attr('i'))
+                    validate = false
+                    return validate
+                }
+                let code = row.find('td.item-code input.value-code').val()
+                let pk = row.attr('pk')
+
+                let PaymentDetail = {
+                    "pk": pk,
+                    "date": date,
+                    "type": type,
+                    "casing": account,
+                    "amount": parseFloat(amount).toFixed(2),
+                    "code": code
+                };
+                Payment.Detail.push(PaymentDetail);
+            })
+            if (payment_type === false && option != '0') {
+                toastr.warning('Necesita realizar el pago en su totalidad para poder generar un comprobante electrónico')
+                return false
+            }
+            if (validate === false) {
+                return false
+            }
+            let payment_total = parseFloat($('#total-payment').val())
+            let total = parseFloat($('#sum-payment').val())
+            if ((payment_total !== total) && (option !== 'N')) {
+                if (total < payment_total) {
+                    toastr.warning('Es necesario realizar el pago en su totalidad para la emisión del comprobante')
+                    return false
+                }
+            }
+            let r = confirm('¿Esta seguro de registrar el pago?');
+            if (r === true && validate === true) {
+                $.ajax({
+                    url: '/accounting/payment_save/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'POST',
+                    data: {'payment': JSON.stringify(Payment)},
+                    success: function (response) {
+                        if (response.success) {
+                            if (response.pk) {
+                                {#if (option === '0') {#}
+                                {#    toastr.success('Pago registrado correctamente')#}
+                                {#    window.open("/accounting/ticket/" + response.number + "/", '_blank');#}
+                                {# } else {#}
+                                {#    window.open("/accounting/invoice/" + response.number + "/", '_blank');#}
+                                {# }#}
+                                $('tbody#payments_detail tr').removeClass('bg-danger');
+                                let codeText = response.number + ' ' + 'C';
+                                printSocketCash(codeText);
+                                //printSocketCashNew(response.number)
+                                {#sendFirebasePrint(response.number, response.hatch)#}
+                                {#SearchOrder(response.number)#}
+                                $('#order').val('')
+                                $('#order').focus()
+                            }
+                        } else {
+                            toastr.error(response.message)
+                        }
+                    },
+                    fail: function (response) {
+                        toastr.error('Error de operación!');
+                        $('#modal-loader').css('display', 'none')
+                    }
+                });
+            } else {
+                $('#modal-loader').css('display', 'none')
+            }
+        }
+
+        function sendFirebasePrint(codeText, userOffice) {
+            firebase.database().ref(`printers/Junior/1/${userOffice}`).set(codeText);
+        }
+
+
+        $('#client-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#client-number').val();
+                let document = '1'
+
+                if (number.length > 0 && number.length === 8) {
+                    document = '1'
+                } else if (number.length > 0 && number.length === 11) {
+                    document = '6'
+                }
+
+                $('#id-loading').css('display', '')
+
+                $.ajax({
+                    url: '/sales/get_person_by_document/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'number': number,
+                        'document': document,
+                        'order': $('#id-order').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            $("#client-pk").val(response.id);
+                            $("#client-names").val(response.names);
+                            $("#client-email").val(response.email);
+                            console.log(document)
+                            if (document === '0') {
+                                $('#radioSuccess1').prop("checked", true);
+                            } else if (document === '1') {
+                                $('#radioSuccess3').prop("checked", true);
+                            } else if (document === '6') {
+                                $('#radioSuccess2').prop("checked", true);
+                            } else {
+                                $('#radioSuccess1').prop("checked", true);
+                            }
+
+                        } else {
+                            toastr.error(response.message)
+                        }
+                        $('#total-paid').focus()
+                    },
+                    fail: function (response) {
+                        toastr.error('Ocurrio un problema en el proceso')
+                    }
+                });
+            }
+        });
+        $('#client-email').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                UpdateClient($('#client-email').val());
+            }
+        });
+
+        function UpdateClient(value) {
+            if ($('#client-pk').val() === '' || $('#client-pk').val() === '0') {
+                toastr.warning('No existe ningun cliente seleccionado');
+                return false;
+            }
+            if ($('#client-number').val() === '') {
+                toastr.warning('Ingrese el numero de documento');
+                return false;
+            }
+            if ($('#client-names').val() === '') {
+                toastr.warning('Ingrese el nombre/razon social correctamente');
+                return false;
+            }
+            if (value === '') {
+                toastr.warning('Ingrese el valor principal a actualizar');
+                return false;
+            }
+
+            $.ajax({
+                url: '/hrm/update_person/',
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    'pk': $('#client-pk').val(),
+                    'number': $('#client-number').val(),
+                    'names': $("#client-names").val(),
+                    {#'address': $("#person-address").val(),#}
+                    {#'phone': $("#person-phone").val(),#}
+                    'email': $("#client-email").val(),
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio problemas en el proceso')
+                }
+            });
+        }
+
+
+        $('#total-paid').keypress(function (e) {
+            if (e.keyCode === 13) {
+
+                e.preventDefault()
+                $(this).trigger("enterKey");
+
+                if (Number($('#total-paid').val()) >= Number($('#total-payment').val())) {
+
+                    if ($('#total-paid').val() !== $('#order').val()) {
+                        SavePayments('')
+                    } else {
+                        $('#order').focus();
+                        $('#total-paid').val(" ");
+                        SearchOrder($('#order').val());
+                    }
+
+                } /*else if (Number($('#total_parent').val()) > 0) {
+                    //console.log("val1", Number($('#total_parent').val()))
+                    //console.log("val2", Number($('#total_difference').val()))
+                    let _sum = Number($('#total_parent').val()) + Number($('#total-paid').val())
+                    //console.log("sum", _sum)
+                    if (_sum >= Number($('#total-payment').val())) {
+                        SavePayments('')
+                    }
+                    else {
+                        toastr.warning('Favor completar el pago faltante, El pago faltante es de S/' +  $('#total_difference').val());
+                        $('#total-paid').focus();
+                        $('#total-paid').val(" ");
+                        return false
+                    }
+                }*/
+                else {
+                    toastr.warning('Favor completar el pago');
+                    $('#total-paid').focus();
+                    $('#total-paid').val(" ");
+                    return false
+                }
+            }
+        });
+        $(document).on('change keyup', '#total-paid', function () {
+            let valor = $(this).val();
+            let sum_payment = $('#sum-payment').val()
+            if (valor === '' || isNaN(valor)) {
+                valor = parseFloat('0.00').toFixed(2)
+            }
+            if (sum_payment === '' || isNaN(sum_payment)) {
+                sum_payment = parseFloat('0.00').toFixed(42)
+            }
+            if (parseFloat(valor) >= parseFloat(sum_payment)) {
+                $('#total-turned').val(parseFloat(valor - sum_payment).toFixed(2))
+            } else {
+                $('#total-turned').val(parseFloat('0.00').toFixed(2))
+            }
+
+        });
+
+        function OrderEmpty() {
+            if ($('tbody#payments_detail tr').length == 0) {
+                AddNewRow();
+                $('tbody#payments_detail tr td.item-type select.value-type').val('E')
+                $('tbody#payments_detail tr td.item-type select.value-type').trigger('change')
+                $('tbody#payments_detail tr td.item-account select.value-account').val(1)
+                $('tbody#payments_detail tr td.item-account select.value-account').trigger('change')
+            }
+        }
+
+        function OrderEmptyMas() {
+            AddNewRow();
+            $('tbody#payments_detail tr td.item-type select.value-type').val('E')
+            $('tbody#payments_detail tr td.item-type select.value-type').trigger('change')
+            $('tbody#payments_detail tr td.item-account select.value-account').val(1)
+            $('tbody#payments_detail tr td.item-account select.value-account').trigger('change')
+        }
+
+        $(document).on('change', 'tbody#payments_detail tr td.item-type select.value-type', function () {
+            let val = $(this).val();
+            let row = $(this).parent('td.item-type').parent('tr')
+            let object = row.find('td.item-account select.value-account')
+            object.empty()
+            if (val === 'E') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < casing_set.length; i++) {
+                    object.append('<option value="' + casing_set[i][0] + '">' + casing_set[i][1] + '</option>')
+                }
+            } else if (val === 'D') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < bank_set.length; i++) {
+                    object.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>')
+                }
+            } else if (val === 'C') {
+                object.append('<option value="C">Cuota</option>')
+            } else {
+                object.append('<option value="0">Seleccione</option>')
+            }
+
+        });
+        $(document).on('change keyup', 'tbody#payments_detail tr td.item-amount input.value-amount', function () {
+            let val = $(this).val();
+            if (val != '' || val != '0' || val != 0 || isNaN(val) === false) {
+                TotalPayment()
+                let total = $('#sum-payment').val()
+                if (isNaN(total) || total == '') {
+                    total = parseFloat('0.00')
+                } else {
+                    total = parseFloat(total)
+                }
+                let t = total
+                if (t > parseFloat($('#id-debt').val())) {
+                    toastr.warning('El pago no puede superar el monto adeudado')
+                    $(this).val('')
+                    TotalPayment()
+                    return false
+                } else {
+                    TotalPayment()
+                }
+            }
+        });
+        {#$(document).on('change keyup', 'tbody#payments_detail tr td.item-account select.value-account', function () {#}
+        {#    let select = $(this)#}
+        {#    let type = select.parent('td.item-account').prev('td.item-type').find('select.value-type').val()#}
+        {#    if (type === 'E') {#}
+        {#        let val = select.val();#}
+        {#        if (val != '' || val != '0' || val != 0 || isNaN(val) === false) {#}
+        {#            $.ajax({#}
+        {#                url: '/accounting/validate_casing/',#}
+        {#                async: true,#}
+        {#                dataType: 'json',#}
+        {#                type: 'GET',#}
+        {#                data: {'pk': val},#}
+        {#                success: function (response) {#}
+        {#                    if (response.success) {#}
+        {#                        toastr.success(response.message)#}
+        {#                    } else {#}
+        {#                        select.val(0)#}
+        {#                        toastr.error(response.message)#}
+        {#                    }#}
+        {#                },#}
+        {#                fail: function (response) {#}
+        {#                    toastr.error('Error de operación!');#}
+        {#                }#}
+        {#            });#}
+        {#        }#}
+        {#    }#}
+        {# });#}
+        $('#order').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                SearchOrder($('#order').val())
+            }
+        });
+
+        function SearchOrder(n) {
+            $('tbody#order_detail').empty()
+            $('tbody#payments_detail').empty()
+            $('#id-order').val('')
+            $('#client-pk').val('')
+            $('#client-number').val('')
+            $('#client-names').val('')
+            $('#client-address').val('')
+            $('#total-payment').val('')
+            $('#date-invoice').val('')
+            $('#total-paid').val('')
+            $('#invoice-total').text('')
+            $('#sum-payment').val('')
+            $('#total-turned').val('')
+            $('#total-refund').val('')
+            $('#total-refund').removeAttr("style");
+            $('#user-sell').val('')
+            $.ajax({
+                url: '/accounting/search_order/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'order': n},
+                success: function (r) {
+                    if (r.success) {
+                        //console.log("r", r)
+                        $('#id-order').val(r.order)
+                        $('#client-pk').val(r.c)
+                        $('#client-number').val(r.document)
+                        $('#client-names').val(r.names)
+                        $('#client-address').val(r.address)
+                        $('#total-payment').val(parseFloat(r.invoice).toFixed(2))
+                        $('#date-invoice').val(r.date)
+                        $('#user-sell').val(r.user)
+                        if (r.parent_order_id !== '') {
+                            let _difference = r.difference
+                            let _input_difference = $('#total_difference');
+                            let label_difference = $('label[for="total_difference"]');
+                            $('.parent-order').removeClass('d-none');
+                            $('#total_parent').val(Number(r.parent_order_total).toFixed(2))
+                            $('#number-parent').text(r.parent_order_number)
+                            _input_difference.val(parseFloat(_difference).toFixed(2))
+                            if (r.payment_order_parent_id !== '') {
+                                $('.difference').removeClass('d-none');
+                            }
+                            else {
+                                $('.difference').addClass('d-none');
+                            }
+                            if (_difference > 0) {
+                                _input_difference.css('background-color', '#3f851b')
+                                label_difference.text('Faltante');
+                                label_difference.addClass('text-success');
+                            }
+                            else {
+                                label_difference.removeClass('text-success');
+                                label_difference.css('color', '#ffb3b3', 'important');
+                                label_difference.text('Reembolso');
+                                _input_difference.css('background-color', '#c63232');
+                                $('#total-paid').val(parseFloat(r.total).toFixed(2));
+                                //$('#total-paid').prop("disabled", true);
+                                $('#total-paid').focus();
+                            }
+                        }
+                        else {
+                            $('.parent-order').addClass('d-none');
+                            $('#total_parent').val('0');
+                            $('#number-parent').text('0');
+                        }
+                        if (r.doc === '0') {
+                            $('#radioSuccess1').prop("checked", true);
+                        } else if (r.doc === '1') {
+                            $('#radioSuccess2').prop("checked", true);
+                        } else if (r.doc === '2') {
+                            $('#radioSuccess3').prop("checked", true);
+                        } else {
+                            $('#radioSuccess1').prop("checked", true);
+                        }
+                        let d = r['d']
+                        if (JSON.parse(r['p']).length === 0) {
+                            //console.log(JSON.parse(r['p']))
+                            OrderEmpty(JSON.parse(r['p']))
+                            return new Promise((resolve, reject) => {
+                                for (let i = 0; i < d.length; i++) {
+                                    resolve(AddOrderRow(i + 1, d[i]['pk'], d[i]['name'], d[i]['unit'], d[i]['measure'], d[i]['quantity'], d[i]['price'], d[i]['amount'], d[i]['is_i']))
+                                }
+                            }).then(async (yes) => {
+                                $('#invoice-total').text(parseFloat(r.invoice).toFixed(2))
+                                if (parseFloat($('#sum-payment').val()) != parseFloat($('#total-payment').val())) {
+                                    OrderEmptyMas()
+                                }
+                                setTimeout(() => {
+                                    $('#total-paid').focus()
+                                    $('#total-paid').select()
+                                }, 500);
+                            })
+                        } else {
+                            return new Promise((resolve, reject) => {
+                                //console.log(JSON.parse(r['p']))
+                                _reprint_codeText = n + ' ' + 'C';
+                                _doc = r.doc;
+                                _number = n;
+                                {#console.log("_reprint_codeText", _reprint_codeText);#}
+                                {#console.log("_doc", _doc);#}
+                                resolve(AddRowPayment(JSON.parse(r['p'])))
+                            }).then(async (options) => {
+                                $('#total-paid').val(parseFloat(r.paid).toFixed(2))
+                                await $('#total-paid').trigger('change')
+
+                                return new Promise((resolve, reject) => {
+                                    for (let i = 0; i < d.length; i++) {
+                                        resolve(AddOrderRow(i + 1, d[i]['pk'], d[i]['name'], d[i]['unit'], d[i]['measure'], d[i]['quantity'], d[i]['price'], d[i]['amount'], d[i]['is_i']))
+                                    }
+                                }).then(async (yes) => {
+                                    $('#invoice-total').text(parseFloat(r.invoice).toFixed(2))
+                                    if (parseFloat($('#sum-payment').val()) != parseFloat($('#total-payment').val())) {
+                                        OrderEmptyMas()
+                                    }
+                                    setTimeout(() => {
+                                        $('#total-paid').focus()
+                                        $('#total-paid').select()
+                                    }, 500);
+                                })
+                            })
+                        }
+                    } else {
+                        $('tbody#order_detail').empty()
+                        $('tbody#payments_detail').empty()
+                        $('#id-order').val('')
+                        $('#client-pk').val('')
+                        $('#client-number').val('')
+                        $('#client-names').val('')
+                        $('#client-address').val('')
+                        $('#total-payment').val('')
+                        $('#date-invoice').val('')
+                        $('#total-paid').val('')
+                        $('#invoice-total').text('')
+                        $('#sum-payment').val('')
+                        $('#total-refund').val('')
+                        $('#user-sell').val('')
+                        $('#order').val('')
+                        $('#order').focus()
+                        toastr.warning(r.message)
+                    }
+                },
+                error: function (r) {
+                    toastr.error(r)
+                }
+            });
+        };
+
+        async function AddRowPayment(p) {
+            for (let i = 0; i < p.length; i++) {
+                await AddRow(i + 1, p[i]['pk'], p[i]['fields']['date_payment'], p[i]['fields']['payment'], p[i]['fields']['casing'], p[i]['fields']['amount'], p[i]['fields']['code_operation'])
+            }
+
+
+        }
+
+        function AddOrderRow(i, pk, product, unit, measure, quantity, price, amount, inv) {
+            $('tbody#order_detail').append(
+                '<tr class="text-uppercase text-center" d="' + pk + '">' +
+                '<td class="align-middle p-1">' + i + '</td>' +
+                '<td class="align-middle p-1 text-left">' + product + '</td>' +
+                '<td class="align-middle p-1">' + measure + '</td>' +
+                '<td class="align-middle p-1 text-right">' + parseFloat(quantity).toFixed(2) + '</td>' +
+                '<td class="align-middle p-1">' + unit + '</td>' +
+                '<td class="align-middle p-1 text-right">' + parseFloat(price).toFixed(2) + '</td>' +
+                '<td class="align-middle p-1 text-right item-amount">' + 'S/. ' + '<b>' + parseFloat(amount).toFixed(2) + '</b>' + '</td>' +
+                '<td class="align-middle p-1 item-check">' +
+                '<div class="icheck-material-warning m-0">' +
+                '<input type="checkbox" class="value-check" id="' + pk + '" checked="' + inv + '" >' +
+                '<label for="' + pk + '">' + '<i class="icon-user">' + '</i>' + '</label>' +
+                '</div>' +
+                '</td>' +
+                '</tr>'
+            );
+        }
+
+        $(document).on('click', 'tbody#order_detail tr td.item-check div input.value-check', function () {
+            {#$('tbody#order_detail tr td.item-check div input.value-check').click(function () {#}
+            let tr = $(this).parent('div').parent('td.item-check').parent('tr')
+            let pk = tr.attr('d')
+            let amount = parseFloat(tr.find('td.item-amount b').text())
+            let total = parseFloat($('#invoice-total').text())
+            if ($(this).is(':checked')) {
+                UpdateOrderDetail(pk, 1)
+                $('#invoice-total').text(parseFloat(total + amount).toFixed(2))
+            } else {
+                UpdateOrderDetail(pk, 0)
+                $('#invoice-total').text(parseFloat(total - amount).toFixed(2))
+            }
+        });
+
+        function AddNewRow() {
+
+            let payment = $('#sum-payment').val()
+            let total = parseFloat($('#total-payment').val())
+            if (payment === '') {
+                payment = parseFloat('0.00')
+            } else {
+                payment = parseFloat(payment)
+            }
+            let options = '<option value="0">Seleccione</option>';
+            for (let i = 0; i < payments_set.length; i++) {
+                options = options + '<option value="' + payments_set[i][0] + '">' + payments_set[i][1] + '</option>'
+            }
+            let account = '<option value="0">Seleccione</option>';
+            let amount = total - payment
+            if (amount <= 0) {
+                if (payment > total) {
+                    $('#total-refund').val(parseFloat(payment - total).toFixed(2))
+                    $('#total-refund').css('background-color', '#ed1616')
+                } else {
+                    toastr.info('El monto maximo de pago es ' + total.toString())
+                }
+                return false
+            }
+            $('tbody#payments_detail').append(
+                '<tr class="text-uppercase bg-danger text-center p-0 item-row" pk="0">' +
+                '<td class="align-middle p-1 item-number"></td>' +
+                '<td class="align-middle p-1 item-date">' + '<input type="date" class="form-control value-date" value="{{ date_now }}">' + '</td>' +
+                '<td class="align-middle p-1 item-type">' + '<select class="form-control value-type">' + options + '</td>' +
+                '<td class="align-middle p-1 item-account">' + '<select class="form-control value-account">' + account + '</td>' +
+                '<td class="align-middle p-1 item-amount">' + '<input type="number" step="0.01" min="0.00" class="form-control text-right value-amount" value="' + parseFloat(amount).toFixed(2) + '" placeholder="0.00">' + '</td>' +
+                '<td class="align-middle p-1 item-code">' + '<input type="text" class="form-control value-code" value="" placeholder="Operación">' + '</td>' +
+                '<td class="align-middle p-1 item-option">' +
+                '<button type="button" class="btn btn-light value-delete">' +
+                '<i class="icon-trash"></i>' +
+                '</button>' +
+                '</td>' +
+                '</tr>'
+            );
+            CountPayment();
+            TotalPayment()
+        }
+
+        function CasingCloseModal() {
+            $.ajax({
+                url: '/accounting/close_casing/',
+                dataType: 'json',
+                type: 'GET',
+                data: {},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-casing').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+
+        function CasingReportModal() {
+            $.ajax({
+                url: '/accounting/casing_report/',
+                dataType: 'json',
+                type: 'GET',
+                data: {},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-report').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+        {#$(document).on('click', 'table#user-table-authorization tbody#user_authorization tr td.item-authorization div input.value-authorization', function () {#}
+        {##}
+        {#    let tr = $(this).parent('div').parent('td.item-authorization').parent('tr')#}
+        {#    let pk = $(this).attr("id")#}
+        {#    if ($(this).is(':checked')) {#}
+        {#        AuthorizationUser(pk, 1)#}
+        {#    } else {#}
+        {#        AuthorizationUser(pk, 0)#}
+        {#    }#}
+        {# });#}
+
+        function AuthorizationUser() {
+            let u = $("#id-authorization").val()
+            $.ajax({
+                url: '/user/authorization/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'u': u},
+                success: function (response) {
+                    if (response.status) {
+                        if (response.value) {
+                            toastr.success(response.message)
+                            if (response.userAuth === true) {
+                                $("#id-authorization option:selected").text(response.userName + ' --- ' + " Autorizado").css('color', '#0aa60f')
+                            }
+                        } else {
+                            $("#id-authorization option:selected").text(response.userName + ' --- ' + " No Autorizado").css('color', '#ffffff')
+                            toastr.info(response.message)
+                        }
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error de operación!');
+                }
+            });
+        }
+
+        function RePrint() {
+            if (_number !== undefined) {
+                printSocketCash(_reprint_codeText);
+                //printSocketCash(_number);
+                $('#order').focus()
+                $('#order').select()
+            } else {
+                toastr.error('PRIMERO BUSQUE UNA ORDEN PAGADA O PAGUE LA ORDEN SELECCIONADA');
+                $('#order').focus()
+                $('#order').select()
+            }
+        }
+
+        function Download() {
+            {#console.log("entro")#}
+            {#console.log("_number", _number)#}
+            {#console.log("_doc", _doc)#}
+
+            if (_number !== undefined && _doc !== undefined) {
+                if (_doc === '0') {
+                    window.open("/accounting/ticket/" + _number + "/", '_blank');
+                } else {
+                    window.open("/accounting/invoice/" + _number + "/", '_blank');
+                }
+                $('#order').focus()
+                $('#order').select()
+            } else {
+                toastr.error('PRIMERO BUSQUE UNA ORDEN PAGADA O PAGUE LA ORDEN SELECCIONADA');
+                $('#order').focus()
+                $('#order').select()
+            }
+        }
+    </script>
+{% endblock extrajs %}

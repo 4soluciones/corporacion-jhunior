@@ -1,0 +1,145 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Kardex Electronico
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-1">
+        <div class="card-header p-2">
+            <form id="kardex-form" action="{% url 'sales:get_kardex_by_product' %}" method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-sm-8">
+                        <fieldset class="border p-3">
+                            <legend class="w-auto mb-0 text-uppercase" style="font-size: 12px">Kardex por Producto
+                            </legend>
+                            <div class="row">
+                                <div class="form-group col-sm-2">
+                                    <label for="filter-code">Cod. Producto:</label>
+                                    <input type="text" class="form-control" id="filter-code" name="product-code"
+                                           autocomplete="off">
+                                </div>
+                                <div class="form-group col-sm-5">
+                                    <label for="filter-product">Nombre del Producto:</label>
+                                    <input type="text" class="form-control" id="filter-product" readonly>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="date-product">Seleccione Mes:</label>
+                                    <input type="month" class="form-control text-center" name="date-product"
+                                           id="date-product" value="{{ date_now }}">
+                                </div>
+
+                                <div class="form-group col-md-2">
+                                    <label for="month" class="text-secondary mt-3"></label>
+                                    <button type="submit" class="btn btn-secondary btn-block">
+                                        Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-4">
+                        <fieldset class="border p-3">
+                            <legend class="w-auto mb-0 text-uppercase" style="font-size: 12px">Kardex total por Mes
+                            </legend>
+                            <div class="row">
+                                <div class="form-group col-md-6 text-center">
+                                    <label for="date-report">Seleccione Mes:</label>
+                                    <input type="month" class="form-control text-center" name="date-report"
+                                           id="date-report" value="{{ date_now }}">
+                                </div>
+                                <div class="form-group col-sm-6 text-center">
+                                    <label for="month">excel</label>
+                                    <button type="button" class="btn btn-success btn-block" onclick="ReportExcel()">
+                                        Descargar
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card-body pt-0">
+            <div class="loader-container col-auto" id="loader-bill"
+                 style="display: none; opacity: 1.5; width: 100%; padding-top: 3em; padding-left: 50em">
+                <div class="loader"></div>
+            </div>
+            <div id="kardex-grid-list"></div>
+        </div>
+    </div>
+
+{% endblock body %}
+
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        loader = '<div class="container">' +
+            '<div class="row">' +
+            '<div class="col-md-12">' +
+            '<div class="loader">' +
+            '<p><strong>Cargando Kardex..</strong></p>' +
+            '<div class="loader-inner"></div>' +
+            '<div class="loader-inner"></div>' +
+            '<div class="loader-inner"></div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+        /*$(document).ready(function() {
+            // Prevenir el envío del formulario al presionar "Enter"
+            $('#kardex-form input').on('keypress', function(e) {
+                if (e.which === 13) { // 13 es el código de la tecla "Enter"
+                    e.preventDefault();
+                }
+            });
+        });*/
+
+        $('#kardex-form').submit(function (e) {
+            e.preventDefault();
+
+            if ($('#filter-code').val() === '') {
+                toastr.warning('¡favor de ingresar un producto', 'Error de Datos!');
+                return false;
+            }
+
+            let data = new FormData($('#kardex-form').get(0));
+            $('#loader-bill').html(loader).show()
+            $('#kardex-grid-list').empty();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: $(this).attr('method'),
+                data: data,
+                cache: false,
+                processData: false,
+                contentType: false,
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                success: function (response, textStatus, xhr) {
+                    if (response.success) {
+                        console.log(response.product_name)
+                        $('#kardex-grid-list').html(response.grid);
+                        $('#filter-product').val(response.product_name);
+                        $('#loader-bill').hide();
+                    } else {
+                        toastr.error(response.message);
+                        $('#loader-bill').hide();
+                    }
+                },
+                error: function (jqXhr, textStatus, xhr) {
+                    toastr.error(jqXhr.responseJSON.error, '¡ERROR!');
+                    $('#loader-bill').hide();
+                }
+            });
+        });
+
+        function ReportExcel() {
+            let date_report = $('#date-report').val()
+            console.log(date_report)
+            window.open("/sales/kardex_excel/" + date_report + "/", '');
+        }
+
+    </script>
+{% endblock extrajs %}

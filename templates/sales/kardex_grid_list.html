@@ -1,0 +1,99 @@
+<table class="table table-light">
+    <thead>
+    <tr style="font-size: 8px;" class="text-center">
+        <th colspan="3" class="bg-primary">Descripcion</th>
+        <th colspan="4" class="bg-signup">Operaciones</th>
+        <th colspan="1" class="bg-dark-light">Saldo</th>
+    </tr>
+    <tr style="font-size: 7px;" class="text-center">
+        <th class="align-middle small">Fecha</th>
+        <th class="align-middle small">Orden</th>
+        <th class="align-middle small">Operación</th>
+        <th class="align-middle small">Cantidad</th>
+        <th class="align-middle small">Unidades</th>
+        <th class="align-middle small">Precio</th>
+        <th class="align-middle small">Total</th>
+        <th class="align-middle small">Restante</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if detail_set %}
+    {% for k in detail_set %}
+        {% if forloop.first and k.id == id %}
+            <tr class="text-center bg-success-light2" style="font-size: 11px">
+                <td class="align-middle">-</td>
+                <td class="align-middle">INVENTARIO</td>
+                <td class="align-middle">Inicial</td>
+                <td class="align-middle">{{ k.previous|safe }} NIU</td>
+                <td class="align-middle">{{ k.previous|floatformat:0 }}</td>
+                <td class="align-middle text-center">-</td>
+                <td class="align-middle text-center">-</td>
+                <td class="align-middle text-right">{{ k.previous|safe }}</td>
+            </tr>
+            {% if k.is_state %}
+                <tr class="text-center" style="font-size: 11px">
+                    <td class="align-middle">{{ k.order.create_at|date:'d-m-Y' }}</td>
+                    <td class="align-middle">{{ k.order.get_type_display }}</td>
+                    <td class="align-middle">{{ k.get_operation_display }}</td>
+                    <td class="align-middle">{{ k.quantity|safe }} {{ k.unit }}</td>
+                    <td class="align-middle">{{ k.quantity_niu }}</td>
+                    <td class="align-middle text-right">{{ k.price|safe }}</td>
+                    <td class="align-middle text-right">{{ k.amount|safe }}</td>
+                    <td class="align-middle text-right">{{ k.quantity_remaining|safe }}</td>
+                </tr>
+            {% else %}
+                <tr class="text-center bg-warning-light2" style="font-size: 11px">
+                    <td class="align-middle">{{ k.create_at|date:'d-m-Y' }}</td>
+                    {#                    {% if k.order.type == 'V' %}#}
+                    {#                        <td class="align-middle">{{ k.order.get_type_display }}</td>#}
+                    {#                    {% elif k.order.type == 'C' %}#}
+                    <td class="align-middle">{{ k.order.get_type_display }}</td>
+                    {#                    {% endif %}#}
+                    <td class="align-middle">{{ k.get_operation_display }}</td>
+                    <td class="align-middle">{{ k.quantity|safe }} {{ k.unit }}</td>
+                    <td class="align-middle">{{ k.quantity_niu }}</td>
+                    <td class="align-middle text-right">{{ k.price|safe }}</td>
+                    <td class="align-middle text-right">{{ k.amount|safe }}</td>
+                    <td class="align-middle text-right">{{ k.quantity_remaining|safe }}</td>
+                </tr>
+            {% endif %}
+        {% else %}
+            {% if k.is_state %}
+                <tr class="text-center" style="font-size: 11px">
+                    <td class="align-middle">{{ k.order.create_at|date:'d-m-Y' }}</td>
+                    <td class="align-middle">{{ k.order.get_type_display }}</td>
+                    <td class="align-middle">{{ k.get_operation_display }}</td>
+                    <td class="align-middle">{{ k.quantity|safe }} {{ k.unit }}</td>
+                    <td class="align-middle">{{ k.quantity_niu }}</td>
+                    <td class="align-middle text-right">{{ k.price|safe }}</td>
+                    <td class="align-middle text-right">{{ k.amount|safe }}</td>
+                    <td class="align-middle text-right">{{ k.quantity_remaining|safe }}</td>
+                </tr>
+            {% else %}
+                <tr class="text-center bg-warning-light2" style="font-size: 11px">
+                    <td class="align-middle">{{ k.create_at|date:'d-m-Y' }}</td>
+                    <td class="align-middle">{{ k.order.get_type_display }}</td>
+                    <td class="align-middle">{{ k.get_operation_display }}</td>
+                    <td class="align-middle">{{ k.quantity|safe }} {{ k.unit }}</td>
+                    <td class="align-middle">{{ k.quantity_niu }}</td>
+                    <td class="align-middle text-right">{{ k.price|safe }}</td>
+                    <td class="align-middle text-right">{{ k.amount|safe }}</td>
+                    <td class="align-middle text-right">{{ k.quantity_remaining|safe }}</td>
+                </tr>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% else %}
+        <tr class="text-center bg-success-light2" style="font-size: 11px">
+          <td class="align-middle">-</td>
+                <td class="align-middle">INVENTARIO</td>
+                <td class="align-middle">Inicial</td>
+                <td class="align-middle">{{ product_obj.stock|safe }} NIU</td>
+                <td class="align-middle">{{ product_obj.stock|floatformat:0 }}</td>
+                <td class="align-middle text-center">-</td>
+                <td class="align-middle text-center">-</td>
+                <td class="align-middle text-right">{{ product_obj.stock|safe }}</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>

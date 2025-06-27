@@ -1,0 +1,1092 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Compr@s
+{% endblock title %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-9 col-md-9 p-1">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-2 pl-1 pr-1">
+                            <input type="text" class="form-control form-control-rounded"
+                                   id="search-code"
+                                   name="search-code"
+                                   placeholder="Codigo Producto"/>
+                        </div>
+                        <div class="col-md-6 pl-1 pr-1">
+                            <div id="autocomplete-product" class="autocomplete text-primary">
+                                <input class="form-control autocomplete-input" id="search-product"
+                                       name="search-product"
+                                       placeholder="Buscar producto"/>
+                                <ul class="autocomplete-result-list"></ul>
+                            </div>
+                        </div>
+                        <div class="col-md-2 pl1 pr-1">
+                            <input type="text" class="form-control" id="id-codes" name="id-codes" value=""
+                                   placeholder="Codigo compra">
+                        </div>
+                        <div class="col-md-2 pl-1 pr-1 text-center">
+                            <button type="button" class="btn btn-light" onclick="CreateOrder()" id="save-order"><i
+                                    class="icon-badge"></i>
+                                Registrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-1">
+                    <div id="detail-items" class="col-md-12 table-responsive p-1 m-0">
+                        <table class="table table-bordered" style="width: 100%">
+                            <thead>
+                            <tr class="text-center">
+                                <th class="p-2" style="width: 5%">Nº</th>
+                                <th class="p-2" style="width: 5%">Codigo</th>
+                                <th class="p-2" style="width: 37%">Descripción</th>
+                                <th class="p-2" style="width: 13%">Cantidad</th>
+                                <th class="p-2" style="width: 13%">Medida</th>
+                                <th class="p-2" style="width: 13%">Precio</th>
+                                <th class="p-2" style="width: 9%">Importe</th>
+                                <th class="p-2" style="width: 5%"><i class='icon-close'></i></th>
+                            </tr>
+                            </thead>
+                            <tbody id="order-detail">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col p-1">
+                                    <label for="type-invoice">Tipo</label>
+                                    <select class="form-control" id="type-invoice" name="type-invoice">
+                                        {% for i in type_set %}
+                                            <option value="{{ i.0 }}">{{ i.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col p-1">
+                                    <label for="invoice_number">Comprobante</label>
+                                    <input type="text" class="form-control" value="" id="invoice_number"
+                                           placeholder="F001-0001"/>
+                                </div>
+                                <div class="col p-1">
+                                    <label for="invoice_date">Fecha Ingreso</label>
+                                    <input type="date" class="form-control" value="{{ date_now }}" id="invoice_date"/>
+                                </div>
+                                <div class="col p-1">
+                                    <label for="date_document">Fecha Documento</label>
+                                    <input type="date" class="form-control" value="{{ date_now }}" id="date_document"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col p-1">
+                                </div>
+                                <div class="col p-1"></div>
+                                <div class="col p-1"></div>
+                                <div class="col p-1">
+                                    <label for="creation">Fecha</label>
+                                    <input type="date" class="form-control" value="{{ date_now }}" id="creation"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-12 p-1">
+                                    <div class="form-group row mb-1">
+                                        <div class="col-lg-5 align-self-center pr-0">
+                                            <select class="form-control form-control-sm" id="id-money" name="id-money">
+                                                {% for c in coin_set %}
+                                                    <option value="{{ c.0 }}">{{ c.1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-7">
+                                            <input type="text" id="id-change"
+                                                   name="id-change"
+                                                   class="form-control text-right font-weight-bold"
+                                                   placeholder="0.000000"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-1">
+                                        <label class="col-lg-5 col-form-label form-control-label">SubTotal</label>
+                                        <div class="col-lg-7">
+                                            <input type="text" id="total-amount"
+                                                   name="total-amount"
+                                                   class="form-control text-right font-weight-bold"
+                                                   placeholder="0.000000"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-1">
+                                        <div class="col-lg-5 align-self-center pr-0">
+                                            <select class="form-control form-control-sm" id="igv-apply"
+                                                    name="igv-apply">
+                                                <option value="1">INCLUYE IGV</option>
+                                                <option value="0">NO INCLUYE IGV</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-7">
+                                            <input type="text" id="id-igv"
+                                                   name="id-igv"
+                                                   class="form-control text-right font-weight-bold"
+                                                   placeholder="0.000000"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    {#                                    <div class="form-group row mb-1">#}
+                                    {#                                        <label class="col-lg-5 col-form-label form-control-label">Descuento</label>#}
+                                    {#                                        <div class="col-lg-7">#}
+                                    {#                                            <input type="text" id="total-discount"#}
+                                    {#                                                   name="total-discount"#}
+                                    {#                                                   class="form-control text-right font-weight-bold"#}
+                                    {#                                                   placeholder="0.00"#}
+                                    {#                                                   readonly>#}
+                                    {#                                        </div>#}
+                                    {#                                    </div>#}
+                                    <div class="form-group row mb-1">
+                                        <label class="col-lg-5 col-form-label form-control-label">Total <b id="moneda">PEN</b></label>
+                                        <div class="col-lg-7">
+                                            <input type="text" id="total"
+                                                   name="total"
+                                                   class="form-control text-right font-weight-bold"
+                                                   placeholder="0.000000"
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3 col-md-3 p-1">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-5 p-1">
+                            <input type="text" class="form-control"
+                                   id="search-order"
+                                   name="search-order"
+                                   maxlength="10"
+                                   placeholder="Buscar compra"/>
+                            <input type="hidden" value="" id="id-order" name="id-order">
+                        </div>
+                        <div class="col-md-7 p-1">
+                            <a href="{% url 'sales:purchase_list' %}" class="btn btn-success w-100"><i
+                                    class="icon-cloud-download"></i> Reporte</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 p-1">
+                            <input type="hidden" value="" id="person-pk" name="person-pk">
+                            <label class="form-label" for="person-document">Documento</label>
+                            <select class="form-control" id="person-document" name="person-document">
+                                {% for d in document_set %}
+                                    <option value="{{ d.0 }}">{{ d.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8 p-1">
+                            <label class="form-label" for="person-number">Numero Documento</label>
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="person-number"
+                                    name="person-number"
+                                    maxlength="15"
+                                    placeholder="Numero documento"
+                            />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 p-1">
+                            <label class="form-label" for="person-names">Nombres/Razón social</label>
+                            <div id="autocomplete-client" class="autocomplete text-primary">
+                                <input class="form-control autocomplete-input"
+                                       type="text"
+                                       id="person-names"
+                                       name="person-names"
+                                       maxlength="200"
+                                       placeholder="Buscar Nombres y Apellidos"/>
+                                <ul class="autocomplete-result-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 p-1">
+                            <label class="form-label" for="person-address">Dirección de domicilio</label>
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="person-address"
+                                    name="person-address"
+                                    maxlength="200"
+                                    placeholder="Av. Dirección Nro 235"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 p-1">
+                            <label class="form-label" for="person-email">Correo Electronico</label>
+                            <input
+                                    type="text"
+                                    id="person-email"
+                                    name="person-email"
+                                    maxlength="100"
+                                    class="form-control"
+                                    placeholder="Correo Electronico"
+                            />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 p-1">
+                            <label class="form-label" for="person-phone">Telefono/Celular</label>
+                            <input
+                                    type="text"
+                                    id="person-phone"
+                                    name="person-phone"
+                                    maxlength="15"
+                                    class="form-control phone-mask"
+                                    placeholder="950 799 8941"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        var unit_set =
+            [
+                {% for u in unit_set %}
+                    [
+                        '{{ u.0 }}',
+                        '{{ u.1 }}'
+                    ],
+                {% endfor %}
+            ];
+
+        new Autocomplete('#autocomplete-product', {
+            search: input => {
+                const url = `/sales/search_product/?search=${encodeURI(input.toUpperCase())}`
+
+                return new Promise(resolve => {
+                    if (input.length < 3) {
+                        $('#search-code').val('')
+                        return resolve([])
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.product)
+                        })
+                })
+            },
+            renderResult: (result, props) => {
+                let group = ''
+                if (result.index % 3 === 0) {
+                    group = '<li class="group">Group</li>'
+                }
+                return `
+                ${group}
+                <li ${props} class="font-weight-bold">
+                 <div class="text-white-50" style="font-size: 13px">
+                    ${'<i class="spinner-grow"></i>'} ${result.name}
+                 </div>
+                 <div class="text-white-50">
+                    CODIGO: ${result.code}   MEDIDA: ${result.measure} <b class="text-white"> STOCK = ${result.stock} UNIDADES </b>
+                  </div>
+                </li>
+                `
+            },
+            getResultValue: result => result.name,
+            onSubmit: result => {
+                if (result) {
+                    $.ajax({
+                        url: '/sales/get_product_purchase/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'code': result.code
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                let p = response['product'];
+                                for (let i = 0; i < p.length; i++) {
+                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, '', '')
+                                }
+                                FocusDetail()
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                    {#AddRowOrder(0, result.pk, result.code, result.name, result.measure)#}
+                    $('#search-product').val('')
+                    $('#search-code').val('')
+                }
+            }
+        })
+        new Autocomplete('#autocomplete-client', {
+            search: input => {
+                const url = `/hrm/get_person/?search=${encodeURI(input.toUpperCase())}`
+
+                return new Promise(resolve => {
+                    if (input.length < 3) {
+                        $('#person-pk').val('')
+                        $('#person-document').val('1')
+                        $('#person-number').val('')
+                        $('#person-email').val('')
+                        $('#person-phone').val('')
+                        $('#person-address').val('')
+                        return resolve([])
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.person)
+                        })
+                })
+            },
+            renderResult: (result, props) => {
+                let group = ''
+                if (result.index % 3 === 0) {
+                    group = '<li class="group">Group</li>'
+                }
+                return `
+                ${group}
+                <li ${props}>
+                 <div class="h6">
+                    ${result.names}
+                 </div>
+                 <div class="wiki-snippet text-white">
+                    Documento: ${result.number} <br>  Celular: ${result.phone} <br>   Correo: ${result.email}
+                  </div>
+                </li>
+                `
+            },
+            getResultValue: result => result.names,
+            onSubmit: result => {
+                if (result) {
+                    $('#person-pk').val(result.pk)
+                    $('#person-document').val(result.document)
+                    $('#person-number').val(result.number)
+                    $('#person-phone').val(result.phone)
+                    $('#person-email').val(result.email)
+                    $('#person-address').val(result.address)
+                }
+            }
+        })
+
+        async function AddRowOrder(i, pk, product, code, name, quantity, price) {
+            return new Promise((resolve, reject) => {
+                let options = '<option value="0">SELECT</option>';
+                for (let i = 0; i < unit_set.length; i++) {
+                    options = options + '<option value="' + unit_set[i][0] + '">' + unit_set[i][1] + '</option>'
+                }
+                resolve(options)
+            }).then((options) => {
+                $('tbody#order-detail').append(
+                    '<tr class="p-0" product="' + product + '" pk="' + pk + '" i="' + i + '" q="0">' +
+                    '<td class="align-middle item-number p-1 text-center">' + i + '</td>' +
+                    '<td class="align-middle item-code p-1 text-center">' + code + '</td>' +
+                    '<td class="align-middle item-description p-1 text-justify">' + name + '</td>' +
+                    '<td class="align-middle item-quantity p-1 text-center">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-quantity" value="' + quantity + '"/>' + '</td>' +
+                    '<td class="align-middle item-unit p-1 text-center">' + '<select class="form-control value-unit">' + options + '</td>' +
+                    '<td class="align-middle item-price p-1 text-right">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-price" value="' + price + '"/>' + '</td>' +
+                    '<td class="align-middle item-amount p-1 text-right">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-amount" value=""/>' + '</td>' +
+                    '<td class="align-middle item-delete p-1 text-center">' +
+                    '    <button type="button" class="btn btn-light btn-round">' + '<i class="icon-trash">' + '</i>' + '</button>' +
+                    '</td>' +
+                    '</tr>'
+                );
+                CountRow();
+                TotalOrder();
+            })
+        }
+
+        function CountRow() {
+            let index = 1;
+            $('tbody#order-detail tr').each(function () {
+                $(this).find('td.item-number').text(index)
+                $(this).attr('i', index);
+                let pk = $(this).attr('pk');
+                let product = $(this).attr('product');
+                $(this).find('td.item-delete button').attr('onclick', 'DeleteRowOrder(' + index + ', ' + pk + ', ' + product + ')')
+                index++;
+            });
+        };
+
+        function DeleteRowOrder(i, pk, product) {
+            let rows = $('tbody#order-detail').find("tr[i=" + i + "][pk=" + pk + "][product=" + product + "]")
+            if (parseInt(pk) != 0) {
+                let order = $('#id-order').val()
+                if (order != '') {
+                    let r = confirm("¿Esta seguro de eliminar la fila?")
+                    if (r == true) {
+                        $.ajax({
+                            url: '/sales/delete_order_detail/',
+                            async: true,
+                            dataType: 'json',
+                            type: 'GET',
+                            data: {'pk': pk},
+                            success: function (response) {
+                                if (response.success) {
+                                    rows.remove();
+                                    CountRow();
+                                    TotalOrder();
+                                    toastr.success(response.message)
+                                } else {
+                                    toastr.error(response.message)
+                                }
+                            },
+                        });
+                    }
+                } else {
+                    toastr.error('Necesita buscar una orden')
+                }
+            } else {
+                rows.remove();
+                CountRow();
+                TotalOrder();
+            }
+        }
+
+        function TotalOrder() {
+            let amount = 0;
+            {#let discount = $('#total-discount').val()#}
+            $('tbody#order-detail tr td.item-amount input.value-amount').each(function () {
+                if ($(this).val()) {
+                    amount = amount + parseFloat($(this).val());
+                } else {
+                    amount = amount + parseFloat("0.00");
+                }
+            });
+
+            {#if (discount === "" || isNaN(discount)) {#}
+            {#    discount = 0#}
+            {# } else {#}
+            {#    discount = parseFloat(discount)#}
+            {# }#}
+            if (parseInt($('#igv-apply').val())) {
+                let new_amount = parseFloat(amount) / parseFloat('1.1800')
+                {#let nigv = (parseFloat(amount.toFixed(6)) * parseFloat('0.1800'))#}
+
+                let total = amount
+                let nigv = amount - new_amount
+                {#$('#total-amount').val((amount - nigv).toFixed(2));#}
+                $('#total-amount').val((new_amount).toFixed(2));
+                $('#id-igv').val(nigv.toFixed(2))
+                $('#total').val(total.toFixed(2));
+            } else {
+                let total = (parseFloat(amount.toFixed(6)) * parseFloat('1.1800'))
+                $('#id-igv').val(parseFloat(total - amount).toFixed(2))
+                $('#total-amount').val(amount.toFixed(2));
+                $('#total').val(total.toFixed(2));
+            }
+        };
+        $(document).on('change keyup', 'tbody#order-detail tr td.item-quantity input', function () {
+            let input = $(this);
+            let quantity = input.val();
+            let tr = $(this).parent("td.item-quantity").parent("tr")
+            let unit = tr.find('td.item-unit select.value-unit').val()
+            let price = tr.find('td.item-price input.value-price').val()
+            let amount = tr.find('td.item-amount input.value-amount').val()
+            if (isNaN(quantity) || quantity === '' || parseFloat(quantity) <= 0) {
+                quantity = parseFloat('0.00').toFixed(2)
+            }
+            if (isNaN(price) || price === '' || parseFloat(price) <= 0) {
+                price = parseFloat('0.00').toFixed(6)
+            }
+            if (unit != 0 || unit != "0") {
+                let units = tr.find('td.item-unit select.value-unit option:selected').text()
+                let product = tr.attr("product")
+                if (quantity != "" && parseInt(product) > 0 && parseFloat(quantity) > 0) {
+                    $.ajax({
+                        url: '/sales/valid_unit/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'quantity': quantity, 'product': product, 'unit': unit, 'units': units},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                            } else {
+                                toastr.warning(response.message)
+                                input.val('')
+                            }
+                        },
+                    });
+                }
+            }
+            if (price > 0 && quantity > 0) {
+                tr.find('td.item-amount input.value-amount').val(parseFloat(price * quantity).toFixed(6))
+                TotalOrder()
+            } else if (amount > 0 && quantity > 0) {
+                tr.find('td.item-price input.value-price').val(parseFloat(parseFloat(amount) / parseFloat(quantity)).toFixed(6))
+                TotalOrder()
+            }
+        })
+        $(document).on('change keyup', 'tbody#order-detail tr td.item-unit select.value-unit', function () {
+            let select = $(this)
+            let unit = select.val();
+            let cell = select.parent('td.item-unit')
+            let row = cell.parent('tr')
+            if (unit != 0 || unit != '0') {
+                let product = row.attr('product')
+                let units = row.find('td.item-unit select.value-unit option:selected').text()
+                $.ajax({
+                    url: '/sales/valid_unit/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'quantity': 1, 'product': product, 'unit': unit, 'units': units},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                        } else {
+                            toastr.warning(response.message)
+                            select.val(0)
+                        }
+                    },
+                });
+            }
+        });
+        $(document).on('change keyup', 'tbody#order-detail tr td.item-price input.value-price', function () {
+            let input = $(this);
+            let tr = $(this).parent("td.item-price").parent("tr")
+            let price = input.val();
+            let quantity = tr.find('td.item-quantity input.value-quantity').val()
+            if (isNaN(quantity) || quantity === '' || parseFloat(quantity) <= 0) {
+                quantity = parseFloat('0.00').toFixed(2)
+            }
+            if (isNaN(price) || price === '' || parseFloat(price) <= 0) {
+                price = parseFloat('0.00').toFixed(6)
+            }
+            if (price >= 0 && quantity >= 0) {
+                tr.find('td.item-amount input.value-amount').val(parseFloat(price * quantity).toFixed(6))
+                TotalOrder()
+            }
+        })
+        $(document).on('change keyup', 'tbody#order-detail tr td.item-amount input.value-amount', function () {
+            let input = $(this);
+            let tr = $(this).parent("td.item-amount").parent("tr")
+            let amount = input.val();
+            let quantity = tr.find('td.item-quantity input.value-quantity').val()
+            if (isNaN(quantity) || quantity === '' || parseFloat(quantity) <= 0) {
+                quantity = parseFloat('0.00').toFixed(2)
+            }
+            if (isNaN(amount) || amount === '' || parseFloat(amount) <= 0) {
+                amount = parseFloat('0.0000').toFixed(6)
+            }
+            if (parseFloat(amount) > 0 && parseFloat(quantity) > 0) {
+                tr.find('td.item-price input.value-price').val(parseFloat(amount / quantity).toFixed(6))
+                TotalOrder()
+            }
+
+        })
+        $(":input#total-discount").on("keyup change", function (e) {
+            let val = $(this).val();
+            if (isNaN(val)) {
+                $(this).val(parseFloat('0.00').toFixed(6));
+            } else {
+                TotalOrder();
+            }
+        })
+        $('#search-code').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let code = $('#search-code').val();
+                if (code.length > 0) {
+                    $.ajax({
+                        url: '/sales/get_product_purchase/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'code': code
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                let p = response['product'];
+                                return new Promise((resolve, reject) => {
+                                    for (let i = 0; i < p.length; i++) {
+                                        AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, '', '')
+                                    }
+                                    resolve(1)
+                                }).then((options) => {
+                                    FocusDetail()
+                                    $('#search-code').val('')
+                                })
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                } else {
+                    toastr.warning('Ingrese un codigo');
+                    return false;
+                }
+            }
+        });
+
+
+        $('#person-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#person-number').val();
+                let document = $('#person-document').val();
+                if ((document === '1') && (number.length !== 8)) {
+                    toastr.warning('El DNI debe contener 8 digitos');
+                    return false;
+                } else {
+                    if ((document === '6') && (number.length !== 11)) {
+                        toastr.warning('El RUC debe contener 11 digitos');
+                        return false;
+                    }
+                }
+                $('#id-loading').css('display', '')
+                $.ajax({
+                    url: '/sales/get_person_by_document/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'number': number,
+                        'document': document,
+                        'type': 'P'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            $("#person-pk").val(response.id);
+                            $("#person-names").val(response.names);
+                            $("#person-phone").val(response.phone);
+                            $("#person-email").val(response.email);
+                            $("#person-address").val(response.address);
+                        } else {
+                            toastr.error(response.message)
+                        }
+                        $('#id-loading').css('display', 'none')
+                    },
+                    fail: function (response) {
+                        toastr.error('Ocurrio un problema en el proceso')
+                    }
+                });
+            }
+        });
+
+        function CreateOrder() {
+            let number_invoice = $('#invoice_number').val()
+            let invoice_date = $('#invoice_date').val()
+            let discount = $('#total-discount').val()
+            if ($('#total-discount').val() === '' || isNaN($('#total-discount').val())) {
+                discount = 0
+            }
+            let total = $('#total').val()
+            if ($('#total').val() === '' || isNaN($('#total').val())) {
+                total = 0
+            }
+            let change = $('#id-change').val()
+            if (change === '' || change === 0) {
+                change = parseFloat('1.0000').toFixed(6)
+            }
+            let igv = $('#id-igv').val()
+            if (igv === '' || igv === 0) {
+                toastr.warning('No se obtuvo el igv')
+                return false
+            }
+            let Order = {
+                "Detail": [],
+                "type": 'C',
+                "document": $('#type-invoice').val(),
+                "creation": $('#creation').val(),
+                "invoice": number_invoice,
+                "invoice_date": invoice_date,
+                "date_document": $('#date_document').val(),
+                "order-pk": $('#id-order').val(),
+                "person": $('#person-pk').val(),
+                "total": parseFloat(total).toFixed(6),
+                "total_discount": parseFloat(discount).toFixed(6),
+                "igv": $('#igv-apply').val(),
+                "coin": $('#id-money').val(),
+                "change": parseFloat(change).toFixed(6)
+            };
+            let status = true
+            $("tbody#order-detail tr").each(function () {
+                let row = $(this)
+                let pk = row.attr('pk')
+                let i = row.attr('i')
+                let q = row.attr('q')
+                let product = row.attr('product')
+                if (product === '0' || product === '') {
+                    toastr.info('Producto desconocido en la fila ' + i.toString())
+                    status = false
+                    return status
+                }
+                let quantity = row.find('td.item-quantity input').val()
+                if (parseFloat(quantity) === 0 || quantity === '') {
+                    toastr.info('Ingrese una cantidad en la fila ' + i.toString())
+                    status = false
+                    return status
+                }
+                let unit = row.find('td.item-unit select.value-unit').val()
+                if (unit === '0' || unit === '') {
+                    toastr.info('Unidad desconocida en la fila ' + i.toString())
+                    status = false
+                    return status
+                }
+                let price = row.find('td.item-price input.value-price').val()
+                if (parseFloat(price) <= 0 || price === '') {
+                    toastr.info('Ingrese un precio valido en la fila ' + i.toString())
+                    status = false
+                    return status
+                }
+                let OrderDetail = {
+                    "detail": pk,
+                    "unit": unit,
+                    "product": product,
+                    "quantity": parseFloat(quantity).toFixed(2),
+                    "q": parseInt(q),
+                    "price": parseFloat(price).toFixed(6)
+                };
+                Order.Detail.push(OrderDetail);
+            })
+            if (!status) {
+                return false
+            }
+            let r = confirm('¿ESTA SEGURO DE REGISTRAR LA COMPRA?');
+            if (r == true) {
+                $.ajax({
+                    url: '/sales/purchase_save/',
+                    dataType: 'json',
+                    type: 'POST',
+                    data: {'order': JSON.stringify(Order)},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                            $('#id-codes').val(response.code)
+                            setTimeout(() => {
+                                empty()
+                            }, 10000);
+
+                        } else {
+                            toastr.error(response.message)
+                        }
+                    },
+                    error: function (response) {
+                        response.error('Ocurrio problemas en el proceso')
+                    }
+                });
+            }
+        }
+
+        function empty() {
+            $('#search-code').val('')
+            $('#search-product').val('')
+            $('#id-order').val('')
+            $('#search-order').val('')
+            $('#person-number').val('')
+            $('#person-names').val('')
+            $('#person-address').val('')
+            $('#person-email').val('')
+            $('#person-phone').val('')
+            $('#id-codes').val('')
+
+            $("tbody#order-detail").empty()
+            $('#total-discount').val('')
+            $('#total').val('')
+            $('#total-amount').val('')
+            $('#invoice_number').val('')
+        }
+
+        $('#search-order').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let order = $('#search-order').val();
+                $('tbody#order-detail').empty();
+                if (parseInt(order) > 0) {
+                    $.ajax({
+                        url: '/sales/get_purchase/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'number': order
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $('#id-order').val(response.pk)
+                                $('#invoice_number').val(response.invoice)
+                                $('#type-invoice').val(response.type)
+                                $('#invoice_date').val(response.invoice_date)
+                                $('#date_document').val(response.date_document)
+                                $('#person-pk').val(response.person)
+                                $('#person-document').val(response.person_document)
+                                $('#person-document').trigger('change')
+                                $('#person-number').val(response.person_number)
+                                $('#person-names').val(response.person_names)
+                                $('#person-address').val(response.person_address)
+                                $('#person-email').val(response.person_email)
+                                $('#person-phone').val(response.person_phone)
+                                AddRow(response['detail'])
+                                $('#total-discount').val(parseFloat(response.discount).toFixed(6))
+                                $('#total-discount').trigger('change')
+                                $('#id-money').val(response.coin)
+                                $('#id-change').val(response.change)
+                                if (response.igv) {
+                                    $('#igv-apply').val(1)
+                                } else {
+                                    $('#igv-apply').val(0)
+                                }
+                            } else {
+                                toastr.warning(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                } else {
+                    toastr.warning('Ingrese el numero de ' + $('#order-type option:selected').text() + ' correctamente');
+                    return false;
+                }
+            }
+        });
+
+        async function AddRow(Detail) {
+            for (let i = 0; i < Detail.length; i++) {
+                await AddRowOrderSearch(i + 1, Detail[i].id, Detail[i].code, Detail[i].product, Detail[i].description, Detail[i].units, Detail[i].unit, Detail[i].quantity, Detail[i].price, Detail[i].quantity_niu)
+            }
+        }
+
+        async function AddRowOrderSearch(i, pk, code, product, product_name, units, unit, quantity, price, quantity_niu) {
+            let amount = parseFloat(quantity) * parseFloat(price)
+            return new Promise((resolve, reject) => {
+                let options = '<option value="0">SELECT</option>';
+                for (let i = 0; i < unit_set.length; i++) {
+                    if (unit === unit_set[i][0]) {
+                        options = options + '<option selected value="' + unit_set[i][0] + '">' + unit_set[i][1] + '</option>'
+                    } else {
+                        options = options + '<option value="' + unit_set[i][0] + '">' + unit_set[i][1] + '</option>'
+                    }
+                }
+                resolve(options)
+            }).then((options) => {
+                $('tbody#order-detail').append(
+                    '<tr class="p-0" product="' + product + '" pk="' + pk + '" i="' + i + '" q="' + quantity_niu + '">' +
+                    '<td class="align-middle item-number p-1 text-center">' + i + '</td>' +
+                    '<td class="align-middle item-code p-1 text-center">' + code + '</td>' +
+                    '<td class="align-middle item-description p-1 text-justify">' + product_name + '</td>' +
+                    '<td class="align-middle item-quantity p-1 text-center">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-quantity" value="' + quantity + '"/>' + '</td>' +
+                    '<td class="align-middle item-unit p-1 text-center">' + '<select class="form-control value-unit">' + options + '</td>' +
+                    '<td class="align-middle item-price p-1 text-right">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-price" value="' + parseFloat(price).toFixed(6) + '"/>' + '</td>' +
+                    '<td class="align-middle item-amount p-1 text-right">' + '<input type="number" step="0.01" placeholder="0.00" class="form-control value-amount" value="' + parseFloat(amount).toFixed(6) + '"/>' + '</td>' +
+                    '<td class="align-middle item-delete p-1 text-center">' +
+                    '    <button type="button" class="btn btn-light btn-round">' + '<i class="icon-trash">' + '</i>' + '</button>' +
+                    '</td>' +
+                    '</tr>'
+                );
+                CountRow();
+                TotalOrder();
+            })
+        }
+
+        $('#person-address').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                UpdateClient($('#person-address').val());
+            }
+        });
+        $('#person-phone').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                UpdateClient($('#person-phone').val());
+            }
+        });
+        $('#person-email').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                UpdateClient($('#person-email').val());
+            }
+        });
+
+        function UpdateClient(value) {
+            if ($('#person-pk').val() === '' || $('#person-pk').val() === '0') {
+                toastr.warning('No existe ningun cliente seleccionado');
+                return false;
+            }
+            if ($('#person-number').val() === '') {
+                toastr.warning('Ingrese el numero de documento');
+                return false;
+            }
+            if ($('#person-names').val() === '') {
+                toastr.warning('Ingrese el nombre/razon social correctamente');
+                return false;
+            }
+            if ($('#person-document').val() === '6' && $("#person-address").val() === '') {
+                toastr.warning('Ingrese la direccion correctamente');
+                return false;
+            }
+            if (value === '') {
+                toastr.warning('Ingrese el valor principal a actualizar');
+                return false;
+            }
+
+            $.ajax({
+                url: '/hrm/update_person/',
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    'pk': $('#person-pk').val(),
+                    'number': $('#person-number').val(),
+                    'names': $("#person-names").val(),
+                    'address': $("#person-address").val(),
+                    'phone': $("#person-phone").val(),
+                    'email': $("#person-email").val(),
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio problemas en el proceso')
+                }
+            });
+        }
+
+        $(document).on('change keyup', '#igv-apply', function () {
+            TotalOrder()
+        });
+        $(document).on('change keyup', '#id-money', function () {
+            let money = $(this)
+            if (money.val() === '1') {
+                $('#id-change').val('')
+                $('#moneda').text('PEN')
+            } else if (money.val() === '2') {
+                /*$.ajax({
+                    url: '/sales/get_change/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'date': $('#date_document').val()},
+                    success: function (response) {
+                        if (response.success) {
+                            $('#id-change').val(parseFloat(response.sales).toFixed(6))
+                            $('#moneda').text(response.money)
+                        } else {
+                            toastr.error(response.message)
+                            money.val('1')
+                        }
+                    },
+                    error: function (response) {
+                        toastr.error('Ocurrio problemas en el proceso')
+                    }
+                });*/
+                $.ajax({
+                    url: '/accounting/get_type_change/',
+                    async: true,
+                    dataType: 'json', // for response
+                    type: 'GET',
+                    data: {'date': $('#date_document').val()},
+                    contentType: 'application/json;charset=UTF-8',
+                    headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                    success: function (response, textStatus, xhr) {
+                        if (xhr.status === 200) {
+                            $('#id-change').val(parseFloat(response.sales).toFixed(6));
+                            $('#moneda').text(response.money);
+                        }
+                    },
+                    error: function (jqXhr, textStatus, xhr) {
+                        if (jqXhr.status === 500) {
+                            toastr.error(jqXhr.responseJSON.error, 'Mensaje');
+                        } else {
+                            if (textStatus === 'timeout') {
+                                toastr.error('Failed from timeout', 'Mensaje');
+                            } else {
+                                console.log(" STATUS: " + xhr + " " + textStatus);
+                            }
+                        }
+                    },
+                });
+                return false;
+            }
+        });
+
+        function FocusDetail() {
+            $('tbody#order-detail tr td.item-quantity input.value-quantity').each(function () {
+                let tr = $(this).parent('td.item-quantity').parent('tr')
+                if ($(this).val() === '') {
+                    $(this).focus()
+                    return false
+                }
+            })
+        }
+
+        $(document).on('keypress', 'tbody#order-detail tr td.item-quantity input.value-quantity', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($(this).val() === '' || parseFloat($(this).val()) <= 0) {
+                    toastr.warning('Ingrese una cantidad')
+                    return false;
+                } else {
+                    let tr = $(this).parent('td.item-quantity').parent('tr')
+                    tr.find('td.item-unit select.value-unit').focus()
+                }
+            }
+        })
+        $(document).on('keypress', 'tbody#order-detail tr td.item-unit select.value-unit', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($(this).val() === "0") {
+                    toastr.warning('Seleccione una unidad')
+                    return false;
+                } else {
+                    let tr = $(this).parent('td.item-unit').parent('tr')
+                    tr.find('td.item-amount input.value-amount').focus()
+                }
+            }
+        })
+        $(document).on('keypress', 'tbody#order-detail tr td.item-amount input.value-amount', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($(this).val() === '' || parseFloat($(this).val()) <= 0) {
+                    toastr.warning('Ingrese un valor')
+                    return false;
+                } else {
+                    $('#search-code').focus()
+                }
+            }
+        })
+    </script>
+{% endblock extrajs %}

@@ -1,0 +1,56 @@
+<div class="modal-dialog">
+    <form id="formBrand" method="POST" enctype="multipart/form-data" action="{% url 'sales:brand_save' %}">
+        {% csrf_token %}
+        <div class="modal-content bg-primary">
+            <div class="modal-header">
+                <h5 class="modal-title text-uppercase" id="staticBackdropLabel">Marca de Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="input-1">Nombre Marca</label>
+                    <input type="text" class="form-control text-uppercase" id="name" name="name" placeholder="Nombre Marca"
+                           value="{{ brand_obj.name }}" required>
+                    <input type="hidden" id="brand-pk" name="brand-pk"
+                           value="{% if brand_obj %}{{ brand_obj.id }}{% else %}0{% endif %}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button> &nbsp;
+                <button type="submit" class="btn btn-light">{% if brand_obj.id %}Actualizar{% else %}
+                    Registrar{% endif %}</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#formBrand').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formBrand').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message)
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }
+                else{
+                    toastr.error(response.message)
+                }
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un problema')
+            }
+        });
+    });
+</script>

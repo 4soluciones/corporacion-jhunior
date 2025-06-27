@@ -1,0 +1,81 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Reporte de depositos
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3 h-100">
+        <div class="card-header pt-2 pb-2">
+            <div class="row d-flex">
+                <label class="form-check-label text-white mt-2 mb-3" for="ticket">Reporte de Depositos:</label>
+            </div>
+            <div class="row d-flex">
+                <label class="form-check-label text-white mt-2" for="ticket">Fecha Inicial:</label>
+                <div class="col-sm-2 col-md-2">
+                    <input type="date" class="form-control" id="init" value="{{ date|date:'Y-m-d' }}">
+                </div>
+                <label class="form-check-label text-white mt-2" for="ticket">Fecha Final:</label>
+                <div class="col-sm-2 col-md-2">
+                    <input type="date" class="form-control" id="end" value="{{ date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-sm-1 col-md-1 text-center align-middle">
+                    <button class="btn btn-light" onclick="getReport()">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0"/>
+        <div class="card-body p-2 h-100">
+            <div id="id-order-table" class="table-responsive-sm">
+                {% include "accounting/invoice_issued_grid.html" %}
+            </div>
+        </div>
+    </div>
+    <div class="text-center align-self-center" id="id-loading" style="
+                display: none;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                background: #e9ecef;
+                opacity: 0.5;
+                width: 100%;
+                height: 100%;
+                padding-top: 21em;"><p class="text-primary">Cargando...</p>
+        <div class="loader5"></div>
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        function getReport() {
+            let init = $('#init').val()
+            if (init === '') {
+                toastr.warning('Ingrese una fecha inicial valida')
+                return false
+            }
+            let end = $('#end').val()
+            if (end === '') {
+                toastr.warning('Ingrese una fecha final valida')
+                return false
+            }
+            $.ajax({
+                url: '/accounting/get_report_deposit/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'init': init, 'end': end},
+                success: function (data) {
+                    $('#id-order-table').empty().html(data.grid);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+
+    </script>
+{% endblock extrajs %}

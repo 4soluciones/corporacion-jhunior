@@ -1,0 +1,313 @@
+{% extends 'home.html' %}
+
+{% block title %}
+    Entrada | Salidas
+{% endblock title %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-primary">Reporte de entradas y salidas</h5>
+                    <div class="card-tools align-self-center">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <div class="btn-group">
+                            {#                            <button type="button" class="btn btn-tool dropdown-toggle"#}
+                            {#                                    data-toggle="dropdown">#}
+                            {#                                <i class="fas fa-wrench"></i>#}
+                            {#                            </button>#}
+                            {#                            <div class="dropdown-menu dropdown-menu-right" role="menu">#}
+                            {#                                <a href="#" class="dropdown-item">Action</a>#}
+                            {#                            </div>#}
+                            <label class="text-primary m-0 mt-1 mr-2">Año</label>
+                            <input type="number" id="id-year" step="1" min="1950" max="2050" minlength="4" maxlength="4"
+                                   class="form-control form-control-sm" value="{{ year }}">
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-center">
+                                <strong>01 Enero, {{ year }} - 31 Diciembre, {{ year }}</strong>
+                            </p>
+                            <div class="chart">
+                                <!-- Sales Chart Canvas -->
+                                <canvas id="ReportGraphic" height="330"></canvas>
+                            </div>
+                            <!-- /.chart-responsive -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- ./card-body -->
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-sm-3 col-6">
+                            <div class="description-block border-right">
+                                                <span class="description-percentage text-success"><i
+                                                        class="fas fa-caret-up my_percentage"></i> </span>
+                                <h5 class="description-header" id="id-out1"></h5>
+                                <span class="description-text">TOTAL SERVICIOS</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 col-6">
+                            <div class="description-block border-right">
+                                                <span class="description-percentage text-warning"><i
+                                                        class="fas fa-caret-left my_percentage"></i></span>
+                                <h5 class="description-header" id="id-out2"></h5>
+                                <span class="description-text">TOTAL ALQUILERES</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 col-6">
+                            <div class="description-block border-right">
+                                                <span class="description-percentage text-success"><i
+                                                        class="fas fa-caret-up my_percentage"></i></span>
+                                <h5 class="description-header" id="id-inp1"></h5>
+                                <span class="description-text">TOTAL COMPRAS</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 col-6">
+                            <div class="description-block">
+                                                <span class="description-percentage text-danger"><i
+                                                        class="fas fa-caret-down my_percentage"></i></span>
+                                <h5 class="description-header" id="id-inp2"></h5>
+                                <span class="description-text">TOTAL SUBALQUILERES</span>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+        </div>
+        {#        <div class="col-md-2">#}
+        {#            <div class="card">#}
+        {#                <div class="card-header">#}
+        {#                    <h5 class="card-title">Filtración</h5>#}
+        {#                    <div class="card-tools">#}
+        {#                        <button type="button" class="btn btn-tool" data-card-widget="collapse">#}
+        {#                            <i class="fas fa-minus"></i>#}
+        {#                        </button>#}
+        {#                        <div class="btn-group">#}
+        {#                            <button type="button" class="btn btn-tool dropdown-toggle"#}
+        {#                                    data-toggle="dropdown">#}
+        {#                                <i class="fas fa-wrench"></i>#}
+        {#                            </button>#}
+        {#                            <div class="dropdown-menu dropdown-menu-right" role="menu">#}
+        {#                                <a href="#" class="dropdown-item">Action</a>#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                        <button type="button" class="btn btn-tool" data-card-widget="remove">#}
+        {#                            <i class="fas fa-times"></i>#}
+        {#                        </button>#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#                <div class="card-body" style="height: 400px;">#}
+        {#                    <div class="row p-1">#}
+        {#                        <div class="col-md-12">#}
+        {#                            <label class="text-primary">Filtro Año</label>#}
+        {#                            <input type="number" id="id-year" step="1" min="1950" max="2050" minlength="4" maxlength="4"#}
+        {#                                   class="form-control form-control-sm" value="{{ year }}">#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                    <div class="row p-1">#}
+        {#                        <div class="col-md-12">#}
+        {#                            <label class="text-primary">Filtro Mes</label>#}
+        {#                            <input type="month" id="id-month" class="form-control form-control-sm" value="">#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                    <div class="row p-1">#}
+        {#                        <div class="col-md-12">#}
+        {#                            <label class="text-primary">Filtro Semana</label>#}
+        {#                            <input type="week" id="id-week" class="form-control form-control-sm" value="{{ week }}">#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#                <div class="card-footer">#}
+        {#                    <div class="row">#}
+        {#                        <div class="col-sm-12 col-12">#}
+        {#                            <div class="description-block border-right">#}
+        {#                                                <span class="description-percentage text-success"><i#}
+        {#                                                        class="fas fa-caret-up"></i></span>#}
+        {#                                <h5 class="description-header">GRAFICA</h5>#}
+        {#                                <span class="description-text">FILTROS</span>#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        $('#id-year').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let y = $('#id-year').val()
+                if (y != '' && y.length === 4) {
+                    $('#ReportGraphic').empty();
+                    $.ajax({
+                        url: '/sales/graphic_year/',
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'year': y},
+                        success: function (response) {
+                            Report(response.output, response.input, response.label)
+                            $('#id-out1').text('S/. ' + (response.out1).toString())
+                            $('#id-out2').text('S/. ' + (response.out2).toString())
+                            $('#id-inp1').text('S/. ' + (response.inp1).toString())
+                            $('#id-inp2').text('S/. ' + (response.inp2).toString())
+                            $('i.my_percentage').text((response.m).toString() + ' al ' + (response.p).toString() + '%')
+                        },
+                        fail: function (response) {
+                            toastr.error('Problemas al mostrar la grafica');
+                        }
+                    });
+                } else {
+                    toastr.warning('Ingrese un año valido')
+                }
+            }
+        });
+        $('#id-month').change(function () {
+            let m = $('#id-month').val()
+            if (m != '') {
+                $('#ReportGraphic').empty();
+                $.ajax({
+                    url: '/sales/graphic_month/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'month': m},
+                    success: function (response) {
+                        Report(response.sales, response.purchase, response.label)
+                    },
+                    fail: function (response) {
+                        toastr.error('Problemas al mostrar la grafica');
+                    }
+                });
+            }
+        });
+        $('#id-week').change(function () {
+            let w = $('#id-week').val()
+            if (w != '') {
+                $('#ReportGraphic').empty();
+                $.ajax({
+                    url: '/sales/graphic_week/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'week': w},
+                    success: function (response) {
+                        Report(response.sales, response.purchase, response.label)
+                    },
+                    fail: function (response) {
+                        toastr.error('Problemas al mostrar la grafica');
+                    }
+                });
+            }
+        });
+
+        function Report(s, p, l) {
+            $(function () {
+                'use strict'
+
+                var ticksStyle = {
+                    fontColor: '#495057',
+                    fontStyle: 'bold'
+                }
+
+                var mode = 'index'
+                var intersect = true
+
+                var $r = $('#ReportGraphic')
+                // eslint-disable-next-line no-unused-vars
+                var salesChart = new Chart($r, {
+                    type: 'bar',
+                    data: {
+                        labels: l,
+                        datasets: [
+                            {
+                                label: 'Total salida',
+                                backgroundColor: '#007bff',
+                                borderColor: '#007bff',
+                                data: s
+                            },
+                            {
+                                label: 'Total entrada',
+                                backgroundColor: '#5dec06',
+                                borderColor: '#5dec06',
+                                data: p
+                            }
+                        ]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            mode: mode,
+                            intersect: intersect
+                        },
+                        hover: {
+                            mode: mode,
+                            intersect: intersect
+                        },
+                        legend: {
+                            display: true
+                        },
+                        scales: {
+                            yAxes: [{
+                                // display: false,
+                                gridLines: {
+                                    display: true,
+                                    lineWidth: '4px',
+                                    color: 'rgba(0, 0, 0, .2)',
+                                    zeroLineColor: 'transparent'
+                                },
+                                ticks: $.extend({
+                                    beginAtZero: true,
+
+                                    // Include a dollar sign in the ticks
+                                    callback: function (value) {
+                                        if (value >= 1000) {
+                                            value /= 1000
+                                            value += 'k'
+                                        }
+
+                                        return 'S/.' + value
+                                    }
+                                }, ticksStyle)
+                            }],
+                            xAxes: [{
+                                display: true,
+                                gridLines: {
+                                    display: false
+                                },
+                                ticks: ticksStyle
+                            }]
+                        }
+                    }
+                })
+            })
+        }
+
+        setTimeout(() => {
+            $('#id-year').trigger('keypress');
+        }, 500);
+
+    </script>
+{% endblock extrajs %}

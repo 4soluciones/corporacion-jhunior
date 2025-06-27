@@ -1,0 +1,530 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Productos
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3 h-100">
+        <div class="card-header">
+            <div class="row d-flex">
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <button type="button" onclick="showModal('')" class="btn btn-light btn-round px-5"><i
+                            class="icon-magnifier-add"></i>
+                    </button>
+                </div>
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <input type="text" class="form-control" id="filter-code"
+                           placeholder="Ingrese Codigo">
+                </div>
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center text-center">
+                    <input type="text" class="form-control" id="filter-product"
+                           placeholder="Ingrese Palabra">
+                </div>
+                {#                <div class="form-group col-sm-2 col-md-2 m-0 p-1 align-self-center text-center">#}
+                {#                    <input type="text" class="form-control" id="filter-product"#}
+                {#                           placeholder="Ingrese Palabra">#}
+                {#                    <div id="autocomplete-product" class="autocomplete text-primary">#}
+                {#                        <input class="form-control autocomplete-input" id="search-product"#}
+                {#                               name="search-product"#}
+                {#                               placeholder="Buscar producto"/>#}
+                {#                        <ul class="autocomplete-result-list"></ul>#}
+                {#                    </div>#}
+                {#                </div>#}
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <button type="button" onclick="showProduct()" class="btn btn-light btn-round btn-block">Ver Todo
+                    </button>
+                </div>
+                {#                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">#}
+                {#                    <button type="button" onclick="DownloadExcel()" class="btn btn-success btn-round btn-block">Excel#}
+                {#                    </button>#}
+                {#                </div>#}
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <select class="form-control" id="id-other">
+                        <option value="1">Marca</option>
+                        <option value="2">Familia</option>
+                    </select>
+                    {#                    <div class="form-group align-self-center form-check-inline m-0" id="form-check">#}
+                    {#                        <div class="icheck-material-warning p-1">#}
+                    {#                            <input type="radio" name="inlineRadioOptions" class="form-check-input" id="brand-m"#}
+                    {#                                   value="1" checked>#}
+                    {#                            <label class="form-check-label text-white" for="brand-m">Marca#}
+                    {#                            </label>#}
+                    {#                        </div>#}
+                    {#                        <div class="icheck-material-warning p-1">#}
+                    {#                            <input type="radio" name="inlineRadioOptions" class="form-check-input" id="family-f"#}
+                    {#                                   value="2">#}
+                    {#                            <label class="form-check-label text-white" for="family-f">Familia#}
+                    {#                            </label>#}
+                    {#                        </div>#}
+                    {#                    </div>#}
+                </div>
+                <div class="form-group col-sm-2 col-md-2 m-0 p-1 align-self-center text-center">
+
+                    <input type="text" class="form-control form-control-rounded" id="search"
+                           placeholder="Ingresar marca o modelo">
+                </div>
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <button type="button" onclick="ExportFilter()" class="btn btn-success btn-round btn-block">Filtro
+                    </button>
+                </div>
+                <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
+                    <button type="button" onclick="StockMini()" class="btn btn-success btn-round btn-block">Stock Minimo
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="product-grid-list"
+                 class="table-responsive text-wrap">
+                {% include "sales/product_grid_list.html" %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-product" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-presenting" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-kadex" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+
+    <script type="text/javascript">
+        setTimeout(() => {
+            $('#filter-code').focus();
+        }, 700);
+        {#$("#search").keyup(function () {#}
+        {#    _this = this;#}
+        {#    $.each($("#table-product tbody tr"), function () {#}
+        {#        if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)#}
+        {#            $(this).hide();#}
+        {#        else#}
+        {#            $(this).show();#}
+        {#    });#}
+        {# });#}
+        /*new Autocomplete('#autocomplete-product', {
+            search: input => {
+                const url = `/sales/search_product/?search=${encodeURI(input.toUpperCase())}`
+
+                return new Promise(resolve => {
+                    if (input.length < 3) {
+                        $('#filter-code').val('')
+                        $('#search').val('')
+                        return resolve([])
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.product)
+                        })
+                })
+            },
+            renderResult: (result, props) => {
+                let group = ''
+                if (result.index % 3 === 0) {
+                    group = '<li class="group">Group</li>'
+                }
+                return `
+                ${group}
+                <li ${props} class="font-weight-bold">
+                 <div class="text-white-50" style="font-size: 13px">
+                    ${'<i class="spinner-grow"></i>'} ${result.name}
+                 </div>
+                 <div class="text-white-50">
+                    CODIGO: ${result.code}   MEDIDA: ${result.measure} <b class="text-white"> STOCK = ${result.stock} UNIDADES </b>
+                  </div>
+                </li>
+                `
+            },
+            getResultValue: result => result.name,
+            onSubmit: result => {
+                if (result) {
+                    $.ajax({
+                        url: '/sales/get_search_product_code/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'code': result.code
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $('#product-grid-list').empty().html(response.grid);
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                    {#AddRowOrder(0, result.pk, result.code, result.name, result.measure)#}
+                    $('#search-product').val('')
+                    $('#search-code').val('')
+                }
+            }
+        })*/
+
+        function AddRow(obj, brand, family, type, t) {
+            let icon = ''
+            let type_obj = ''
+            if (obj.is_state) {
+                icon = '<i class="icon-check text-white"></i>'
+            } else {
+                icon = '<i class="icon-close text-white"></i>'
+            }
+            {#if (t === 'A') {#}
+            {#    type_obj = '<button type="button" class="btn btn-light" onclick="showProductDetailCanvas(' + obj.id + ')">' + '<i class="icon-calculator">' + '</i>' + type + '</button>'#}
+            {# } else {#}
+            {#    type_obj = type#}
+            {# }#}
+            $('tbody.product_detail').append(
+                '<tr pk="' + obj.id + '">' +
+                '<td class="align-middle text-center item-number p-1"></td>' +
+                '<td class="align-middle item-name p-1">' + '<strong>CODIGO: ' + obj.code + '<br>' + obj.name + '<br>' + obj.description + '</strong>' + '</td>' +
+                '<td class="align-middle text-center item-brand p-1">' + brand + '</td>' +
+                '<td class="align-middle text-center item-family p-1">' + family + '</td>' +
+                '<td class="align-middle text-center item-type p-1">' + type + '</td>' +
+                '<td class="align-middle text-center item-state p-1">' + icon + '</td>' +
+                '<td class="align-middle item-measure p-1">' + '<strong>' + "ANCHO: " + obj.width + '<br>' + " LARGO: " + obj.length + '<br>' + "ALTO: " + obj.height + '</strong>' + '</td>' +
+                '<td class="align-middle item-store p-1">' + '<strong>' + "ALMACÉN: " + obj.store + '<br>' + " STOCK: " + parseFloat(obj.stock).toFixed(2) + '<br>' + "MINIMO: " + parseFloat(obj.minimum).toFixed(2) + '</strong>' + '</td>' +
+                '<td class="align-middle item-relation p-1">' + '<input type="text" maxlength="50" class="form-control text-uppercase" value="' + obj.relation + '">' + '</td>' +
+                '<td class="align-middle text-center item-action p-1">' +
+                '     <button type="button" class="btn btn-light" onclick="showModal(' + obj.id + ')">' + '<i class="icon-note">' + '</i>' + '</button>' +
+                '     <button type="button" class="btn btn-light" onclick="showPrice(' + obj.id + ')">' + '<i class="icon-paypal">' + '</i>' + '</button>' +
+                '     <button type="button" class="btn btn-light" onclick="showKardexAccounting(' + obj.id + ')">' + '<i class="icon-home">' + '</i>' + '</button>' +
+                '</td>' +
+                '</tr>'
+            );
+            CountRow()
+        }
+
+        function CountRow() {
+            let index = 1;
+            $('tbody.product_detail tr').each(function () {
+                $(this).attr('i', index);
+                $(this).children('td:first').text(index);
+                index++;
+            });
+        };
+
+        function showModal(pk) {
+            $.ajax({
+                url: '/sales/modal_product/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-product').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+
+        function showPrice(pk) {
+            $.ajax({
+                url: '/sales/modal_presenting/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-presenting').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+
+        /*function showKardex(pk) {
+            if (parseInt(pk) > 0)
+                $.ajax({
+                    url: '/sales/modal_kardex/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': pk},
+                    success: function (response) {
+                        $('#modal-kadex').empty().html(response.form).modal('show');
+                    },
+                    error: function (response) {
+                        toastr.error('Ocurrio un problema')
+                    }
+                });
+        }*/
+
+        function showKardexAccounting(pk) {
+            if (parseInt(pk) > 0)
+                $.ajax({
+                    url: '/sales/modal_kardex_accounting/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': pk},
+                    success: function (response) {
+                        $('#modal-kadex').empty();
+
+                        $('#modal-kadex').html(response.form).modal('show');
+                    },
+                    error: function (response) {
+                        toastr.error('Ocurrio un problema')
+                    }
+                });
+        }
+
+        /*$(document).on('click', '.button-kardex', function (e) {
+            let _pk = $(this).attr("pk");
+            //console.log(_pk);
+            $.ajax({
+                url: '/sales/modal_kardex_accounting/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': _pk},
+                success: function (response) {
+                    $('#modal-kadex').empty().html(response.form).modal('show');
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        });*/
+
+        $('#filter-code').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($('#filter-code').val() !== "") {
+                    $.ajax({
+                        url: '/sales/get_search_product_code/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'code': $('#filter-code').val()},
+                        success: function (response) {
+                            $('#product-grid-list').empty().html(response.grid);
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                        }
+                    });
+                    //$('#filter-code').val('')
+                    $('#filter-code').focus()
+                    $('#filter-product').val('')
+                    $('#search').val('')
+                }
+            }
+        })
+        $('#filter-product').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if (($('#filter-product').val()).length > 3) {
+                    $.ajax({
+                        url: '/sales/get_search_product/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'product': $('#filter-product').val()},
+                        success: function (response) {
+                            $('#product-grid-list').empty().html(response.grid);
+                            $('#filter-code').val('')
+                            $('#search').val('')
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                        }
+                    });
+                }
+            }
+        })
+        $('#search').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if (($('#search').val()).length > 2) {
+                    {#let option = $('input[name="inlineRadioOptions"]:checked').val()#}
+                    let option = $('#id-other').val()
+                    $.ajax({
+                        url: '/sales/get_search_product_other/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'name': $('#search').val(), 'other': option},
+                        success: function (response) {
+                            $('#product-grid-list').empty().html(response.grid);
+                            $('#filter-code').val('')
+                            $('#filter-product').val('')
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                        }
+                    });
+                }
+            }
+        })
+        $(document).on('keypress', 'tbody.product_detail tr td.item-relation input', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let product = $(this).parent('td.item-relation').parent('tr').attr('pk')
+                let relation = $(this).val()
+
+                if (relation == '') {
+                    return false
+                } else {
+                    $.ajax({
+                        url: '/sales/update_product/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'product': product,
+                            'relation': relation
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                }
+            }
+        });
+
+        function showProduct() {
+            $.ajax({
+                url: '/sales/get_product_all/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {},
+                success: function (response) {
+                    $('#product-grid-list').empty().html(response.grid);
+                    $('#filter-product').val(" ")
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        function checkGrid() {
+            let check = false;
+            $('tbody.product_detail tr td.item-check input[type="checkbox"]').each(function () {
+                if ($(this).prop('checked')) {
+                    check = true;
+                }
+            });
+            return check;
+        }
+
+        function DownloadExcel() {
+            {#window.open("/sales/reportproduct/");#}
+            window.location.href = "{% url 'sales:reportproduct' %}";
+        }
+
+        function StockMini() {
+            window.location.href = "{% url 'sales:stockmin' %}";
+        }
+
+        function ExportFilter() {
+            if (checkGrid() === false) {
+                let c1 = $('#filter-product').val()
+                if (c1 === "") {
+                    c1 = "0"
+                }
+                let c2 = $('#search').val()
+                if (c2 === "") {
+                    c2 = "0"
+                }
+                let c3 = $('#id-other').val()
+                if (c3 === "") {
+                    c3 = "0"
+                }
+                let c4 = $('#filter-code').val()
+                if (c4 === "") {
+                    c4 = "0"
+                }
+                {#console.log(c1)#}
+                {#console.log(c2)#}
+                {#console.log(c3)#}
+                {#console.log(c4)#}
+                window.open("/sales/export_product_filter/" + c1 + "/" + c2 + "/" + c3 + "/" + c4 + "/" + " " + "/", '_top');
+            } else {
+                let array_user_id_dict = []
+                $('tbody.product_detail tr td.item-check input[type="checkbox"]').each(function () {
+                    let pk = $(this).attr("pk");
+                    if ($(this).prop('checked')) {
+                        array_user_id_dict.push(pk)
+                    }
+                });
+                let serialized_array = JSON.stringify(array_user_id_dict)
+                window.open("/sales/export_product_filter/" + "0" + "/" + "0" + "/" + "0" + "/" + "0" + "/" + encodeURIComponent(serialized_array) + "/", '_top');
+            }
+        }
+
+        {#function ExportFilter() {#}
+        {#    let Product = {#}
+        {#        "Detail": [],#}
+        {#        "name": 'REPORTE DE PRODUCTOS'#}
+        {#    };#}
+        {#    $('#table-product tbody.product_detail tr').each(function () {#}
+        {#        let r = $(this)#}
+        {#        let D = {#}
+        {#            "index": r.attr('i'),#}
+        {#            "code": r.find('td.item-name').attr('code'),#}
+        {#            "product": r.find('td.item-name').attr('name'),#}
+        {#            "brand": r.find('td.item-brand').text(),#}
+        {#            "family": r.find('td.item-family').text(),#}
+        {#            "type": r.find('td.item-type').text(),#}
+        {#            "state": r.find('td.item-state').attr('state'),#}
+        {#            "width": r.find('td.item-measure').attr('a'),#}
+        {#            "length": r.find('td.item-measure').attr('l'),#}
+        {#            "height": r.find('td.item-measure').attr('h'),#}
+        {#            "store": r.find('td.item-store').attr('store'),#}
+        {#            "stock": parseFloat(r.find('td.item-store').attr('stock')),#}
+        {#            "minimum": parseFloat(r.find('td.item-store').attr('minimum')),#}
+        {#            "relation": r.find('td.item-relation input').val()#}
+        {#        };#}
+        {#        Product.Detail.push(D);#}
+        {#    });#}
+        {#    if (Product.Detail.length > 0) {#}
+        {#        window.open("/sales/export_product/" + JSON.stringify(Product) + "/", '_top');#}
+        {#$.ajax({#}
+        {#    url: '/sales/export_product/',#}
+        {#    dataType: 'json',#}
+        {#    type: 'POST',#}
+        {#    data: {'product': JSON.stringify(Product)},#}
+        {#    success: function (response) {#}
+        {#        if (response.status_code === 200) {#}
+        {#            toastr.success("Bien hecho")#}
+        {#            window.open(response);#}
+        {##}
+        {#        }else{#}
+        {#            toastr.error('Problemas con la exportación')#}
+        {#        }#}
+        {#        window.open(response);#}
+        {#    },#}
+        {#    fail: function (response) {#}
+        {#        toastr.error("error");#}
+        {#    }#}
+        {# });#}
+        {#    }#}
+        {# }#}
+    </script>
+{% endblock extrajs %}

@@ -1,0 +1,467 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Ordenes - Proveedores
+{% endblock title %}
+{% block body %}
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="card-body p-2 h-100">
+
+                <div class="row d-flex">
+                    <div class="col">
+                        <select class="form-control" id="supplier-id">
+                            <option value="0">SELECCIONE PROVEEDOR</option>
+                            {% for s in supplier_set %}
+                                <option value="{{ s.id }}">{{ s.names }}</option>
+                            {% endfor %}
+
+
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" class="form-control" id="init" value="{{ date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" class="form-control" id="end" value="{{ date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-1 text-center align-middle">
+                        <button class="btn btn-light" onclick="Consult()">
+                            Filtrar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="id-order-table" class="table-responsive pt-3">
+                    {% include "finances/order_supplier_grid.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="purchaseModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="purchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content bg-success">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="purchaseModalLabel">Notas de crédito de proveedores</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="orderModal">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-warning" id="sendCreditNote">Crear Nota de Credito de Compra
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="creditNoteModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="creditNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content bg-danger">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="creditNoteModalLabel">Revision de nota de crédito de proveedor</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="creditNote">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cerrar</button>
+                    {#                    <button type="button" class="btn btn-success" id="btnAnnulCreditNote" value="0">Anular Nota de Credito de Proveedor</button>#}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="showPurchaseModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="showPurchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content bg-secondary">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="showPurchaseModalLabel">Compra realizada a proveedor</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="showPurchase">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-guide-supplier" tabindex="-1" role="dialog"
+         aria-labelledby="ModalHelpTitle"
+         aria-hidden="true"></div>
+
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        function Consult() {
+            let init = $('#init').val()
+            if (init === '') {
+                toastr.warning('Ingrese una fecha inicial valida')
+                return false
+            }
+            let end = $('#end').val()
+            if (end === '') {
+                toastr.warning('Ingrese una fecha final valida')
+                return false
+            }
+            let supplier = $('select[id="supplier-id"]').val()
+            $.ajax({
+                url: '/finances/get_orders_purchased/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'supplier': supplier, 'init': init, 'end': end},
+                success: function (data) {
+                    $('#id-order-table').empty().html(data.grid);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        let orderObj = {};
+
+        $(document).on('click', '.show-items', function () {
+
+            $.ajax({
+                url: '/finances/get_order_purchased_by_id/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'orderID': $(this).val()},
+                success: function (data) {
+                    $('#orderModal').empty().html(data.form);
+                    orderObj = JSON.parse(data.serialized_obj);
+                    console.log(orderObj)
+                    orderObj["details"] = data.serialized_detail_set;
+                    //orderObj["newTotal"] = 0;
+                    //orderObj["newIgv"] = 0;
+                    //orderObj["newBase"] = 0;
+                    orderObj["creditNoteInvoiceNumber"] = data.date;
+                    orderObj["creditNoteDateDocument"] = data.date;
+                    orderObj["creditNoteInvoiceDate"] = data.date;
+                    orderObj["creditNoteDate"] = data.date;
+                    detailSet = data.serialized_detail_set;
+                    let base = 0;
+                    let igv = 0;
+                    let total = 0;
+                    if (orderObj["is_igv"]) {  // with igv
+                        total = Number(data.orderTotal);
+                        base = total / 1.18;
+                        igv = total - base;
+                    } else {  // without igv
+                        base = Number(data.orderTotal);
+                        igv = base * 0.18;
+                        total = base + igv;
+                    }
+                    $(`table.table-order-detail tfoot tr td input.old-igv`).val(igv.toFixed(6));
+                    $(`table.table-order-detail tfoot tr td input.old-base`).val(base.toFixed(6));
+                    $(`table.table-order-detail tfoot tr td input.old-total`).val(total.toFixed(6));
+                    //calculateNewTotal()
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        });
+
+        $(document).on('input', '#credit-note-invoice-number-name', function () {
+            orderObj["creditNoteInvoiceNumber"] = $(this).val();
+        });
+
+        $(document).on('input', '#credit-note-date-document', function () {
+            orderObj["creditNoteDateDocument"] = $(this).val();
+        });
+
+        $(document).on('input', '#credit-note-invoice-date', function () {
+            orderObj["creditNoteInvoiceDate"] = $(this).val();
+        });
+
+        $(document).on('input', '#credit-note-date', function () {
+            orderObj["creditNoteDate"] = $(this).val();
+        });
+
+        $(document).on('input', '.quantity-returned', function () {
+
+            if (Number($(this).val()) > Number($(this).attr('max-value'))) {
+                alert('Verifique cantidad a devolver');
+                $(this).val("")
+            } else {
+                let pk = $(this).attr('detail-id');
+                let tr = $(`table.table-order-detail tbody tr[pk=${pk}]`);
+                let findDetailObj = orderObj.details.find((d) => {
+                    return d.detailID === parseInt(pk)
+                });
+                let price = Number(findDetailObj["price"]);
+                let quantityReturned = Number($(this).val());
+                let subtotal = Number(price * quantityReturned).toFixed(6);
+                findDetailObj["quantityReturned"] = Number(quantityReturned);
+                findDetailObj["newSubtotal"] = Number(subtotal);
+                findDetailObj["isCreditNote"] = (quantityReturned > 0);
+                tr.find(`td input.new-subtotal`).val(subtotal);
+            }
+            calculateNewTotal()
+        });
+
+        function calculateNewTotal() {
+
+            const res = orderObj.details.reduce((acc, item) => {
+                return acc += Number(item.newSubtotal);
+            }, 0);
+
+            let base = 0;
+            let igv = 0;
+            let total = 0;
+            if (orderObj["is_igv"]) {  // with igv
+                total = Number(res);
+                base = total / 1.18;
+                igv = total - base;
+            } else {  // without igv
+                base = Number(res);
+                igv = base * 0.18;
+                total = base + igv;
+            }
+
+            $(`table.table-order-detail tfoot tr td input.new-base`).val(base.toFixed(6));
+            $(`table.table-order-detail tfoot tr td input.new-igv`).val(igv.toFixed(6));
+            $(`table.table-order-detail tfoot tr td input.new-total`).val(total.toFixed(6));
+
+            orderObj["newTotal"] = Number(total.toFixed(6));
+            orderObj["newIgv"] = Number(igv.toFixed(6));
+            orderObj["newBase"] = Number(base.toFixed(6));
+        }
+        let guide_id = {{ guide_id }}
+        $(document).on('click', '#sendCreditNote', function () {
+            let r = confirm('¿ESTA SEGURO DE REGISTRAR LA NOTA DE CREDITO?');
+            if (r === true) {
+                //const even = orderObj.details.some(item => item.isCreditNote);
+                //if (even) {
+                console.log(orderObj)
+
+                    $.ajax({
+                        url: '/finances/credit_note_supplier_save/',
+                        dataType: 'json',
+                        type: 'POST',
+                        headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                        data: {'creditNote': JSON.stringify(orderObj), 'guideID': $('#guide_id').val()},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                                $('#purchaseModal').modal('hide');
+                                Consult();
+
+                            } else {
+                                toastr.error(response.message)
+                            }
+                        },
+                        error: function (response) {
+                            response.error('Ocurrio problemas en el proceso')
+                        }
+                    });
+                //} else {
+                //    toastr.error("No hay items para generar la nota de credito")
+                //}
+            }
+        });
+
+        $(document).on('click', '.show-credit-note-items', function () {
+
+            $.ajax({
+                url: '/finances/credit_note_supplier_review/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'creditNoteID': $(this).val()},
+                success: function (data) {
+                    $('#creditNote').empty().html(data.form);
+                    $('#btnAnnulCreditNote').val(data.creditNoteID);
+                    let base = 0;
+                    let igv = 0;
+                    let total = 0;
+                    if (data.creditNoteIsIgv) {  // with igv
+                        total = Number(data.creditNoteTotal);
+                        base = total / 1.18;
+                        igv = total - base;
+                    } else {  // without igv
+                        base = Number(data.creditNoteTotal);
+                        igv = base * 0.18;
+                        total = base + igv;
+                    }
+                    $(`table.table-credit-note-detail tfoot tr td input.old-igv`).val(igv.toFixed(6));
+                    $(`table.table-credit-note-detail tfoot tr td input.old-base`).val(base.toFixed(6));
+                    $(`table.table-credit-note-detail tfoot tr td input.old-total`).val(total.toFixed(6));
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        });
+
+        $(document).on('click', '#btnAnnulCreditNote', function () {
+            $.ajax({
+                url: '/finances/annul_credit_note_by_id/',
+                async: true,
+                dataType: 'json',
+                type: 'POST',
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                data: {'creditNoteID': $(this).val()},
+                success: function (data) {
+                    toastr.success(data.message)
+                    $('#creditNoteModal').modal('hide');
+                    Consult();
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        });
+
+        $(document).on('click', '.show-purchase-items', function () {
+
+            $.ajax({
+                url: '/finances/purchase_review/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'purchaseID': $(this).val()},
+                success: function (data) {
+                    $('#showPurchase').empty().html(data.form);
+
+                    let base = 0;
+                    let igv = 0;
+                    let total = 0;
+                    if (data.purchaseIsIgv) {  // with igv
+                        total = Number(data.purchaseTotal);
+                        base = total / 1.18;
+                        igv = total - base;
+                    } else {  // without igv
+                        base = Number(data.purchaseTotal);
+                        igv = base * 0.18;
+                        total = base + igv;
+                    }
+                    $(`table.table-purchase-detail tfoot tr td input.old-igv`).val(igv.toFixed(6));
+                    $(`table.table-purchase-detail tfoot tr td input.old-base`).val(base.toFixed(6));
+                    $(`table.table-purchase-detail tfoot tr td input.old-total`).val(total.toFixed(6));
+
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        });
+
+        let orderGuideObj = {};
+
+        $(document).on('click', '.create-guide', function () {
+            let _pk = $(this).val();
+            $.ajax({
+                url: '/finances/modal_guide/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': _pk},
+                success: function (data) {
+                    $('#modal-guide-supplier').empty().html(data.form).modal('show');
+                    orderGuideObj = JSON.parse(data.serialized_obj);
+                    console.log(orderGuideObj)
+                    orderGuideObj["details"] = data.serialized_detail_set;
+                    orderGuideObj["newTotal"] = 0;
+                    orderGuideObj["newIgv"] = 0;
+                    orderGuideObj["newBase"] = 0;
+                    {#orderGuideObj["creditNoteInvoiceNumber"] = data.date;#}
+                    {#orderGuideObj["creditNoteDateDocument"] = data.date;#}
+                    {#orderGuideObj["creditNoteInvoiceDate"] = data.date;#}
+                    {#orderGuideObj["creditNoteDate"] = data.date;#}
+                    detailSet = data.serialized_detail_set;
+                    let base = 0;
+                    let igv = 0;
+                    let total = 0;
+                    if (orderObj["is_igv"]) {  // with igv
+                        total = Number(data.orderTotal);
+                        base = total / 1.18;
+                        igv = total - base;
+                    } else {  // without igv
+                        base = Number(data.orderTotal);
+                        igv = base * 0.18;
+                        total = base + igv;
+                    }
+                    $(`table#table-detail-guide tfoot tr td input.old-igv`).val(igv.toFixed(6));
+                    $(`table#table-detail-guide tfoot tr td input.old-base`).val(base.toFixed(6));
+                    $(`table#table-detail-guide tfoot tr td input.old-total`).val(total.toFixed(6));
+                },
+                fail: function (response) {
+                    toastr.error('Error en la peticion', '¡Mensaje!');
+                }
+            });
+        });
+
+        $(document).on('input', '.quantity-returned-guide', function () {
+
+            if (Number($(this).val()) > Number($(this).attr('max-value'))) {
+                alert('Verifique cantidad a devolver');
+                $(this).val("")
+            } else {
+                let pk = $(this).attr('detail-id');
+                let tr = $(`table#table-detail-guide tbody tr[pk=${pk}]`);
+                let findDetailObj = orderGuideObj.details.find((d) => {
+                    return d.detailID === parseInt(pk)
+                });
+                let price = Number(findDetailObj["price"]);
+                let quantityReturned = Number($(this).val());
+                let subtotal = Number(price * quantityReturned).toFixed(6);
+                findDetailObj["quantityReturned"] = Number(quantityReturned);
+                findDetailObj["newSubtotal"] = Number(subtotal);
+                findDetailObj["isGuideReturn"] = (quantityReturned > 0);
+                tr.find(`td input.new-subtotal`).val(subtotal);
+            }
+            calculateNewTotalGuide()
+        });
+
+        function calculateNewTotalGuide() {
+            const res = orderGuideObj.details.reduce((acc, item) => {
+                return acc += Number(item.newSubtotal);
+            }, 0);
+
+            let base = 0;
+            let igv = 0;
+            let total = 0;
+            if (orderGuideObj["is_igv"]) {  // with igv
+                total = Number(res);
+                base = total / 1.18;
+                igv = total - base;
+            } else {  // without igv
+                base = Number(res);
+                igv = base * 0.18;
+                total = base + igv;
+            }
+
+            $(`table#table-detail-guide tfoot tr td input.new-base`).val(base.toFixed(6));
+            $(`table#table-detail-guide tfoot tr td input.new-igv`).val(igv.toFixed(6));
+            $(`table#table-detail-guide tfoot tr td input.new-total`).val(total.toFixed(6));
+
+            orderGuideObj["newTotal"] = Number(total.toFixed(6));
+            orderGuideObj["newIgv"] = Number(igv.toFixed(6));
+            orderGuideObj["newBase"] = Number(base.toFixed(6));
+        }
+
+        function DownloadGuideReturn(o) {
+            window.open("/finances/guide_return/" + o + "/", '_blank');
+        }
+    </script>
+{% endblock extrajs %}

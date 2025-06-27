@@ -1,0 +1,65 @@
+<table id="example1" class="table table-bordered table-striped">
+    <thead>
+    <tr class="text-center">
+        <th>Nº</th>
+        <th>Comprobante</th>
+        <th>Tipo Comprobante</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+        <th>Pago</th>
+        <th>Información Cliente</th>
+        <th>Total</th>
+{#        <th>Descargar</th>#}
+    </tr>
+    </thead>
+    <tbody id="order_list">
+    {% for p in payment_set %}
+        <tr class="text-center" order="{{ p.order.id }}">
+            <td class="align-middle p-1">{{ p.order.number }}</td>
+            <td class="align-middle p-1">
+                {% if p.order.bill_number %}
+                    {{ p.order.bill_serial }}-{{ p.order.bill_number }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="align-middle p-1">{{ p.order.get_doc_display }}</td>
+            <td class="align-middle p-1">{{ p.order.get_status_display }}</td>
+            <td class="align-middle p-1">{{ p.order.create_at|date:'d-m-Y' }}</td>
+            <td class="align-middle p-1">
+                {{ p.get_payment_display }}
+            </td>
+            <td class="text-left text-uppercase align-middle p-1" style="white-space: normal; word-wrap: break-word"><p
+                    class="m-0">{{ p.order.person.names }}</p></td>
+            <td class="text-right align-middle p-1">{{ p.order.total|safe }}</td>
+{#            <td class="align-middle p-1">#}
+{#                <button type="button"  onclick="{% if p.order.type == 'T' %}DownloadPDFQuotation({{ p.order.id }}){% else %}DownloadPDF({{ p.order.id }}){% endif %}" class="btn btn-sm btn-warning"><i#}
+{#                        class="icon-cloud-download"></i></button>#}
+{#            </td>#}
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="8"><p class="text-warning">No existen resultados</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script type="text/javascript">
+    {#    $(document).ready(function() {#}
+    {#    $('#table-order').DataTable( {#}
+    {#        dom: 'Bfrtip',#}
+    {#        buttons: [#}
+    {#            'copy', 'csv', 'excel', 'pdf', 'print'#}
+    {#        ]#}
+    {#    } );#}
+    {# } );#}
+     $(document).ready(function () {
+            $("#example1").DataTable({
+                //"ordering": false,
+                "order": [[0, 'desc']],
+                "aLengthMenu": [1000],
+                "responsive": true, "lengthChange": false, "autoWidth": false,
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        });
+</script>

@@ -1,0 +1,76 @@
+<table class="table table-light m-0 order" id="t-orders-detail">
+    <thead class="order">
+    <tr class="text-center">
+        <th>Nº</th>
+        <th>Comprobante</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+        <th>Hora Venta</th>
+        <th>Hora Pago</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody class="order">
+    {% for o in order_set %}
+        <tr order="{{ o.id }}" class="text-center">
+            <td class="align-middle p-1">
+                <button class="btn btn-sm btn-light btn-detail-sales" pk="{{ o.id }}">+</button>
+                {{ o.number }}</td>
+            <td class="align-middle p-1">
+                {% if o.status == 'R' %}
+                    {% if o.bill_number %}
+                        {{ o.bill_serial }}-{{ o.bill_number }}
+                    {% else %}
+                        -
+                    {% endif %}
+                {% elif o.status == 'E' %}
+                    {{ o.bill_serial }}-{{ o.bill_number }}
+                {% elif o.status == 'A' %}
+                    {{ o.bill_serial }}-{{ o.bill_number }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="align-middle p-1">
+                {{ o.get_status_display }}
+            </td>
+            <td class="align-middle p-1">{{ o.create_at|date:'Y-m-d' }}</td>
+            <td class="align-middle p-1">{{ o.update_at|date:'H:i:s' }}</td>
+            <td class="align-middle p-1">{{ o.payments_set.first.create_at|date:'H:i:s' }}</td>
+            <td class="align-middle p-1 text-right">{{ o.total|safe }}</td>
+        </tr>
+        <tr class="text-center" style="display: none">
+            <td colspan="2" class="p-0"></td>
+            <td colspan="5" class="row-table-detail p-0"></td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="7"><p class="text-warning">No existen ordenes por el usuario</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<style>
+    table.order {
+        width: 100%; /* 140px * 5 column + 16px scrollbar width */
+        border-spacing: 0;
+    }
+
+    tbody.order, thead.order tr {
+        display: block;
+    }
+
+    tbody.order {
+        height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    tbody.order td, thead.order th {
+        width: 140px;
+    }
+
+    thead.order th:last-child {
+        width: 156px; /* 140px + 16px scrollbar width */
+    }
+</style>

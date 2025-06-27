@@ -1,0 +1,204 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Cliente - Proveedor
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3 h-100">
+        <div class="card-header">
+            <div class="row d-flex">
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center">
+                    <h5 class="card-title fw-">Clientes/Proveedores</h5>
+                    <h6 class="card-subtitle text-muted">Listado</h6>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="form-group col-sm-6 col-md-6 m-0 p-1 align-self-center">
+                    <form method="get" class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control-rounded" name="search" 
+                                   value="{{ search }}" placeholder="Buscar...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control form-control-rounded" name="type">
+                                <option value="">Todos los tipos</option>
+                                {% for choice in type_choices %}
+                                    <option value="{{ choice.0 }}" {% if choice.0 == selected_type %}selected{% endif %}>
+                                        {{ choice.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control form-control-rounded" name="enabled">
+                                <option value="">Todos los estados</option>
+                                <option value="true" {% if selected_enabled == 'true' %}selected{% endif %}>Habilitado</option>
+                                <option value="false" {% if selected_enabled == 'false' %}selected{% endif %}>Deshabilitado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary btn-round px-3">
+                                <i class="icon-magnifier"></i> Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center text-center">
+                    <a type="button" href="{% url 'hrm:person_create' %}" class="btn btn-light btn-round px-5">
+                        <i class="icon-lock"></i> Crear Persona
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-2">
+            <!-- Información de resultados -->
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    {% if search or selected_type or selected_enabled %}
+                        <a href="{% url 'hrm:persons' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="icon-close"></i> Limpiar filtros
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <table id="table-person" class="table-striped table table-bordered table-sm">
+                <thead>
+                <tr class="text-center">
+                    <th style="width: 5%">Nº</th>
+                    <th style="width: 7%">Tipo</th>
+                    <th style="width: 3%">Doc</th>
+                    <th style="width: 10%">Numero</th>
+                    <th style="width: 30%">Nombres y Apellidos</th>
+                    <th style="width: 20%">Dirección</th>
+                    <th style="width: 5%">Telefono</th>
+                    <th style="width: 5%">Descuento</th>
+                    <th style="width: 5%">Habilitado</th>
+                    <th style="width: 5%">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for p in object_list %}
+                    <tr>
+                        <td class="align-middle text-center">{{ forloop.counter }}</td>
+                        <td class="align-middle text-center">
+                            {% if p.type == 'C' %}CLIENTE{% elif p.type == 'P' %}PROVEEDOR{% else %}-{% endif %}
+                        </td>
+                        <td class="align-middle text-center">
+                            {% if p.document == '1' %}DNI{% elif p.document == '6' %}RUC{% else %}-{% endif %}
+                        </td>
+                        <td class="align-middle text-center">{{ p.number }}</td>
+                        <td class="align-middle text-left"><p class="paragraph"> {{ p.names|upper }}</p></td>
+                        <td class="align-middle text-center"><p class="paragraph">{{ p.address|upper }}</p></td>
+                        <td class="align-middle text-center">{{ p.phone|default_if_none:'-' }}</td>
+                        <td class="align-middle text-center">
+                            {% if p.discount__value %}
+                                <span class="badge bg-info">{{ p.discount__value }}%</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle text-center">
+                            {% if p.is_enabled == True %}
+                                  <span class="badge bg-success">Habilitado</span>
+                            {% else %}
+                                  <span class="badge bg-danger">Deshabilitado</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle text-center">
+                            <a href="{% url 'hrm:person_update' p.id %}" class="btn btn-light btn-sm">
+                                <i class="icon-note"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">
+                            <i class="icon-info"></i> No se encontraron registros
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+                <nav aria-label="Paginación" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_enabled %}&enabled={{ selected_enabled }}{% endif %}">
+                                    <i class="icon-control-start"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_enabled %}&enabled={{ selected_enabled }}{% endif %}">
+                                    <i class="icon-arrow-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_enabled %}&enabled={{ selected_enabled }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_enabled %}&enabled={{ selected_enabled }}{% endif %}">
+                                    <i class="icon-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_enabled %}&enabled={{ selected_enabled }}{% endif %}">
+                                    <i class="icon-control-end"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <style>
+    .paragraph{
+        white-space: pre-wrap;
+    }
+    </style>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        // Auto-submit del formulario cuando cambien los filtros
+        $(document).ready(function() {
+            $('select[name="type"], select[name="enabled"]').change(function() {
+                $(this).closest('form').submit();
+            });
+            
+            // Debounce para la búsqueda
+            let searchTimeout;
+            $('input[name="search"]').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    $(this).closest('form').submit();
+                }, 500);
+            });
+        });
+    </script>
+{% endblock extrajs %}

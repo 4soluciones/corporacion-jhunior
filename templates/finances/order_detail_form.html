@@ -1,0 +1,123 @@
+{% load operations %}
+<style>
+    .bg-transparent{
+        background-color: #28a745!important;
+        border: 1px solid #28a745;
+    }
+</style>
+<div class="row mb-3">
+
+        <label for="credit-note-invoice-number" class="col-sm-2 col-form-label">Nro nota credito</label>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" id="credit-note-invoice-number-name" value="" maxlength="50">
+          <input type="hidden" class="form-control" id="guide_id" value="{{ guide_id }}">
+        </div>
+
+
+        <label for="credit-note-date-document" class="col-sm-2 col-form-label">Fecha Emisión</label>
+        <div class="col-sm-4">
+          <input type="date" class="form-control" id="credit-note-date-document" value="{{ date|date:'Y-m-d' }}">
+        </div>
+</div>
+
+<div class="row mb-3">
+    <label for="credit-note-invoice-date" class="col-sm-2 col-form-label">Fecha Ingreso</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="credit-note-invoice-date" value="{{ date|date:'Y-m-d' }}">
+    </div>
+
+    <label for="credit-note-date" class="col-sm-2 col-form-label">Fecha Validez</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="credit-note-date" value="{{ date|date:'Y-m-d' }}">
+    </div>
+</div>
+
+
+<div class="form-group row">
+    <label for="static-purchase-supplier-name" class="col-sm-2 col-form-label">Proveedor</label>
+    <div class="col-sm-10">
+      <input type="text" readonly class="form-control bg-transparent" id="static-purchase-supplier-name" value="{{ order_obj.person.names }}">
+    </div>
+  </div>
+
+<div class="row mb-3">
+    <label for="static-purchase-doc" class="col-sm-2 col-form-label">COMPROBANTE</label>
+    <div class="col-sm-4">
+      <input type="text" readonly class="form-control bg-transparent" id="static-purchase-doc" value="{{ order_obj.get_doc_display }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="text" readonly class="form-control bg-transparent" id="static-purchase-invoice-related-id" value="{{ order_obj.invoice_number }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="date" readonly class="form-control bg-transparent" id="static-purchase-create-at" value="{{ order_obj.date_document|date:'Y-m-d' }}">
+    </div>
+
+  </div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-order-detail">
+        <thead>
+        <tr>
+            <td>CODIGO</td>
+            <td>PRODUCTO</td>
+            <td>MEDIDAS</td>
+            <td>UNIDAD</td>
+            <td>PRECIO</td>
+            <td>CANTIDAD<br>COMPRADA</td>
+            <td>CANTIDAD<br>A DEVOLVER</td>
+            <td>SUBTOTAL<br>NOTA CREDITO</td>
+            <td>SUBTOTAL<br>COMPRA </td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in detail_dict %}
+{#            {% for a in order_obj.order_set.all.last.orderdetail_set.all %}#}
+                <tr pk="{{ d.id }}">
+                    <td class="align-middle text-center">{{ d.product_code }}</td>
+                    <td class="align-middle">{{ d.product_name }}</td>
+                    <td class="align-middle" a="{{ d.product_with }}" l="{{ d.product_length }}" h="{{ d.product_height }}">
+                        <strong>ANCHO: {{ d.product_with }}<br>LARGO: {{ d.product_length }}<br>ALTO: {{ d.product_height }}</strong>
+                    </td>
+                    <td class="align-middle">{{ d.unit }}</td>
+                    <td class="align-middle">{{ d.price|safe }}</td>
+                    <td class="align-middle"><input type="text" class="form-control bg-transparent text-right quantity-purchased" value="{{ d.quantity|safe }}" readonly /></td>
+                    <td class="align-middle"><input type="text" class="form-control text-right quantity-returned" readonly detail-id="{{ d.id }}" max-value="{{ d.quantity|safe }}" value="{{ d.quantity_returned|safe }}" /></td>
+                    <td class="align-middle"><input type="text" class="form-control bg-transparent text-right new-subtotal" value="{{ d.amount|safe }}" readonly /></td>
+                    <td class="align-middle"><input type="text" class="form-control bg-transparent text-right old-subtotal" value="{{ d.amount|safe }}" readonly /></td>
+                </tr>
+{#            {% endfor %}#}
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td class="small align-bottom" colspan="6">MONEDA: {{ order_obj.get_coin_display }}</td>
+            <td>BASE</td>
+            <td><input type="text" class="form-control bg-transparent text-right new-base" value="{{ order_obj.order_set.all.last.total|get_sub_total }}"/></td>
+            <td><input type="text" class="form-control bg-transparent text-right old-base" value="{{ order_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td class="small align-bottom" colspan="6">T.C.: {{ order_obj.change|safe }}</td>
+            <td>IGV</td>
+            <td><input type="text" class="form-control bg-transparent text-right new-igv" value="{{ order_obj.order_set.all.last.total|get_igv }}" readonly /></td>
+            <td><input type="text" class="form-control bg-transparent text-right old-igv" value="{{ order_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td colspan="6"></td>
+            <td>TOTAL</td>
+            <td><input type="text" class="form-control bg-transparent text-right new-total" value="{{ order_obj.order_set.all.last.total|safe }}" readonly /></td>
+            <td><input type="text" class="form-control bg-transparent text-right old-total" value="{{  order_obj.order_set.all.last.get_purchase_total|safe }}" readonly /></td>
+        </tr>
+
+        </tfoot>
+
+    </table>
+</div>
+
+<script>
+
+</script>
+

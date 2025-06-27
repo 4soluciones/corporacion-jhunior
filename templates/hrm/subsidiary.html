@@ -1,0 +1,138 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Sucursal
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        <h5 class="card-header">Sucursal</h5>
+        <!-- Account -->
+        <div class="card-body">
+            <form id="formSubsidiary" method="POST" enctype="multipart/form-data" action="{% url 'hrm:subsidiary_save' %}"
+            >
+                {% csrf_token %}
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label for="name" class="form-label">Nombre Comercial</label>
+                        <input
+                                class="form-control"
+                                type="text"
+                                id="name"
+                                name="name"
+                                value="{{ subsidiary_obj.name }}"
+                                placeholder="Nombre Comercial"
+                                maxlength="100"
+                                required
+                                autofocus
+                        />
+                        <input type="hidden" class="form-control" id="subsidiary" name="subsidiary"
+                               value="{% if subsidiary_obj.id %}{{ subsidiary_obj.id }}{% else %}0{% endif %}">
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="serial" class="form-label">Serie Sucursal</label>
+                        <input class="form-control" type="text" maxlength="4" name="serial" id="serial"
+                               value="{{ subsidiary_obj.serial }}" placeholder="Serie Sucursal" required/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="ruc" class="form-label">Ruc Empresa</label>
+                        <input class="form-control" maxlength="11" type="text" id="ruc" name="ruc"
+                               placeholder="Ruc Sucursal" value="{{ subsidiary_obj.ruc }}" required/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="business_name" class="form-label">Razón Social</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="business_name"
+                                name="business_name"
+                                placeholder="Razón Social"
+                                maxlength="100"
+                                value="{{ subsidiary_obj.business_name }}"
+                                required
+                        />
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input
+                                class="form-control"
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ subsidiary_obj.email }}"
+                                placeholder="correo@example.com"
+                                required
+                        />
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="phone">Telefono</label>
+                         <div class="position-relative has-icon-left">
+                             <div class="form-control-position">
+                                <i class="icon-phone"></i>
+                            </div>
+                             <input
+                                    type="text"
+                                    id="phone"
+                                    name="phone"
+                                    class="form-control"
+                                    placeholder="950 155256"
+                                    value="{{ subsidiary_obj.phone }}"
+                            />
+
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                         <label for="representative_dni" class="form-label">Documento Representante</label>
+                        <input type="text" class="form-control" id="representative_dni" name="representative_dni"
+                               placeholder="Documento Representante" value="{{ subsidiary_obj.representative_dni }}"/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="address" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="address" name="address"
+                               placeholder="Dirección de Fiscal" value="{{ subsidiary_obj.address }}" required/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="representative_name" class="form-label">Nombres y Apellidos Representante</label>
+                        <input type="text" class="form-control" id="representative_name" name="representative_name"
+                               placeholder="Nombres Representante" value="{{ subsidiary_obj.representative_name }}"/>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-light px-5"><i class="icon-lock"></i>{% if subsidiary_obj.id %}Actualizar Sucursal{% else %}
+                        Registrar Sucursal{% endif %}</button>
+                    <a type="reset" class="btn btn-light px-5" href="{% url 'hrm:subsidiaries' %}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+        <!-- /Account -->
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $('#formSubsidiary').submit(function (event) {
+            event.preventDefault();
+            let data = new FormData($('#formSubsidiary').get(0));
+            $.ajax({
+                url: $(this).attr('action'),
+                type: $(this).attr('method'),
+                data: data,
+                cache: false,
+                processData: false,
+                contentType: false,
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                success: function (response) {
+                    if(response.success){
+                        toastr.success(response.message)
+                        window.location.href = "/hrm/subsidiaries/";
+                    }else   {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (response) {
+                    {#toastr.error('Ocurrio un error');#}
+                }
+            });
+        });
+    </script>
+{% endblock extrajs %}

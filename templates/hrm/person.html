@@ -1,0 +1,351 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Cliente - Proveedor
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        <div class="card-header bg-primary text-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="card-title mb-0">
+                        <i class="icon-user"></i> 
+                        {% if person_obj.id %}Editar{% else %}Nuevo{% endif %} Cliente/Proveedor
+                    </h5>
+                    <small class="text-white-50">
+                        {% if person_obj.id %}Actualizando información del cliente{% else %}Registrando nuevo cliente{% endif %}
+                    </small>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'hrm:persons' %}" class="btn btn-outline-light btn-sm">
+                        <i class="icon-arrow-left"></i> Volver al listado
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <form id="formPerson" method="POST" enctype="multipart/form-data" action="{% url 'hrm:person_save' %}">
+                {% csrf_token %}
+                
+                <!-- Información Personal -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2">
+                            <i class="icon-user"></i> Información Personal
+                        </h6>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="type" class="form-label fw-bold">
+                            <i class="icon-tag"></i> Tipo de Persona
+                        </label>
+                        <select class="form-control form-control-lg" id="type" name="type" required>
+                            {% for choice in type_set %}
+                                <option value="{{ choice.0 }}" {% if choice.0 == person_obj.type %}selected{% endif %}>
+                                    {{ choice.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="document" class="form-label fw-bold">
+                            <i class="icon-doc"></i> Tipo de Documento
+                        </label>
+                        <select class="form-control form-control-lg" id="document" name="document" required>
+                            {% for doc in document_set %}
+                                <option value="{{ doc.0 }}" {% if doc.0 == person_obj.document %}selected{% endif %}>
+                                    {{ doc.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="number" class="form-label fw-bold">
+                            <i class="icon-credit-card"></i> Número de Documento
+                        </label>
+                        <input class="form-control form-control-lg" type="text" maxlength="15" name="number" id="number"
+                               value="{{ person_obj.number }}" placeholder="Ej: 12345678" required/>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="discount" class="form-label fw-bold">
+                            <i class="icon-percent"></i> Descuento (%)
+                        </label>
+                        <select class="form-control form-control-lg" id="discount" name="discount">
+                            <option value="0">Sin descuento</option>
+                            {% for discount in discount_set %}
+                                <option value="{{ discount.id }}" {% if discount.id == person_obj.discount.id %}selected{% endif %}>
+                                    {{ discount.value }}%
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Información de Contacto -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2">
+                            <i class="icon-phone"></i> Información de Contacto
+                        </h6>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="names" class="form-label fw-bold">
+                            <i class="icon-user"></i> Nombres y Apellidos / Razón Social
+                        </label>
+                        <input class="form-control form-control-lg" type="text" id="names" name="names"
+                               value="{{ person_obj.names }}" placeholder="Ingrese nombres completos" maxlength="200" required autofocus/>
+                        <input type="hidden" class="form-control" id="person" name="person"
+                               value="{% if person_obj.id %}{{ person_obj.id }}{% else %}0{% endif %}">
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="address" class="form-label fw-bold">
+                            <i class="icon-location-pin"></i> Dirección
+                        </label>
+                        <input class="form-control form-control-lg" maxlength="200" type="text" id="address" name="address"
+                               placeholder="Dirección completa" value="{{ person_obj.address|default_if_none:'' }}"/>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label fw-bold">
+                            <i class="icon-envelope"></i> Correo Electrónico
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="icon-envelope"></i></span>
+                            <input class="form-control form-control-lg" type="email" id="email" name="email"
+                                   value="{{ person_obj.email|default_if_none:'' }}" placeholder="correo@ejemplo.com" maxlength="100"/>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label fw-bold">
+                            <i class="icon-phone"></i> Teléfono
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="icon-phone"></i></span>
+                            <input type="text" id="phone" name="phone" class="form-control form-control-lg"
+                                   placeholder="Ej: 950 155 256" value="{{ person_obj.phone|default_if_none:'' }}"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary border-bottom pb-2">
+                            <i class="icon-settings"></i> Estado y Configuración
+                        </h6>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="defaultCheck3" name="defaultCheck3"
+                                   {% if person_obj.is_enabled %}checked{% endif %} style="transform: scale(1.5);">
+                            <label class="form-check-label fw-bold" for="defaultCheck3">
+                                <i class="icon-check-circle"></i> Cliente Activo
+                            </label>
+                            <div class="form-text">Habilita o deshabilita este cliente en el sistema</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="icon-check"></i> 
+                                    {% if person_obj.id %}Actualizar Cliente{% else %}Registrar Cliente{% endif %}
+                                </button>
+                                <a type="reset" class="btn btn-secondary btn-lg ms-2" href="{% url 'hrm:persons' %}">
+                                    <i class="icon-close"></i> Cancelar
+                                </a>
+                            </div>
+                            
+                            {% if person_obj.id %}
+                                <div class="text-muted">
+                                    <small>
+                                        <i class="icon-info"></i> 
+                                        Cliente creado el {{ person_obj.id|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Card de Ayuda -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0"><i class="icon-info"></i> Información Útil</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="text-info"><i class="icon-user"></i> Tipos de Persona</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Cliente:</strong> Persona que compra productos</li>
+                        <li><strong>Proveedor:</strong> Persona que vende productos</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-info"><i class="icon-doc"></i> Documentos</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>DNI:</strong> Para personas naturales</li>
+                        <li><strong>RUC:</strong> Para empresas y personas jurídicas</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-info"><i class="icon-percent"></i> Descuentos</h6>
+                    <ul class="list-unstyled">
+                        <li>Los descuentos se aplican automáticamente</li>
+                        <li>Puede seleccionar "Sin descuento" si no aplica</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Validación en tiempo real
+            $('#number').on('input', function() {
+                let value = $(this).val();
+                let documentType = $('#document').val();
+                
+                if (documentType === '1' && value.length > 8) {
+                    $(this).val(value.substring(0, 8));
+                } else if (documentType === '6' && value.length > 11) {
+                    $(this).val(value.substring(0, 11));
+                }
+            });
+            
+            // Cambiar validación según tipo de documento
+            $('#document').change(function() {
+                let documentType = $(this).val();
+                let numberField = $('#number');
+                
+                if (documentType === '1') {
+                    numberField.attr('maxlength', '8');
+                    numberField.attr('placeholder', 'Ej: 12345678');
+                } else if (documentType === '6') {
+                    numberField.attr('maxlength', '11');
+                    numberField.attr('placeholder', 'Ej: 20123456789');
+                }
+            });
+            
+            // Formulario con validación mejorada
+            $('#formPerson').submit(function (event) {
+                event.preventDefault();
+                
+                // Validaciones básicas
+                let names = $('#names').val().trim();
+                let number = $('#number').val().trim();
+                let documentType = $('#document').val();
+                
+                if (!names) {
+                    toastr.error('Por favor ingrese nombres y apellidos');
+                    $('#names').focus();
+                    return false;
+                }
+                
+                if (!number) {
+                    toastr.error('Por favor ingrese número de documento');
+                    $('#number').focus();
+                    return false;
+                }
+                
+                // Validar formato según tipo de documento
+                if (documentType === '1' && number.length !== 8) {
+                    toastr.error('El DNI debe tener 8 dígitos');
+                    $('#number').focus();
+                    return false;
+                }
+                
+                if (documentType === '6' && number.length !== 11) {
+                    toastr.error('El RUC debe tener 11 dígitos');
+                    $('#number').focus();
+                    return false;
+                }
+                
+                // Mostrar loading
+                let submitBtn = $(this).find('button[type="submit"]');
+                let originalText = submitBtn.html();
+                submitBtn.html('<i class="icon-refresh icon-spin"></i> Procesando...');
+                submitBtn.prop('disabled', true);
+                
+                let data = new FormData($('#formPerson').get(0));
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: data,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                    success: function (response) {
+                        toastr.success("Cliente guardado exitosamente");
+                        setTimeout(function() {
+                            window.location.href = "{% url 'hrm:persons' %}";
+                        }, 1500);
+                    },
+                    error: function (response) {
+                        toastr.error('Ocurrió un error al guardar el cliente');
+                        submitBtn.html(originalText);
+                        submitBtn.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Efectos visuales
+            $('.form-control').focus(function() {
+                $(this).parent().addClass('border-primary');
+            }).blur(function() {
+                $(this).parent().removeClass('border-primary');
+            });
+        });
+    </script>
+    
+    <style>
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .card-header {
+            border-bottom: none;
+        }
+        
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+        
+        .form-control-lg {
+            padding: 12px 16px;
+            font-size: 16px;
+        }
+        
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #ced4da;
+        }
+    </style>
+{% endblock extrajs %}

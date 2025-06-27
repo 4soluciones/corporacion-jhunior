@@ -1,0 +1,78 @@
+<form id="formUnit" method="POST" enctype="multipart/form-data" action="{% url 'sales:unit_save' %}">
+    {% csrf_token %}
+    <div class="row">
+        <div class="mb-1">
+            <label class="form-label" for="name">Nombre Unidad</label>
+            <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-fullname2" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        name="name"
+                        placeholder="Nombre Unidad"
+                        value="{{ unit_obj.name }}"
+                        required
+                />
+
+            </div>
+            <input type="hidden" id="unit-pk" name="unit-pk"
+                   value="{% if unit_obj %}{{ unit_obj.id }}{% else %}0{% endif %}"/>
+        </div>
+        <div class="mb-1">
+            <label class="form-label" for="name">Descripción Unidad</label>
+            <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-fullname2" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="description"
+                        name="description"
+                        placeholder="Descripción Unidad"
+                        value="{{ unit_obj.description }}"
+                        required
+                />
+
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-2 d-grid w-100">{% if unit_obj.id %}Actualizar{% else %}
+        Registrar{% endif %}</button>
+    <button
+            type="button"
+            id="unit-cancel"
+            class="btn btn-outline-secondary d-grid w-100"
+            data-bs-dismiss="offcanvas"
+    >
+        Cancel
+    </button>
+</form>
+<script type="text/javascript">
+    $('#formUnit').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formUnit').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message)
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }
+                $('#unit-cancel').trigger('click')
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un problema')
+            }
+        });
+    });
+</script>

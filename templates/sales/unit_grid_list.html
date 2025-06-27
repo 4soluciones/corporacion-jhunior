@@ -1,0 +1,151 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Unidad Medida
+{% endblock title %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-pills flex-column flex-md-row mb-2">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sales:products' %}"><i class='bx bxl-product-hunt'></i>
+                        Producto</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sales:brands' %}"
+                    ><i class='bx bxs-plus-circle me-1'></i> Marcas producto</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sales:familys' %}"
+                    ><i class='bx bxs-plus-circle me-1'></i> Familias Producto</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'sales:units' %}"
+                    ><i class='bx bxs-plus-circle me-1'></i> Unidad Medida</a
+                    >
+                </li>
+            </ul>
+            <div class="card">
+                <div class="card-header pt-2 pb-2">
+                    <div class="row">
+                        <div class="col-md-7 align-self-center">
+                            <h5 class="m-0">Unidades de Medida</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text" id="basic-addon-search31"><i
+                                        class="bx bx-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Search..." aria-label="Search..."
+                                       aria-describedby="basic-addon-search31" id="search">
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <button class="dt-button add-new btn btn-primary"
+                                    onclick="showOffUnit()"
+                            ><span><i
+                                    class="bx bx-plus me-0 me-sm-1"></i><span
+                                    class="d-none d-lg-inline-block">Crear Unidad</span></span></button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-0"/>
+                <div class="card-body p-2">
+                    {% if object_list %}
+                        <table id="table-unit"
+                               class="table table-striped small w-100">
+                            <thead>
+                            <tr class="text-center">
+                                <th>N°</th>
+                                <th>Nombre Unidad</th>
+                                <th>Descripción</th>
+                                <th>Editar</th>
+                            </tr>
+                            </thead>
+                            <tbody style="font-size: 13px;">
+                            {% for u in object_list %}
+                                <tr class="text-center" pk="{{ u.id }}">
+                                    <td class="align-middle">{{ forloop.counter }}</td>
+                                    <td class="text-primary">
+                                        {{ u.name }}
+                                    </td>
+                                    <td class="text-primary">
+                                        {{ u.description }}
+                                    </td>
+                                    <td class="align-middle">
+                                        <button class="btn btn-sm rounded-pill btn-icon btn-warning" pk="{{ u.id }}"
+                                                onclick="showOffUnit({{ u.id }})">
+                                            <span class="tf-icons bx bxs-edit-alt"></span></button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="alert alert-info small" role="alert">
+                            <strong>Consulta: </strong> No existen registro de ningúna unidad de medida.
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- /Account -->
+            </div>
+        </div>
+    </div>
+    <div
+            class="offcanvas offcanvas-start"
+            tabindex="-1"
+            id="unit_canvas"
+            aria-labelledby="offcanvasStartLabel"
+    >
+        <div class="offcanvas-header">
+            <h5 id="offcanvasStartLabel" class="offcanvas-title">Unidad de Medida</h5>
+            <button
+                    type="button"
+                    class="btn-close text-reset"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"
+            ></button>
+        </div>
+        <div class="offcanvas-body my-0 mx-0 flex-grow-0" id="unit-body">
+
+        </div>
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#search").keyup(function () {
+                _this = this;
+                // Show only matching TR, hide rest of them
+                $.each($("#table-family tbody tr"), function () {
+                    if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+                        $(this).hide();
+                    else
+                        $(this).show();
+                });
+            });
+        });
+
+        function showOffUnit(pk) {
+            var canvas = document.getElementById('unit_canvas');
+            var off = new bootstrap.Offcanvas(canvas)
+            $.ajax({
+                url: '/sales/get_unit/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    $('#unit-body').empty().html(response.form)
+                    off.show()
+                },
+                fail: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+    </script>
+{% endblock extrajs %}

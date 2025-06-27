@@ -1,0 +1,163 @@
+<table class="col-md-12 table table-light m-0 w-100 table-hover user w-100">
+    <thead class="user">
+    <tr class="text-center">
+        <th style="width: 40%">Usuario</th>
+        <th style="width: 40%">Cantidad</th>
+        <th style="width: 5%"></th>
+        <th style="width: 15%">Total</th>
+    </tr>
+    </thead>
+    <tbody id="body-users" class="user">
+    {% for u in user_dic %}
+        <tr class="" user="{{ u.pk }}" onclick="GetOrdersList({{ u.pk }})">
+            <td class="align-middle p-1 text-uppercase" style="width: 40%">{{ u.username }}</td>
+            <td class="align-middle p-1 text-center" style="width: 40%">{{ u.quantity|safe }}</td>
+            <td class="align-middle p-1 text-right" style="width: 5%">S/</td>
+            <td class="align-middle p-1 text-right" style="width: 15%">{{ u.total|safe }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3"><p class="text-warning">No existen usuarios</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div class="col-md-12 mt-2">
+    <form class="small">
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label">Total Venta</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right" placeholder="S/. 0.00" type="text"
+                           value="{{ total_s|safe }}" readonly>
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label">Total Factura</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right" placeholder="S/. 0.00" type="text"
+                           value="{{ total_f|safe }}" readonly>
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label">Total Boleta</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right" placeholder="S/. 0.00" type="text"
+                           value="{{ total_b|safe }}" readonly>
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label text-warning">Total Nota de Credito</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right bg-danger" placeholder="S/. 0.00" type="text"
+                           value="{{ total_n|safe }}" readonly>
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label">Total Ticket</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right" placeholder="S/. 0.00" type="text"
+                           value="{{ total_t|safe }}" readonly>
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label">Total Pendiente</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right" type="text" readonly
+                           value="{{ total_p|safe }}">
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-md-7 col-form-label form-control-label text-warning">Total Anulado</label>
+            <div class="col-md-5 p-0">
+                <div class="input-icon">
+                    <input class="form-control text-right bg-danger" type="text" readonly
+                           value="{{ total_cancel|safe }}">
+                    <i class="change-money">S/</i>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    table.user {
+        width: 100%; /* 140px * 5 column + 16px scrollbar width */
+        border-spacing: 0;
+    }
+
+    tbody.user, thead.user tr {
+        display: block;
+    }
+
+    tbody.user {
+        height: 180px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    tbody.user td, thead.user th {
+        width: 140px;
+    }
+
+    thead.user th:last-child {
+        width: 156px; /* 140px + 16px scrollbar width */
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon > i {
+    {#content: "$";#} position: absolute;
+        display: block;
+        transform: translate(0, -50%);
+        top: 50%;
+        pointer-events: none;
+        width: 25px;
+        text-align: center;
+        font-style: normal;
+    }
+
+    .input-icon > input {
+        padding-left: 25px;
+        padding-right: 8px;
+    }
+
+    .input-icon-right > i {
+        right: 0;
+    }
+
+    .input-icon-right > input {
+        padding-left: 0;
+        padding-right: 25px;
+        text-align: right;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>

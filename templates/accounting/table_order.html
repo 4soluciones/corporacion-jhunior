@@ -1,0 +1,79 @@
+<div class="tableFixHead">
+    <table class="table table-hover o m-0 table-bordered">
+    <thead class="o">
+    <tr class="text-center">
+        <th class="o">Nº</th>
+        <th class="o">Usuario</th>
+        <th class="o">Comprobante</th>
+        <th class="o">Nombres/Razon Social</th>
+        <th class="o">Fecha</th>
+        <th class="o">Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for o in order_set %}
+        <tr order="{{ o.id }}" class="text-center" onclick="OrderDetail({{ o.id }})">
+            <td class="align-middle o p-1">{{ o.number }}</td>
+            <td class="align-middle o p-1 text-center">{{ o.user.username|upper }}</td>
+            <td class="align-middle o p-1">
+                {% if o.status == 'R' %}
+                    {% if o.bill_number %}
+                        {{ o.bill_serial }}-{{ o.bill_number }}
+                    {% else %}
+                        -
+                    {% endif %}
+                {% elif o.status == 'E' %}
+                    {{ o.bill_serial }}-{{ o.bill_number }}
+                {% elif o.status == 'A' %}
+                    {{ o.bill_serial }}-{{ o.bill_number }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="align-middle o p-1 text-left" style="white-space: normal; word-wrap: break-word">
+                <p class="m-0">{{ o.person.names }}</p></td>
+            <td class="align-middle o p-1">{{ o.create_at|date:'d-m-y' }}</td>
+            <td class="align-middle o p-1 text-right">{{ o.total|safe }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td class="o" colspan="5"><p class="text-white">No existen resultados</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+    <tr>
+        <td class="align-middle" colspan="3"></td>
+        <td class="align-middle text-right">Total:</td>
+        <td class="align-middle text-right">S/. {{ total|safe }}</td>
+    </tr>
+    </tfoot>
+</table>
+</div>
+
+<style>
+    .tableFixHead {
+        overflow: auto;
+        height: 500px;
+    }
+
+    .tableFixHead thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Just common table stuff. Really. */
+    table.o {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th.o, td.o {
+        padding: 8px 16px;
+    }
+
+    th.o {
+        background: #7e2f2f;
+    }
+</style>

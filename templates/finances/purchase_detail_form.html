@@ -1,0 +1,87 @@
+
+<style>
+    .bg-transparent{
+        background-color: #6f42c166!important;
+        border: 1px solid #6f42c1;
+    }
+</style>
+
+<div class="form-group row">
+    <label for="static-review-purchase-realized-supplier-name" class="col-sm-2 col-form-label">Proveedor</label>
+    <div class="col-sm-10">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-realized-supplier-name" value="{{ purchase_obj.person.names }}">
+    </div>
+  </div>
+
+<div class="row mb-3">
+    <label for="static-review-purchase-realized-doc" class="col-sm-2 col-form-label">COMPROBANTE</label>
+    <div class="col-sm-4">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-realized-doc" value="{{ purchase_obj.get_doc_display }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-realized-invoice-related-id" value="{{ purchase_obj.invoice_number }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="date" readonly class="form-control bg-transparent" id="static-review-purchase-realized-create-at" value="{{ purchase_obj.date_document|date:'Y-m-d' }}">
+    </div>
+
+  </div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-purchase-detail">
+        <thead>
+        <tr>
+            <td>CODIGO</td>
+            <td>PRODUCTO</td>
+            <td>MEDIDAS</td>
+            <td>UNIDAD</td>
+            <td>PRECIO</td>
+            <td>CANT. COMPRADA</td>
+            <td>SUBTOTAL</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in purchase_obj.orderdetail_set.all %}
+            <tr pk="{{ d.id }}">
+                <td class="align-middle">{{ d.product.code }}</td>
+                <td class="align-middle">{{ d.product.name }}</td>
+                <td class="align-middle" a="{{ d.product.width }}" l="{{ d.product.length }}" h="{{ d.product.height }}">
+                    <strong>ANCHO: {{ d.product.width }}<br>LARGO: {{ d.product.length }}<br>ALTO: {{ d.product.height }}</strong>
+                </td>
+                <td class="align-middle">{{ d.unit }}</td>
+                <td class="align-middle">{{ d.price|safe }}</td>
+                <td class="align-middle"><input type="text" class="form-control bg-transparent text-right" value="{{ d.quantity|safe }}" readonly /></td>
+                <td class="align-middle"><input type="text" class="form-control bg-transparent text-right" value="{{ d.amount|safe }}" readonly /></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td class="small align-bottom" colspan="5">MONEDA: {{ purchase_obj.get_coin_display }}</td>
+            <td>BASE</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-base" value="{{ purchase_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td class="small align-bottom" colspan="5">T.C.: {{ purchase_obj.change|safe }}</td>
+            <td>IGV</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-igv" value="{{ purchase_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td colspan="5"></td>
+            <td>TOTAL</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-total" value="{{ purchase_obj.get_purchase_total|safe }}" readonly /></td>
+        </tr>
+
+        </tfoot>
+
+    </table>
+</div>
+
+<script>
+
+</script>
+

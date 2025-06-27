@@ -1,0 +1,388 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content="Sistema de gestión corporativa Jhunior"/>
+    <meta name="author" content="4soluciones"/>
+    <title>Iniciar Sesión</title>
+    <!-- loader-->
+    <link href="{% static 'assets/css/pace.min.css' %}" rel="stylesheet"/>
+    <script src="{% static 'assets/js/pace.min.js' %}"></script>
+    <!--favicon-->
+    <link rel="icon" href="{% static 'assets/images/logo.ico' %}" type="image/x-icon">
+    <!-- Bootstrap core CSS-->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet"/>
+    <!-- animate CSS-->
+    <link href="{% static 'assets/css/animate.css' %}" rel="stylesheet" type="text/css"/>
+    <!-- Icons CSS-->
+    <link href="{% static 'assets/css/icons.css' %}" rel="stylesheet" type="text/css"/>
+    <!-- Custom Style-->
+    <link href="{% static 'assets/css/app-style.css' %}" rel="stylesheet"/>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card-authentication1 {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-container {
+            padding: 30px 0 20px;
+            text-align: center;
+        }
+        
+        .logo-container img {
+            width: 158px;
+            height: 158px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+        
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: white;
+            color: #000;
+        }
+        
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+        
+        .position-relative {
+            position: relative;
+        }
+        
+        .form-control-position {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+        
+        .form-row {
+            margin-bottom: 25px;
+        }
+        
+        .icheck-material-white {
+            margin-top: 5px;
+        }
+        
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .forgot-password:hover {
+            color: #764ba2;
+            text-decoration: none;
+        }
+        
+        .card-footer {
+            background: transparent;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .footer-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #764ba2;
+            text-decoration: none;
+        }
+        
+        .loader-wrapper {
+            display: none;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-title {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .modal-message {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+        
+        .modal-close {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .card-authentication1 {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .brand-title {
+                font-size: 1.1rem;
+            }
+            
+            .logo-container img {
+                width: 158px;
+                height: 158px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- start loader -->
+<div id="pageloader-overlay" class="visible incoming">
+    <div class="loader-wrapper-outer">
+        <div class="loader-wrapper-inner">
+            <div class="loader"></div>
+        </div>
+    </div>
+</div>
+<!-- end loader -->
+
+<div class="login-container">
+    <div class="card card-authentication1">
+        <div class="card-body">
+            <div class="card-content p-4">
+                <div class="logo-container">
+                    <img src="{% static 'assets/images/logo_corporation.png' %}" alt="Logo Jhunior">
+                </div>
+                <h1 class="brand-title text-center">CORPORACION PERNOS JUNIOR S.R.L.</h1>
+                <p class="welcome-text">Bienvenido al sistema de gestión corporativa 4Soft</p>
+                
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="position-relative">
+                            {{ form.username }}
+                            <div class="form-control-position">
+                                <i class="icon-user"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="position-relative">
+                            {{ form.password }}
+                            <div class="form-control-position">
+                                <i class="icon-lock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <div class="icheck-material-white">
+                                <input type="checkbox" id="user-checkbox" checked=""/>
+                                <label for="user-checkbox" style="color: #667eea">Recordar</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-6 text-right">
+                            <a href="#" class="forgot-password" onclick="showForgotPassword()">¿Olvidaste tu contraseña?</a>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-login btn-block">Iniciar Sesión</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <p class="mb-0">
+                <a href="https://4soluciones.net/" class="footer-link" target="_blank">Desarrollado por 4soluciones</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para olvidé contraseña -->
+<div id="forgotPasswordModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Recuperar Contraseña</h3>
+        <p class="modal-message">Para recuperar tu contraseña, por favor contacta con el departamento de sistemas.</p>
+        <button class="modal-close" onclick="closeForgotPassword()">Entendido</button>
+    </div>
+</div>
+
+<!--Start Back To Top Button-->
+<a href="#" class="back-to-top"><i class="fa fa-angle-double-up"></i> </a>
+<!--End Back To Top Button-->
+
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/popper.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
+
+<!-- sidebar-menu js -->
+<script src="{% static 'assets/js/sidebar-menu.js' %}"></script>
+
+<!-- Custom scripts -->
+<script src="{% static 'assets/js/app-script.js' %}"></script>
+
+<script>
+    function showForgotPassword() {
+        document.getElementById('forgotPasswordModal').style.display = 'block';
+    }
+    
+    function closeForgotPassword() {
+        document.getElementById('forgotPasswordModal').style.display = 'none';
+    }
+    
+    // Cerrar modal al hacer clic fuera de él
+    document.getElementById('forgotPasswordModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeForgotPassword();
+        }
+    });
+    
+    // Cerrar modal con la tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeForgotPassword();
+        }
+    });
+</script>
+</body>
+</html>

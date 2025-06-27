@@ -1,0 +1,464 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Ordenes - Cliente
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-2 pl-1 pr-1">
+                    <label for="input-1" class="m-0">Número Documento</label>
+                    <input type="text" class="form-control" id="person-number" name="person-number"
+                           placeholder="Numero Documento" maxlength="15">
+                </div>
+                <div class="col-md-8 pl-1 pr-1">
+                    <label for="input-1" class="m-0">Nombres Apellidos - Razon Social</label>
+                    <div id="autocomplete-client" class="autocomplete">
+                        <input class="form-control autocomplete-input"
+                               type="text"
+                               id="person-names"
+                               name="person-names"
+                               maxlength="200"
+                               placeholder="Buscar Cliente..."/>
+                        <ul class="autocomplete-result-list"></ul>
+                    </div>
+                </div>
+                <div class="col-md-2 pl-1 pr-1">
+                    <label for="input-1" class="m-0">Número Orden</label>
+                    <input type="text" class="form-control" id="order-number" name="order-number"
+                           placeholder="Numero Orden" maxlength="15">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-2">
+            <div id="table-orders" class="table-responsive-sm" style="height: 510px">
+                {% include "accounting/orders_person_grid.html" %}
+            </div>
+        </div>
+{#        <div class="card-footer p-1">#}
+{#            <div class="row">#}
+{#                <div class="col-md-4"></div>#}
+{#                <div class="col-md-4"></div>#}
+{#                <div class="col-md-4">#}
+{#                    <div class="form-group row m-0">#}
+{#                        <label class="col-lg-9 text-right p-1 col-form-label form-control-label align-self-center">Total#}
+{#                            Deuda</label>#}
+{#                        <div class="col-lg-3 p-1 align-self-center">#}
+{#                            <input type="text" value=""#}
+{#                                   id="total-debt"#}
+{#                                   name="total-debt"#}
+{#                                   class="form-control text-right"#}
+{#                                   placeholder="S/. 0.00"#}
+{#                                   readonly>#}
+{#                        </div>#}
+{#                        <label class="col-lg-2 text-left col-form-label p-1 align-self-center form-control-label">Soles</label>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+    <div class="modal fade" id="modal-payment" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-guide" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-credit-note" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $('#order-number').focus()
+        new Autocomplete('#autocomplete-client', {
+            search: input => {
+                const url = `/hrm/get_person/?search=${encodeURI(input.toUpperCase())}`
+
+                return new Promise(resolve => {
+                    if (input.length < 3) {
+                        $('#person-number').val('')
+                        $('#order-number').val('')
+                        return resolve([])
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.person)
+                        })
+                })
+            },
+            renderResult: (result, props) => {
+                let group = ''
+                if (result.index % 3 === 0) {
+                    group = '<li class="group">Group</li>'
+                }
+                return `
+                ${group}
+                <li ${props}>
+                 <div class="h6">
+                    ${result.names}
+                 </div>
+                 <div class="wiki-snippet text-white">
+                    <i class="icon-user"></i> N° Documento: ${result.number} <i class="icon-phone"></i>  Celular: ${result.phone}  <i class="zmdi zmdi-account-box-mail"></i>  Correo: ${result.email}
+                  </div>
+                </li>
+                `
+            },
+            getResultValue: result => result.names,
+            onSubmit: result => {
+                if (result) {
+                    $.ajax({
+                        url: '/accounting/orders_person/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'pk': result.pk,
+                            'number': ''
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                $('#table-orders').empty().html(response.grid);
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                    $('#person-number').val(result.number)
+                    $('#order-number').val('')
+                }
+            }
+        })
+        $('#person-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#person-number').val();
+                if (number.length === !8 && number.length === !11) {
+                    toastr.warning('Ingrese un documento valido');
+                    return false;
+                }
+                $('#id-loading').css('display', '')
+                $.ajax({
+                    url: '/accounting/orders_person/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'pk': '',
+                        'number': number
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#table-orders').empty().html(response.grid);
+                            $('#person-names').val(response.names)
+                            $('#order-number').val('')
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    fail: function (response) {
+                        toastr.error("error");
+                    }
+                });
+                $('#person-number').val(result.number)
+                $('#order-number').val('')
+            }
+        });
+        $('#order-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#order-number').val();
+                SearchOrderReport(number)
+                {#PaymentModalShow(number)#}
+            }
+        });
+
+        function SearchOrderReport(o) {
+            if (parseInt(o) > 0) {
+                {#console.log("search")#}
+                $.ajax({
+                    url: '/accounting/get_order_by_number/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'order': parseInt(o)
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#table-orders').empty().html(response.grid);
+                        } else {
+                            toastr.warning(response.message);
+                        }
+                        $('#person-number').val('')
+                        $('#person-names').val('')
+                        $('#order-number').val('')
+                    },
+                    fail: function (response) {
+                        toastr.error("error");
+                    }
+                });
+            }
+        }
+
+        function PaymentModal(pk) {
+            $.ajax({
+                url: '/accounting/modal_payment/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (data) {
+                    $('#modal-payment').empty().html(data.grid).modal('show');
+                    setTimeout(() => {
+                        $('#total-paid').focus();
+                        $('#total-paid').select();
+                    }, 700);
+
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+
+        function PaymentModalShow(n) {
+            $.ajax({
+                url: '/accounting/modal_payment_show/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'n': n},
+                success: function (data) {
+                    $('#modal-payment').empty().html(data.grid).modal('show');
+                    setTimeout(() => {
+                        $('#total-paid').focus();
+                        $('#total-paid').select();
+                    }, 700);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+        $(document).on('change', 'tbody#payments_detail tr td.item-type select.value-type', function () {
+            let val = $(this).val();
+            let row = $(this).parent('td.item-type').parent('tr')
+            let object = row.find('td.item-account select.value-account')
+            object.empty()
+            if (val === 'E') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < casing_set.length; i++) {
+                    object.append('<option value="' + casing_set[i][0] + '">' + casing_set[i][1] + '</option>')
+                }
+            } else if (val === 'D') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < bank_set.length; i++) {
+                    object.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>')
+                }
+            } else if (val === 'C') {
+                object.append('<option value="C">Cuota</option>')
+            } else {
+                object.append('<option value="0">Seleccione</option>')
+            }
+
+        });
+        $(document).on('change keyup', 'tbody#payments_detail tr td.item-amount input.value-amount', function () {
+            let val = $(this).val();
+            if (val !== '' || val !== '0' || val !== 0 || isNaN(val) === false) {
+                TotalPayment()
+                let total = $('#sum-payment').val()
+                if (isNaN(total) || total === '') {
+                    total = parseFloat('0.00')
+                } else {
+                    total = parseFloat(total)
+                }
+                let t = total
+                if (t > parseFloat($('#id-debt').val())) {
+                    toastr.warning('El pago no puede superar el monto adeudado')
+                    $(this).val('')
+                    TotalPayment()
+                    return false
+                } else {
+                    TotalPayment()
+                }
+            }
+        });
+        $(document).on('change keyup', 'tbody#payments_detail tr td.item-account select.value-account', function () {
+            let select = $(this)
+            let type = select.parent('td.item-account').prev('td.item-type').find('select.value-type').val()
+            if (type === 'E') {
+                let val = select.val();
+                if (val != '' || val != '0' || val != 0 || isNaN(val) === false) {
+                    $.ajax({
+                        url: '/accounting/validate_casing/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'pk': val},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                            } else {
+                                select.val(0)
+                                toastr.error(response.message)
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error('Error de operación!');
+                        }
+                    });
+                }
+            }
+        });
+
+        function DownloadInvoice(o) {
+            window.open("/accounting/invoice/" + o + "/", '_blank');
+        }
+
+        function CreateGuide(o) {
+            $.ajax({
+                url: '/sales/modal_guide/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': o},
+                success: function (response) {
+                    $('#modal-guide').empty().html(response.grid).modal('show');
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        function DownloadGuide(o) {
+            window.open("/sales/guide/" + o + "/", '_blank');
+        }
+
+        function CancelReceipt(o) {
+            let r = confirm("¿Esta seguro de realizar una anulación?")
+            if (r === true) {
+                $.ajax({
+                    url: '/accounting/cancel_recipe/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': o},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                             console.log(response.detail)
+                            SearchOrderReport(response.number)
+                        } else {
+                            toastr.error(response.message)
+                            console.log(response.detail)
+                        }
+                    },
+                    error: function (response) {
+                        toastr.error('Ocurrio un problema')
+                    }
+                });
+            }
+        }
+        let orderGuideObj = {};
+        function createCreditNote(o) {
+            $.ajax({
+                url: '/accounting/modal_credit_note/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': o},
+                success: function (response) {
+                    $('#modal-credit-note').empty().html(response.grid).modal('show');
+                    orderObj = JSON.parse(response.serialized_obj);
+                    {#console.log(orderObj)#}
+                    orderObj["details"] = response.serialized_detail_set;
+                    orderObj["newTotal"] = 0;
+                    orderObj["newIgv"] = 0;
+                    orderObj["newBase"] = 0;
+                    //detailSet = response.serialized_detail_set;
+                    let base = 0;
+                    let igv = 0;
+                    let total = 0;
+                    if (orderObj["is_igv"]) {  // with igv
+                        total = Number(response.orderTotal);
+                        base = total / 1.18;
+                        igv = total - base;
+                    } else {  // without igv
+                        base = Number(response.orderTotal);
+                        igv = base * 0.18;
+                        total = base + igv;
+                    }
+                    $(`table#table-detail-guide tfoot tr td input.old-igv`).val(igv.toFixed(6));
+                    $(`table#table-detail-guide tfoot tr td input.old-base`).val(base.toFixed(6));
+                    $(`table#table-detail-guide tfoot tr td input.old-total`).val(total.toFixed(6));
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        function DownloadNoteCredit(enlace) {
+            console.log(enlace)
+            window.open(enlace, '_blank');
+        }
+
+        $(document).on('input', '.quantity-returned-credit', function () {
+
+            if (Number($(this).val()) > Number($(this).attr('max-value'))) {
+                alert('Verifique cantidad a devolver');
+                $(this).val("")
+            } else {
+                let pk = $(this).attr('detail-id');
+                let tr = $(`table#table-detail-guide tbody tr[pk=${pk}]`);
+                let findDetailObj = orderObj.details.find((d) => {
+                    return d.detailID === parseInt(pk)
+                });
+                let price = Number(findDetailObj["price"]);
+                let quantityReturned = Number($(this).val());
+                let subtotal = Number(price * quantityReturned).toFixed(6);
+                findDetailObj["quantityReturned"] = Number(quantityReturned);
+                findDetailObj["newSubtotal"] = Number(subtotal);
+                findDetailObj["isCreditNote"] = (quantityReturned > 0);
+                tr.find(`td input.new-subtotal`).val(subtotal);
+            }
+            calculateNewTotalCredit()
+        });
+
+        function calculateNewTotalCredit() {
+            const res = orderObj.details.reduce((acc, item) => {
+                return acc += Number(item.newSubtotal);
+            }, 0);
+
+            let base = 0;
+            let igv = 0;
+            let total = 0;
+            if (orderObj["is_igv"]) {  // with igv
+                total = Number(res);
+                base = total / 1.18;
+                igv = total - base;
+            } else {  // without igv
+                base = Number(res);
+                igv = base * 0.18;
+                total = base + igv;
+            }
+
+            $(`table#table-detail-guide tfoot tr td input.new-base`).val(base.toFixed(6));
+            $(`table#table-detail-guide tfoot tr td input.new-igv`).val(igv.toFixed(6));
+            $(`table#table-detail-guide tfoot tr td input.new-total`).val(total.toFixed(6));
+
+            orderGuideObj["newTotal"] = Number(total.toFixed(6));
+            orderGuideObj["newIgv"] = Number(igv.toFixed(6));
+            orderGuideObj["newBase"] = Number(base.toFixed(6));
+        }
+
+
+    </script>
+{% endblock extrajs %}

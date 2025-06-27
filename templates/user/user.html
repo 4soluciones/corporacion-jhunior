@@ -1,0 +1,224 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Usuario
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        {#        <h5 class="card-header">Perfil Usuario</h5>#}
+        <div class="card-body">
+            <form id="formUser" method="POST" enctype="multipart/form-data" action="{% url 'user:user_save' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col">
+                        <div class="profile-card-2">
+                            <img src="
+
+
+
+
+                                    {% if user_obj.photo.url %}{{ user_obj.photo.url }}{% else %}{% static 'assets/images/img/employee.jpg' %}{% endif %}"
+                                 alt="profile-image" class="profile">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3 col-md-6"></div>
+                    <div class="mb-3 col-md-6">
+                        <label for="state" class="form-label">Numero Documento</label>
+                        <input class="form-control" maxlength="15" type="text" id="document" name="document"
+                               placeholder="Numero Documento" value="{{ user_obj.document }}" required/>
+                        <input type="hidden" class="form-control" id="user" name="user"
+                               value="{% if user_obj.id %}{{ user_obj.id }}{% else %}0{% endif %}">
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="firstName" class="form-label">Nombres</label>
+                        <input
+                                class="form-control"
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value="{{ user_obj.first_name }}"
+                                placeholder="Nombres Usuario"
+                                maxlength="50"
+                                required
+                                autofocus
+                        />
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="lastName" class="form-label">Apellidos</label>
+                        <input class="form-control" type="text" maxlength="50" name="last_name" id="last_name"
+                               value="{{ user_obj.last_name }}" placeholder="Apellidos Usuario" required/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="zipCode" class="form-label">Fecha Nacimiento</label>
+                        <input
+                                type="date"
+                                class="form-control"
+                                id="birth_date"
+                                name="birth_date"
+                                placeholder=""
+                                maxlength="10"
+                                value="{{ user_obj.birth_date|date:'Y-m-d' }}"
+                                required
+                        />
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input
+                                class="form-control"
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ user_obj.email }}"
+                                placeholder="correo@example.com"
+                                required
+                        />
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="phoneNumber">Celular</label>
+                        <div class="position-relative has-icon-left">
+                            <div class="form-control-position">
+                                <i class="icon-phone"></i>
+                            </div>
+                            <input
+                                    type="text"
+                                    id="phone"
+                                    name="phone"
+                                    class="form-control"
+                                    placeholder="950 155256"
+                                    value="{{ user_obj.phone }}"
+                            />
+                        </div>
+                    </div>
+                    {#                    <div class="mb-3 col-md-6">#}
+                    {#                        <label class="form-label" for="country">Genero</label>#}
+                    {#                        <select id="gender" name="gender" class="form-control">#}
+                    {#                            <option value="">Seleccione</option>#}
+                    {#                            {% for g in gender_set %}#}
+                    {#                                {% if user_obj.gender == g.0 %}#}
+                    {#                                    <option selected value="{{ g.0 }}">{{ g.1 }}</option>#}
+                    {#                                {% else %}#}
+                    {#                                    <option value="{{ g.0 }}">{{ g.1 }}</option>#}
+                    {#                                {% endif %}#}
+                    {#                            {% endfor %}#}
+                    {#                        </select>#}
+                    {#                    </div>#}
+                    <div class="mb-3 col-md-6">
+                        <label for="address" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="address" name="address"
+                               placeholder="Dirección de Domicilio" value="{{ user_obj.address }}"/>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="user" class="form-label">Usuario</label>
+                        <div class="position-relative has-icon-left">
+                            <input type="text" id="username" name="username" class="form-control input-shadow"
+                                   placeholder="Ingrese Usuario" value="{{ user_obj.username }}" required
+                                   maxlength="100">
+                            <div class="form-control-position">
+                                <i class="icon-user"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="password" class="form-label">Contraseña de Acceso al Sistema</label>
+                        <div class="position-relative has-icon-right">
+                            <input type="password" id="password" name="password" class="form-control input-shadow"
+                                   placeholder="Contraseña" required maxlength="100">
+                            <div class="form-control-position">
+                                <i class="icon-lock"></i>
+                            </div>
+                        </div>
+                        {#                        <input#}
+                        {#                                type="password"#}
+                        {#                                id="password"#}
+                        {#                                class="form-control"#}
+                        {#                                name="password"#}
+                        {#                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"#}
+                        {#                                aria-describedby="password"#}
+                        {#                                required#}
+                        {#                        />#}
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="country">Sucursal</label>
+                        <select id="subsidiary" name="subsidiary" class="form-control">
+                            <option value="">Seleccione</option>
+                            {% for s in subsidiary_set %}
+                                {% if user_obj.subsidiary.id == s.id %}
+                                    <option selected value="{{ s.id }}">{{ s.name }}</option>
+                                {% else %}
+                                    <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <div class="row">
+                            <div class="col">
+                                <label for="currency" class="form-label">Estado del usuario</label>
+                                <div class="icheck-material-white">
+                                    <input type="checkbox" id="defaultCheck3" name="defaultCheck3"
+                                            {% if user_obj.is_active %}
+                                           checked{% endif %}/>
+                                    <label for="defaultCheck3">Activo</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="form-label" for="country">Cargo Usuario</label>
+                                <select id="type" name="type" class="form-control" {% if user.type != 'A' %} disabled {% endif %}>
+                                    <option value="">Seleccione</option>
+                                    {% for t in type_set %}
+                                        {% if user_obj.type == t.0 %}
+                                            <option selected value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% else %}
+                                            <option value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button type="button" id="btn-save" class="btn btn-light">{% if user_obj.id %}Actualizar
+                        Usuario{% else %}
+                        Registrar Usuario{% endif %}</button>
+                    <a id="btn-close" class="btn btn-light" href="{% url 'user:users' %}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+        <!-- /Account -->
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $('#btn-save').click(function (event) {
+            event.preventDefault();
+            $('#type').removeAttr('disabled');
+            let data = new FormData($('#formUser').get(0));
+            $.ajax({
+                url: $('#formUser').attr('action'),
+                type: $('#formUser').attr('method'),
+                data: data,
+                cache: false,
+                processData: false,
+                contentType: false,
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message)
+                        {#window.location.replace("/user/users/");#}
+                        window.location.href = "/user/users/";
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un error');
+                }
+            });
+        });
+    </script>
+{% endblock extrajs %}

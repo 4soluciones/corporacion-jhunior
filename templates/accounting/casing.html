@@ -1,0 +1,121 @@
+{% load static %}
+<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <form id="formCasing" method="POST" enctype="multipart/form-data"
+          action="{% url 'accounting:casing_save' %}">
+        {% csrf_token %}
+        <div class="modal-content bg-primary">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    {% if casing_obj %}
+                        {% if casing_obj.type == 'C' %}
+                            CAJA:
+                        {% elif casing_obj.type == 'B' %}
+                            CUENTA BANCARIA:
+                        {% endif %}
+                        {{ casing_obj.name }}
+                    {% else %}
+                        NUEVA CAJA/CUENTA
+                    {% endif %}
+                </h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col">
+                                <label for="number" class="form-label">Sucursal</label>
+                                <select class="form-control" id="subsidiary" name="subsidiary" required>
+                                    {% for s in subsidiary_set %}
+                                        {% if s.id == casing_obj.subsidiary.id %}
+                                            <option selected value="{{ s.id }}">{{ s.name }}</option>
+                                        {% else %}
+                                            <option value="{{ s.id }}">{{ s.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col">
+                                <label for="document" class="form-label">Caja/Cuenta</label>
+                                <select class="form-control" id="type" name="type" required>
+                                    {% for t in type_set %}
+                                        {% if t.0 == casing_obj.type %}
+                                            <option selected value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% else %}
+                                            <option value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" class="form-control" id="casing" name="casing"
+                                       value="{% if casing_obj.id %}{{ casing_obj.id }}{% else %}0{% endif %}">
+                            </div>
+                            <div class="form-group col">
+                                <label for="number" class="form-label">Nombre caja/cuenta</label>
+                                <input class="form-control text-uppercase" type="text" maxlength="50" name="name" id="name"
+                                       value="{{ casing_obj.name }}" placeholder="Ingrese Nombre..." required/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col">
+                                <label for="description" class="form-label">Descripción</label>
+                                <textarea id="description" name="description" class="form-control text-uppercase"
+                                          placeholder="Descripción...">{{ casing_obj.description }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col">
+                                <label class="form-label" for="phone">Monto Inicial</label>
+                                <input
+                                        type="number"
+                                        step="0.01"
+                                        id="initial"
+                                        name="initial"
+                                        class="form-control text-right"
+                                        placeholder="S/. 0.00"
+                                        value="{{ casing_obj.initial|safe }}"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button> &nbsp;
+                <button type="submit" class="btn btn-light">{% if casing_obj.id %}
+                    Actualizar{% else %}
+                    Registrar{% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#formCasing').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formCasing').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    toastr.error("Ocurrio un error");
+                }
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un error');
+            }
+        });
+    });
+</script>

@@ -1,0 +1,1345 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Ventas Corporativas
+{% endblock title %}
+
+{% block body %}
+    <div class="row" style="background-color: #33603f">
+        <div class="col-sm-12 col-md-12 p-1">
+            <div class="card">
+                <div class="card-header pr-3 border-0 pb-2">
+                    <div class="row">
+                        <div class="col-md-2 pl-1 pr-1">
+                            <input type="text" class="form-control form-control-rounded"
+                                   id="search-code"
+                                   name="search-code"
+                                   maxlength="4" autocomplete="off"
+                                   placeholder="Codigo Producto"/>
+                        </div>
+                        <div class="col-md-3 pl-1 pr-1">
+                            <div id="autocomplete-product" class="autocomplete text-primary">
+                                <input class="form-control autocomplete-input" id="search-product"
+                                       name="search-product"
+                                       placeholder="Buscar producto"/>
+                                <ul class="autocomplete-result-list"></ul>
+                            </div>
+                        </div>
+                        <div class="col-md-2 pl-1 pr-1">
+                            <div class="form-group m-0">
+                                <button type="button" id="btn-new-window" class="btn btn-light w-100">
+                                    <i class="fa fa-file" aria-hidden="true"></i> Nueva Pestaña
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 pl-1 pr-1 text-center">
+                            <select class="form-control" id="order-type" name="order-type">
+                                {% for t in order_type_set %}
+                                    {% if t.0 != 'C' %}
+                                        {% if t.0 == 'V' %}
+                                            <option selected value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% else %}
+                                            <option value="{{ t.0 }}">{{ t.1 }}</option>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1 pl-1 pr-1">
+                            <input type="hidden" value="" id="id-order" name="id-order">
+                            <input type="text" class="form-control"
+                                   id="search-order"
+                                   name="search-order"
+                                   maxlength="10"
+                                   placeholder="Nº orden"/>
+                        </div>
+                        <div class="col-md-2 pl-1 pr-1 text-center">
+                            <button type="button" class="btn btn-light w-100" id="save-order"><i
+                                    class="icon-badge"></i>
+                                Registrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pl-4 pt-1 pr-4">
+                    <div id="detail-items" class="row tableFixHead">
+                        <table class="table border-0 " style="width: 100%;">
+                            <thead class="w-100">
+                            <tr class="text-center w-100" style="font-size: 9px;">
+                                <th class="p-2" style="width: 3%">AU</th>
+                                <th class="p-2" style="width: 5%">Codigo</th>
+                                <th class="p-2" style="width: 7%">Cantidad</th>
+                                <th class="p-2" style="width: 40%">Descripción</th>
+                                <th class="p-2" style="width: 9%">Stock</th>
+                                <th class="p-2" style="width: 8%">Medidas</th>
+                                <th class="p-2" style="width: 6%">Mayor</th>
+                                <th class="p-2" style="width: 8%">Precio</th>
+                                <th class="p-2" style="width: 8%">Importe</th>
+                                <th class="p-2" style="width: 6%"><i class='icon-close'></i></th>
+                            </tr>
+                            </thead>
+                            <tbody id="order-detail" style="font-size: 11px">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer pr-3 pt-1">
+                    <div class="row">
+                        <div class="col-md-8 pr-2 pl-2">
+                            <div class="row">
+                                <div class="col-md-4 p-1">
+                                    <input type="hidden" value="" id="person-pk" name="person-pk">
+                                    <input
+                                            type="text"
+                                            class="form-control"
+                                            id="person-number"
+                                            name="person-number"
+                                            maxlength="15"
+                                            placeholder="Numero documento"
+                                    />
+                                </div>
+                                <div class="col-md-8 p-1"><input class="form-control"
+                                                                 type="text"
+                                                                 id="person-names"
+                                                                 name="person-names"
+                                                                 maxlength="200"
+                                                                 placeholder="Nombres y Apellidos"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 p-1">
+                                    <select class="form-control" id="doc" name="doc">
+                                        {% for d in doc_set %}
+                                            <option value="{{ d.0 }}">{{ d.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-8 p-1">
+                                    <input
+                                            type="text"
+                                            class="form-control text-uppercase"
+                                            id="person-address"
+                                            name="person-address"
+                                            maxlength="200"
+                                            placeholder="Direccion cliente"
+                                    />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 p-1">
+                                    {#                                    <label for="license_plate" class="mb-1">PLACA</label>#}
+                                    <input type="text" class="form-control text-uppercase" value="" placeholder="PLACA"
+                                           id="license_plate">
+                                </div>
+                                <div class="col-md-3 p-1">
+                                    <div class="form-group m-0">
+                                        <button type="button" id="btn-refresh" class="btn btn-light w-100"
+                                                style="background-color: #7696778a">
+                                            <i class="fa fa-refresh" aria-hidden="true"></i> Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 p-1">
+                                    <div class="form-group m-0">
+                                        <button type="button" id="btn-window" class="btn btn-light w-100"><i
+                                                class="icon-printer"></i> Ventanilla
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 p-1">
+                                    <div class="form-group m-0">
+                                        <button type="button" id="btn-logistics" class="btn btn-light w-100"><i
+                                                class="icon-printer"></i> Logistica
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 pr-2 pl-2">
+                            <div class="form-group mb-2 row">
+                                <label class="col-md-5 col-form-label form-control-label">SubTotal</label>
+                                <div class="col-md-7">
+                                    <input type="text" id="total-amount"
+                                           name="total-amount"
+                                           class="form-control text-right font-weight-bold"
+                                           placeholder="S/. 0.00"
+                                           disabled>
+                                </div>
+                            </div>
+                            <div class="form-group mb-2 row">
+                                <label class="col-md-5 col-form-label form-control-label">Descuento</label>
+                                <div class="col-md-7">
+                                    <input type="text" id="total-discount"
+                                           name="total-discount"
+                                           class="form-control text-right font-weight-bold"
+                                           placeholder="S/. 0.00"
+                                           disabled>
+                                </div>
+                            </div>
+                            <div class="form-group mb-2 row">
+                                <label class="col-md-5 col-form-label form-control-label">Total</label>
+                                <div class="col-md-7">
+                                    <input type="text" id="total"
+                                           name="total"
+                                           class="form-control text-right font-weight-bold"
+                                           placeholder="S/. 0.00"
+                                           disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        table {
+            width: 100%;
+        }
+
+        thead, tbody, tr, td, th {
+            display: block;
+        }
+
+        tr:after {
+            content: ' ';
+            display: block;
+            visibility: hidden;
+            clear: both;
+        }
+
+        thead th {
+            height: 30px;
+
+            /*text-align: left;*/
+        }
+
+        tbody {
+            height: 320px;
+            overflow-y: auto;
+        }
+
+        thead {
+            /* fallback */
+        }
+
+
+        tbody td, thead th {
+            width: 19.2%;
+            float: left;
+        }
+    </style>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        let old_timestamp = null
+
+        $(document).on('click', '#save-order', function (e) {
+            if (old_timestamp == null || old_timestamp + 2000 < e.timeStamp) {
+                let _save = CreateOrder();
+                if (_save !== false) {
+                    old_timestamp = e.timeStamp;
+                }
+            }
+        });
+
+
+        var socket;
+        //console.log(firebaseConfig)
+        const juniorRef = firebase.database().ref('printers/Junior');
+
+        new Autocomplete('#autocomplete-product', {
+            search: input => {
+                const url = `/sales/search_product/?search=${encodeURI(input.toUpperCase())}`
+
+                return new Promise(resolve => {
+                    if (input.length < 3) {
+                        $('#search-code').val('')
+                        return resolve([])
+                    }
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.product)
+                        })
+                })
+            },
+            renderResult: (result, props) => {
+                let group = ''
+                if (result.index % 3 === 0) {
+                    group = '<li class="group">Group</li>'
+                }
+                return `
+                ${group}
+                <li ${props} class="font-weight-bold">
+                 <div class="text-white-50" style="font-size: 13px">
+                    ${'<i class="spinner-grow"></i>'} ${result.name}
+                 </div>
+                 <div class="text-white-50">
+                    CODIGO: ${result.code}   MEDIDA: ${result.measure} <b class="text-white"> STOCK = ${result.stock} UNIDADES </b>
+                  </div>
+                </li>
+                `
+            },
+            getResultValue: result => result.name,
+            onSubmit: result => {
+                if (result) {
+                    $.ajax({
+                        url: '/sales/get_products/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'code': result.code
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                let p = response['product'];
+                                for (let i = 0; i < p.length; i++) {
+                                    if (i === 0) {
+                                        let d = ValidateCode(p[i].id)
+                                    } else {
+                                    }
+                                    //console.log(p[i].id)
+                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m)
+                                }
+                                Focus()
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                    {#AddRowOrder(0, result.pk, result.code, result.name, result.measure)#}
+                    $('#search-product').val('')
+                    $('#search-code').val('')
+                }
+            }
+        })
+
+        function ValidateCode(pk) {
+            let state = true
+            if ($("tbody#order-detail tr[product=" + pk + "]").length) {
+                toastr.warning('El producto ya se encuentra agregado');
+                state = false
+                return state;
+            }
+        }
+
+        {#new Autocomplete('#autocomplete-client', {#}
+        {#    search: input => {#}
+        {#        const url = `/hrm/get_person/?search=${encodeURI(input.toUpperCase())}`#}
+        {##}
+        {#        return new Promise(resolve => {#}
+        {#            if (input.length < 3) {#}
+        {#                $('#person-pk').val('')#}
+        {#$('#person-document').val('1')#}
+        {#                $('#person-number').val('')#}
+        {#$('#person-email').val('')#}
+        {#$('#person-phone').val('')#}
+        {#                $('#person-address').val('')#}
+        {#                return resolve([])#}
+        {#            }#}
+        {#            fetch(url)#}
+        {#                .then(response => response.json())#}
+        {#                .then(data => {#}
+        {#                    resolve(data.person)#}
+        {#                })#}
+        {#        })#}
+        {#    },#}
+        {#    renderResult: (result, props) => {#}
+        {#        let group = ''#}
+        {#        if (result.index % 3 === 0) {#}
+        {#            group = '<li class="group">Group</li>'#}
+        {#        }#}
+        {#        return `#}
+        {#        ${group}#}
+        {#        <li ${props}>#}
+        {#         <div class="h6">#}
+        {#            ${result.names}#}
+        {#         </div>#}
+        {#         <div class="wiki-snippet text-white">#}
+        {#            Documento: ${result.number} <br>  Celular: ${result.phone} <br>   Correo: ${result.email}#}
+        {#          </div>#}
+        {#        </li>#}
+        {#        `#}
+        {#    },#}
+        {#    getResultValue: result => result.names,#}
+        {#    onSubmit: result => {#}
+        {#        if (result) {#}
+        {#            $('#person-pk').val(result.pk)#}
+        {#            $('#person-document').val(result.document)#}
+        {#            $('#person-number').val(result.number)#}
+        {#$('#person-phone').val(result.phone)#}
+        {#$('#person-email').val(result.email)#}
+        {#            $('#person-address').val(result.address)#}
+        {#        }#}
+        {#    }#}
+        {# })#}
+
+        function AddRowOrder(i, pk, product, code, name, measure, y, m, order, stock) {
+            $('tbody#order-detail').append(
+                '<tr class="p-0" product="' + product + '" pk="' + pk + '" unit="0" niu="0" i="' + i + '" q="0" y="' + y + '" order="' + 0 + '" "style="width: 100%">' +
+                '<td  class="align-middle item-authorization p-1 text-center" style="width: 3%">' +
+                {#'   <div class="icheck-material-warning m-0">' +#}
+                '       <input type="checkbox" class="form-control small" id="' + i + '">' +
+                {#'       <label for="' + i + '">' + i + '</label>' +#}
+                {#'   </div>' +#}
+                '</td>' +
+                '<td class="align-middle item-code pt-3 text-center" style="width: 5%" >' + code + '</td>' +
+                '<td class="align-middle item-quantity p-1 text-center" style="width: 7%">' + '<input type="text" placeholder="0.00" class="form-control value-quantity" value=""/>' + '</td>' +
+                '<td class="align-middle item-description p-1 text-justify" style="width: 40%; white-space: normal; word-wrap: break-word">' + '<p>' + name + '</p>' + '</td>' +
+                '<td class="align-middle item-stock p-1 text-center" style="width: 9%">' + stock + '</td>' +
+                '<td class="align-middle item-measure p-1 text-center" style="width: 8%">' + measure + '</td>' +
+                '<td class="align-middle item-elderly p-1 text-right" style="width: 6%">' + parseFloat(m).toFixed(4) + '</td>' +
+                '<td class="align-middle item-price p-1 text-right" style="width: 8%">' + parseFloat('0.00').toFixed(4) + '</td>' +
+                '<td class="align-middle item-amount p-1 text-right" style="width: 8%">' + parseFloat('0.00').toFixed(4) + '</td>' +
+                '<td class="align-middle item-delete p-1 text-center" style="width: 6%" >' +
+                '    <button type="button" class="btn btn-light btn-round">' + '<i class="icon-trash">' + '</i>' + '</button>' +
+                '</td>' +
+                '</tr>'
+            );
+            CountRow();
+            TotalOrder();
+        }
+
+        function Focus() {
+            $('tbody#order-detail tr td.item-quantity input').each(function () {
+                let tr = $(this).parent('td.item-quantity').parent('tr')
+                if ($(this).val() == '') {
+                    $(this).focus()
+                    return false
+                }
+            })
+        }
+
+        $(document).on('keypress', 'tbody#order-detail tr td.item-quantity input', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($(this).val() === '') {
+                    toastr.warning('Ingrese una cantidad')
+                    return false;
+                } else {
+                    let tr = $(this).parent('td.item-quantity').parent('tr')
+                    let valor = $(this).val();
+                    getPrices(valor, tr)
+                    let tr_next = tr.next()
+                    if (tr_next.length) {
+                        let _val = tr_next.find('td.item-quantity input').val()
+                        let _order = tr.attr("order")
+                        let _Y = tr.attr("Y")
+                        {#console.log("_val", _val)#}
+                        {#console.log("_order", _order)#}
+                        let _next_tr_y = tr_next.attr("y");
+                        if (_next_tr_y === '1') {
+                            tr_next.find('td.item-quantity input').val($(this).val())
+                            tr_next.find('td.item-quantity input').focus()
+                        } else {
+                            tr_next.find('td.item-quantity input').focus()
+                            tr_next.find('td.item-quantity input').select()
+                        }
+
+                        /*if (_order !== "0") {
+
+                        } else {
+                            let _next_tr_y = tr_next.attr("y");
+                            if (_next_tr_y === '1') {
+                                tr_next.find('td.item-quantity input').val($(this).val())
+                                tr_next.find('td.item-quantity input').focus()
+                            } else {
+                                tr_next.find('td.item-quantity input').focus()
+                                tr_next.find('td.item-quantity input').select()
+                            }
+                        }*/
+
+                    } else {
+                        $('#search-code').focus()
+                    }
+
+                }
+            }
+        });
+
+        function CountRow() {
+            let index = 1;
+            $('tbody#order-detail tr').each(function () {
+                {#$(this).find('td.item-authorization div input').attr('id', index)#}
+                $(this).find('td.item-authorization input').attr('id', index)
+                {#$(this).find('td.item-authorization div label').attr('for', index)#}
+                {#$(this).find('td.item-authorization div label').text(index)#}
+                $(this).attr('i', index);
+                let pk = $(this).attr('pk');
+                let product = $(this).attr('product');
+                $(this).find('td.item-delete button').attr('onclick', 'DeleteRowOrder(' + index + ', ' + pk + ', ' + product + ')')
+                index++;
+            });
+        };
+
+        function DeleteRowOrder(i, pk, product) {
+            let rows = $('tbody#order-detail').find("tr[i=" + i + "][pk=" + pk + "][product=" + product + "]")
+            if (parseInt(pk) != 0) {
+                let order = $('#id-order').val()
+                if (order != '') {
+                    let r = confirm("¿Esta seguro de eliminar la fila?")
+                    if (r === true) {
+                        $.ajax({
+                            url: '/sales/delete_order_detail/',
+                            async: true,
+                            dataType: 'json',
+                            type: 'GET',
+                            data: {'pk': pk},
+                            success: function (response) {
+                                if (response.success) {
+                                    rows.remove();
+                                    CountRow();
+                                    TotalOrder();
+                                    toastr.success(response.message)
+                                } else {
+                                    toastr.error(response.message)
+                                }
+                            },
+                        });
+                    }
+                } else {
+                    toastr.error('Necesita buscar una orden')
+                }
+            } else {
+                rows.remove();
+                CountRow();
+                TotalOrder();
+            }
+        }
+
+        function TotalOrder() {
+            let amount = 0;
+            let discount = $('#total-discount').val()
+            $('tbody#order-detail tr td.item-amount').each(function () {
+                amount = amount + parseFloat($(this).text());
+            });
+            if (discount === "" || isNaN(discount)) {
+                discount = 0
+            } else {
+                discount = parseFloat(discount)
+            }
+            let total = amount - discount
+            $('#total-amount').val(amount.toFixed(4));
+            $('#total').val(total.toFixed(4));
+        }
+
+        function getPrices(valor, tr) {
+            var typingTimer = 500;
+            var doneTypingInterval = 500;
+            let check = tr.find('td.item-authorization input')
+            let product = tr.attr("product")
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(function () {
+                if (valor !== "" && parseInt(product) > 0 && parseFloat(valor) > 0) {
+                    if (!ajaxRequestSent) {
+                        ajaxRequestSent = true;
+                        $.ajax({
+                            url: '/sales/get_prices/',
+                            async: true,
+                            dataType: 'json',
+                            type: 'GET',
+                            data: {
+                                'quantity': valor,
+                                'product': product,
+                                'state': (check.is(':checked')) ? 1 : 0,
+                                'y': tr.attr('y'),
+                                'q': tr.attr('q'),
+                                'pk': tr.attr('pk'),
+                                'is_corporate': '1'
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    {#console.log("cantidad", valor)#}
+                                    {#console.log("precio", response.price)#}
+                                    {#console.log("monto", response.amount)#}
+                                    {#console.log("----------------------")#}
+                                    {#toastr.success(response.message)#}
+                                    tr.find("td.item-price").text(parseFloat(response.price).toFixed(4))
+                                    tr.find("td.item-amount").text(parseFloat(response.amount).toFixed(4))
+                                    tr.attr('unit', response.unit)
+                                    tr.attr('niu', response.niu)
+                                    TotalOrder();
+                                } else if ($('#order-type').val() === 'V') {
+                                    toastr.warning(response.message)
+                                    tr.find('td.item-quantity input.value-quantity').val('')
+                                    tr.find('td.item-quantity input.value-quantity').trigger('change')
+                                    tr.find('td.item-quantity input.value-quantity').focus()
+                                }
+                                ajaxRequestSent = false;
+                            },
+                        });
+                    }
+
+
+                } else {
+                    tr.find("td.item-price").text(parseFloat('0.00').toFixed(4))
+                    tr.find("td.item-amount").text(parseFloat('0.00').toFixed(4))
+                    TotalOrder();
+                }
+            }, doneTypingInterval);
+        }
+
+        var ajaxRequestSent = false;
+        /*$(document).on('change keyup', 'tbody#order-detail tr td.item-quantity input', function () {
+            var typingTimer = 500;
+            var doneTypingInterval = 500;
+            let valor = $(this).val();
+            let tr = $(this).parent("td.item-quantity").parent("tr")
+            {#let check = tr.find('td.item-authorization div.icheck-material-warning input')#}
+            let check = tr.find('td.item-authorization input')
+            let product = tr.attr("product")
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(function () {
+                if (valor !== "" && parseInt(product) > 0 && parseFloat(valor) > 0) {
+                    if (!ajaxRequestSent) {
+                        ajaxRequestSent = true;
+                        $.ajax({
+                            url: '/sales/get_prices/',
+                            async: true,
+                            dataType: 'json',
+                            type: 'GET',
+                            data: {
+                                'quantity': valor,
+                                'product': product,
+                                'state': (check.is(':checked')) ? 1 : 0,
+                                'y': tr.attr('y'),
+                                'q': tr.attr('q'),
+                                'pk': tr.attr('pk'),
+                                'is_corporate': '1'
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    {#console.log("cantidad", valor)#}
+                                    {#console.log("precio", response.price)#}
+                                    {#console.log("monto", response.amount)#}
+                                    {#console.log("----------------------")#}
+                                    {#toastr.success(response.message)#}
+                                    tr.find("td.item-price").text(parseFloat(response.price).toFixed(4))
+                                    tr.find("td.item-amount").text(parseFloat(response.amount).toFixed(4))
+                                    tr.attr('unit', response.unit)
+                                    tr.attr('niu', response.niu)
+                                    TotalOrder();
+                                } else if ($('#order-type').val() === 'V') {
+                                    toastr.warning(response.message)
+                                    tr.find('td.item-quantity input.value-quantity').val('')
+                                    tr.find('td.item-quantity input.value-quantity').trigger('change')
+                                }
+                                ajaxRequestSent = false;
+                            },
+                        });
+                    }
+
+
+                } else {
+                    tr.find("td.item-price").text(parseFloat('0.00').toFixed(4))
+                    tr.find("td.item-amount").text(parseFloat('0.00').toFixed(4))
+                    TotalOrder();
+                }
+            }, doneTypingInterval);
+        })*/
+
+        $(":input#total-discount").on("keyup change", function (e) {
+            let val = $(this).val();
+            if (isNaN(val)) {
+                $(this).val(parseFloat('0.00').toFixed(4));
+            } else {
+                TotalOrder();
+            }
+        })
+        $('#search-code').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let code = $('#search-code').val();
+                if (code.length > 0) {
+                    $.ajax({
+                        url: '/sales/get_products/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {
+                            'code': code,
+                            'is_corporate': '1'
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                let p = response['product'];
+                                //console.log(p)
+                                for (let i = 0; i < p.length; i++) {
+                                    if (i === 0 && p.length > 1) {
+                                        let s = ValidateCode(p[i].id)
+                                        if (s == false) {
+                                            break
+                                        }
+                                    }
+                                    //console.log("p[i].id", p[i].id)
+                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m, order = "", p[i].stock)
+                                }
+                                Focus()
+                                $('#search-code').val('')
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error("error");
+                        }
+                    });
+                } else {
+                    $('#person-number').focus()
+                }
+            }
+        });
+
+
+        $('#person-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#person-number').val();
+                let document = 1
+                if (number.length === 8) {
+                    document = 1
+                } else if (number.length === 11) {
+                    document = 6
+                } else if (number === '0') {
+                    document = 1
+                } else if (number === '') {
+                    document = 0
+                    $('#person-names').focus()
+                    $('#person-pk').val('')
+                    $('#doc').val(0)
+                    return false
+                } else if (number === '1') {
+                    document = 1
+                }
+                $.ajax({
+                    url: '/sales/get_person_by_document/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'number': number,
+                        'document': document,
+                        'type': 'C'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            {#toastr.success(response.message);#}
+                            $("#person-pk").val(response.id);
+                            $("#person-names").val(response.names);
+                            {#$("#person-phone").val(response.phone);#}
+                            {#$("#person-email").val(response.email);#}
+                            $("#person-address").val(response.address);
+                            $('#person-names').focus()
+                            if (document == 1) {
+                                $('#doc').val(2)
+                            } else if (document == 6) {
+                                $('#doc').val(1)
+                            }
+
+                        } else {
+                            toastr.error(response.message)
+                        }
+                        {#$('#id-loading').css('display', 'none')#}
+                    },
+                    fail: function (response) {
+                        toastr.error('Ocurrio un problema en el proceso')
+                    }
+                });
+            }
+        });
+
+        async function printSocket($data) {
+
+            socket = await new WebSocket("ws://localhost:5000/ws");
+            socket.onopen = async function (data) {
+                console.log("Socket connected");
+                await socket.send($data);
+                await socket.close();
+            };
+            socket.onmessage = function (data) {
+                console.log("Socket message received: " + data.data);
+            };
+            socket.onclose = function (data) {
+                console.log("Socket closed");
+            };
+        }
+
+        function CreateOrder() {
+            let order_type = $('#order-type').val()
+            if (order_type === 'V') {
+                let doc = $('#doc').val()
+                let discount = $('#total-discount').val()
+                if ($('#total-discount').val() === '' || isNaN($('#total-discount').val())) {
+                    discount = 0
+                }
+                let total = $('#total').val()
+                if ($('#total').val() === '' || isNaN($('#total').val())) {
+                    total = 0
+                }
+                let text = ($('#order-type option:selected').text()).toString()
+
+                if (order_type != 'V' && doc != '0') {
+                    toastr.warning('UNA ' + text + ' NO PUEDE CONTENER COMPROBANTE ELECTRONICO!')
+                    return false
+                }
+                if ($('tbody#order-detail tr').length <= 0) {
+                    toastr.warning('Ingrese almenos un detalle')
+                    return false
+                }
+                let Order = {
+                    "Detail": [],
+                    "type": order_type,
+                    "document": doc,
+                    "order-pk": $('#id-order').val(),
+                    "person": $('#person-pk').val(),
+                    "total": parseFloat(total).toFixed(4),
+                    "total_discount": parseFloat(discount).toFixed(4),
+                    "license_plate": $('#license_plate').val()
+                };
+                let status = true
+                $("tbody#order-detail tr").each(function () {
+                    let row = $(this)
+                    let pk = row.attr('pk')
+                    let i = row.attr('i')
+                    let q = row.attr('q')
+                    let product = row.attr('product')
+                    if (product === '0' || product === '') {
+                        toastr.info('Producto desconocido en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let quantity = row.find('td.item-quantity input').val()
+                    if (parseFloat(quantity) === 0 || quantity === '') {
+                        toastr.info('Ingrese una cantidad en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let unit = row.attr('unit')
+                    if (unit === '0' || unit === '') {
+                        toastr.info('Unidad desconocida en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let niu = row.attr('niu')
+                    if (niu === '0' || niu === '') {
+                        toastr.info('Unidad unitaria desconocida en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let price = row.find('td.item-price').text()
+                    if (parseFloat(price) === 0 || price === '') {
+                        toastr.info('Ingrese un precio en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let OrderDetail = {
+                        "detail": pk,
+                        "unit": unit,
+                        "product": product,
+                        "niu": niu,
+                        "quantity": parseFloat(quantity).toFixed(4),
+                        "q": parseInt(q),
+                        "price": parseFloat(price).toFixed(4)
+                    };
+                    Order.Detail.push(OrderDetail);
+                })
+                if (!status) {
+                    return false
+                }
+                let r = confirm('¿ESTA SEGURO DE PROCESAR LA ' + text + '?');
+                if (r === true) {
+                    $.ajax({
+                        url: '/sales/order_save/',
+                        dataType: 'json',
+                        type: 'POST',
+                        data: {'order': JSON.stringify(Order)},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                                //empty()
+                                let codeText = response.number + ' ' + 'V';
+
+                                window.open("/sales/ticket/" + response.number + "/", '_blank');
+
+                                printSocket(codeText);
+                                $('#btn-logistics').removeAttr("disabled");
+                                $('#btn-logistics').attr('onclick', 'DownloadLogistic(' + response.number + ')');
+                                $('#search-order').val(response.number);
+                                $('#id-order').val(response.order);
+                                giveEnterKey();
+                                //window.print()
+                                //sendFirebase(codeText, response.hatch, 1)
+                                //sendFirebasePrint(response.number, response.hatch)
+
+                            } else {
+                                toastr.error(response.message)
+                            }
+                            $('#search-code').focus()
+                        },
+                        error: function (jqXhr, textStatus, xhr) {
+                            if (jqXhr.status === 500) {
+                                toastr.error(jqXhr.responseJSON.error, '¡Inconcebible!');
+                            }
+                        }
+                    });
+                }
+            } else if (order_type === 'T') {
+                let doc = $('#doc').val()
+                let discount = $('#total-discount').val()
+                if ($('#total-discount').val() === '' || isNaN($('#total-discount').val())) {
+                    discount = 0
+                }
+                let total = $('#total').val()
+                if ($('#total').val() === '' || isNaN($('#total').val())) {
+                    total = 0
+                }
+                let text = ($('#order-type option:selected').text()).toString()
+
+                if (order_type !== 'V' && doc !== '0') {
+                    toastr.warning('UNA ' + text + ' NO PUEDE CONTENER COMPROBANTE ELECTRONICO!')
+                    return false
+                }
+                if ($('tbody#order-detail tr').length <= 0) {
+                    toastr.warning('Ingrese almenos un detalle')
+                    return false
+                }
+                let Order = {
+                    "Detail": [],
+                    "type": order_type,
+                    "document": doc,
+                    "order-pk": $('#id-order').val(),
+                    "person": $('#person-pk').val(),
+                    "total": parseFloat(total).toFixed(4),
+                    "total_discount": parseFloat(discount).toFixed(4),
+                    "license_plate": $('#license_plate').val()
+                };
+                let status = true
+                $("tbody#order-detail tr").each(function () {
+                    let row = $(this)
+                    let pk = row.attr('pk')
+                    let i = row.attr('i')
+                    let q = row.attr('q')
+                    let product = row.attr('product')
+                    if (product === '0' || product === '') {
+                        toastr.info('Producto desconocido en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let quantity = row.find('td.item-quantity input').val()
+                    if (parseFloat(quantity) === 0 || quantity === '') {
+                        toastr.info('Ingrese una cantidad en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let unit = row.attr('unit')
+                    if (unit === '0' || unit === '') {
+                        toastr.info('Unidad desconocida en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let niu = row.attr('niu')
+                    if (niu === '0' || niu === '') {
+                        toastr.info('Unidad unitaria desconocida en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let price = row.find('td.item-price').text()
+                    if (parseFloat(price) === 0 || price === '') {
+                        toastr.info('Ingrese un precio en la fila ' + i.toString())
+                        status = false
+                        return status
+                    }
+                    let OrderDetail = {
+                        "detail": pk,
+                        "unit": unit,
+                        "product": product,
+                        "niu": niu,
+                        "quantity": parseFloat(quantity).toFixed(4),
+                        "q": parseInt(q),
+                        "price": parseFloat(price).toFixed(4)
+                    };
+                    Order.Detail.push(OrderDetail);
+                })
+                if (!status) {
+                    return false
+                }
+                let r = confirm('¿ESTA SEGURO DE PROCESAR LA ' + text + '?');
+                if (r === true) {
+                    $.ajax({
+                        url: '/sales/quotation_save/',
+                        dataType: 'json',
+                        type: 'POST',
+                        data: {'order': JSON.stringify(Order)},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                                //empty()
+                                let codeText = response.number + ' ' + 'V';
+
+                                window.open("/sales/quotation/" + response.number + "/", '_blank');
+
+                                printSocket(codeText);
+
+                                $('#search-order').val(response.number);
+                                $('#id-order').val(response.order);
+                                giveEnterKey();
+                                //window.print()
+                                //sendFirebase(codeText, response.hatch, 1)
+                                //sendFirebasePrint(response.number, response.hatch)
+
+                            } else {
+                                toastr.error(response.message)
+                            }
+                            $('#search-code').focus()
+                        },
+                        error: function (jqXhr, textStatus, xhr) {
+                            if (jqXhr.status === 500) {
+                                toastr.error(jqXhr.responseJSON.error, '¡Inconcebible!');
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        function sendFirebase(codeText, userOffice, userPrinter) {
+            firebase.database().ref(`printers/Junior/1/${userOffice}/${userPrinter}/order`).set(codeText);
+        }
+
+        function sendFirebasePrint(codeText, userOffice) {
+            firebase.database().ref(`printers/Junior/1/V/${userOffice}/`).set(codeText);
+        }
+
+        function empty() {
+            $('#search-code').val('')
+            $('#search-product').val('')
+            $('#id-order').val('')
+            $('#search-order').val('')
+            $('#person-number').val('')
+            $('#person-names').val('')
+            $('#person-address').val('')
+            {#$('#person-email').val('')#}
+            {#$('#person-phone').val('')#}
+            $('#license_plate').val('')
+            $('#doc').val(0)
+
+            $("tbody#order-detail").empty()
+            $('#total-discount').val('')
+            $('#total').val('')
+            $('#total-amount').val('')
+            $('#btn-window').attr('onclick', '')
+            $('#btn-logistics').attr('onclick', '')
+
+        }
+
+        function giveEnterKey() {
+            let type = $('#order-type').val();
+            if (type === '0' || type === '') {
+                toastr.warning('Elija el tipo de documento que desea buscar')
+                return false
+            }
+            let order = $('#search-order').val();
+            $('tbody#order-detail').empty();
+            if (parseInt(order) > 0) {
+                $.ajax({
+                    url: '/sales/get_order/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {
+                        'number': order,
+                        'type': type,
+                        'type_name': $('#order-type option:selected').text()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $("#order-detail").empty();
+                            {#$('#order-type').val(response.type)#}
+                            $('#id-order').val(response.pk)
+                            $('#person-pk').val(response.person)
+                            $('#license_plate').val(response.license_plate)
+                            $('#doc').val(response.doc)
+                            {#$('#person-document').val(response.person_document)#}
+                            {#$('#person-document').trigger('change')#}
+                            $('#person-number').val(response.person_number)
+                            $('#person-names').val(response.person_names)
+                            $('#person-address').val(response.person_address)
+                            {#$('#person-email').val(response.person_email)#}
+                            {#$('#person-phone').val(response.person_phone)#}
+                            AddRow(response['detail'])
+                            $('#total-discount').val(parseFloat(response.discount).toFixed(4))
+                            $('#total-discount').trigger('change')
+                            $('#btn-window').attr('onclick', 'DownloadTicket(' + order + ')')
+                            $('#btn-logistics').attr('onclick', 'DownloadLogistic(' + order + ')')
+                        } else {
+                            toastr.warning(response.message);
+                        }
+                    },
+                    fail: function (response) {
+                        toastr.error("error");
+                    }
+                });
+            } else {
+                toastr.warning('Ingrese el numero de ' + $('#order-type option:selected').text() + ' correctamente');
+                return false;
+            }
+        }
+
+        $('#search-order').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                giveEnterKey()
+
+            }
+        });
+
+        async function AddRow(Detail) {
+            for (let i = 0; i < Detail.length; i++) {
+                await AddRowOrderSearch(i + 1, Detail[i].id, Detail[i].code, Detail[i].product, Detail[i].description, Detail[i].measure, Detail[i].unit, Detail[i].quantity, Detail[i].price, Detail[i].quantity_niu, Detail[i].m, Detail[i].y, Detail[i].order_id, Detail[i].stock)
+            }
+        }
+
+        function AddRowOrderSearch(i, pk, code, product, product_name, measure, unit, quantity, price, quantity_niu, m, y, order_id, stock) {
+            let q_u = parseFloat(quantity_niu / quantity)
+            let amount = parseFloat(quantity) * parseFloat(price)
+            $('tbody#order-detail').append(
+                '<tr class="p-0" product="' + product + '" pk="' + pk + '" unit="' + unit + '" niu="' + q_u + '" i="' + i + '" q="' + quantity_niu + '" y="' + y + '" order="' + order_id + '"  style="width: 100%">' +
+                '<td class="align-middle item-authorization p-1 text-center" style="width: 3%">' +
+                {#'   <div class="icheck-material-warning m-0">' +#}
+                '       <input type="checkbox" class="form-control small" id="' + i + '">' +
+                {#'       <label for="' + i + '">' + i + '</label>' +#}
+                {#'   </div>' +#}
+                '</td>' +
+                '<td class="align-middle item-code p-1 text-center" style="width: 5%">' + code + '</td>' +
+                '<td class="align-middle item-quantity p-1 text-center" style="width: 7%">' + '<input type="text" placeholder="0.00" class="form-control value-quantity" value="' + parseFloat(quantity) + '"/>' + '</td>' +
+                '<td class="align-middle item-description p-1 text-justify" style="width: 40%; white-space: normal; word-wrap: break-word">' + product_name + '</td>' +
+                '<td class="align-middle item-stock p-1 text-center" style="width: 9%">' + stock + '</td>' +
+                '<td class="align-middle item-measure p-1 text-center" style="width: 8%">' + measure + '</td>' +
+                '<td class="align-middle item-elderly p-1 text-right" style="width: 6%">' + parseFloat(m).toFixed(4) + '</td>' +
+                '<td class="align-middle item-price p-1 text-right" style="width: 8%">' + parseFloat(price).toFixed(4) + '</td>' +
+                '<td class="align-middle item-amount p-1 text-right" style="width: 8%">' + parseFloat(amount).toFixed(4) + '</td>' +
+                '<td class="align-middle item-delete p-1 text-center" style="width: 6%">' +
+                '    <button type="button" class="btn btn-light btn-round">' + '<i class="icon-trash">' + '</i>' + '</button>' +
+                '</td>' +
+                '</tr>'
+            );
+            CountRow();
+            TotalOrder();
+        }
+
+        $('#person-address').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                UpdateClient($('#person-address').val());
+                $('#license_plate').focus()
+            }
+        });
+        $('#person-names').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                if ($('#person-number').val() === '1') {
+                    UpdateClient($('#person-names').val());
+                } else if ($('#person-number').val() === '') {
+                    InsertClient($('#person-names').val())
+                }
+                $('#person-address').focus()
+            }
+        });
+        $('#license_plate').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+
+                if (old_timestamp == null || old_timestamp + 2000 < e.timeStamp) {
+                    let _save = CreateOrder();
+                    if (_save !== false) {
+                        old_timestamp = e.timeStamp;
+                    }
+                }
+
+
+            }
+        });
+
+        function UpdateClient(value) {
+            if (value === '') {
+                $('#license_plate').focus()
+                return false;
+            }
+            if ($('#person-pk').val() === '' || $('#person-pk').val() === '0') {
+                toastr.warning('No existe ningun cliente seleccionado');
+                return false;
+            }
+            if ($('#person-number').val() === '') {
+                toastr.warning('Ingrese el numero de documento');
+                return false;
+            }
+            if ($('#person-names').val() === '') {
+                toastr.warning('Ingrese el nombre/razon social correctamente');
+                return false;
+            }
+            {#if ($('#person-document').val() === '6' && $("#person-address").val() === '') {#}
+            {#    toastr.warning('Ingrese la direccion correctamente');#}
+            {#    return false;#}
+            {# }#}
+
+
+            $.ajax({
+                url: '/hrm/update_person/',
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    'pk': $('#person-pk').val(),
+                    'number': $('#person-number').val(),
+                    'names': $("#person-names").val(),
+                    'address': $("#person-address").val(),
+                    'phone': '',
+                    'email': '',
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio problemas en el proceso')
+                }
+            });
+        }
+
+        function InsertClient(value) {
+            if (value === '') {
+                $('#license_plate').focus()
+                return false;
+            }
+            {#if ($('#person-pk').val() === '' || $('#person-pk').val() === '0') {#}
+            {#    toastr.warning('No existe ningun cliente seleccionado');#}
+            {#    return false;#}
+            {# }#}
+            {#if ($('#person-number').val() === '') {#}
+            {#    toastr.warning('Ingrese el numero de documento');#}
+            {#    return false;#}
+            {# }#}
+            {#if ($('#person-names').val() === '') {#}
+            {#    toastr.warning('Ingrese el nombre/razon social correctamente');#}
+            {#    return false;#}
+            {# }#}
+            $.ajax({
+                url: '/hrm/insert_person/',
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    'pk': 0,
+                    'number': 0,
+                    'names': value,
+                    'address': $("#person-address").val(),
+                    {#'phone': '',#}
+                    {#'email': '',#}
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#person-pk").val(response.pk)
+                        $("#person-number").val(response.pk)
+                    } else {
+                        toastr.error(response.message)
+                    }
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio problemas en el proceso')
+                }
+            });
+        }
+
+        setTimeout(() => {
+            $('#search-code').focus()
+        }, 500);
+        $(document).keydown(function (tecla) {
+            if (tecla.keyCode === 107) {
+                $('#search-code').focus()
+                {#setTimeout(() => {#}
+                {#    $('#search-code').val('')#}
+                {# }, 1000);#}
+            }
+        });
+        $(document).keyup(function (tecla) {
+            if (tecla.keyCode === 107) {
+                $('#search-code').val('')
+            }
+        });
+
+        function DownloadTicket(o) {
+
+            if (o > "0") {
+                //window.open("/sales/ticket/" + o + "/", '_blank');
+                let codeText = o + ' ' + 'VS';
+                //console.log(codeText)
+                printSocket(codeText);
+            } else {
+                toastr.warn('Busque una orden o generala, antes de imprimir en Ventanilla')
+                return false;
+            }
+
+        }
+
+        function DownloadLogistic(o) {
+
+            if (o > "0") {
+                window.open("/sales/logistic/" + o + "/", '_blank');
+                let codeText = o + ' ' + 'S';
+                //console.log(codeText)
+                printSocket(codeText);
+            } else {
+                toastr.warn('Busque una orden o generala, antes de imprimir en logistica')
+                return false;
+            }
+
+        }
+
+        var $th = $('.tableFixHead').find('thead th')
+        $('.tableFixHead').on('scroll', function () {
+            $th.css('transform', 'translateY(' + this.scrollTop + 'px)');
+        });
+
+
+        $("#btn-refresh").click(function () {
+            location.reload();
+        });
+
+        $("#btn-new-window").click(function () {
+            window.open("/sales/sales/", '_blank');
+        });
+
+
+        {#$(document).on('click', 'tbody#order-detail tr td.item-authorization div input', function () {#}
+        {#    let tr = $(this).parent('div').parent('td.item-authorization').parent('tr')#}
+        {#    if ($(this).is(':checked')) {#}
+        {#        tr.find('td.item-quantity input').change()#}
+        {#    } else {#}
+        {#        tr.find('td.item-quantity input').change()#}
+        {#    }#}
+        {# });#}
+        $(document).on('click', 'tbody#order-detail tr td.item-authorization input', function () {
+            let tr = $(this).parent('td.item-authorization').parent('tr')
+            if ($(this).is(':checked')) {
+                tr.find('td.item-quantity input').change()
+            } else {
+                tr.find('td.item-quantity input').change()
+            }
+        });
+    </script>
+{% endblock extrajs %}

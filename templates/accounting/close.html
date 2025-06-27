@@ -1,0 +1,102 @@
+{% load static %}
+<div class="modal-dialog modal-dialog-centered modal" role="document">
+    <form id="formClosing" class="embed-responsive p-0" action="{% url 'accounting:closing' %}"
+          method="POST">
+        {% csrf_token %}
+        <div class="modal-content bg-primary">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    {{ casing_obj.get_type_display }}: {{ casing_obj.name }}
+                    <input type="hidden" class="form-control" id="id-casing-close"
+                           name="id-casing-close" value="{{ casing_obj.id }}" required>
+                </h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="font-size: 13px;">
+                <div class="card m-0">
+                    <div class="card-header">
+                        <label for="id-date-closing">Fecha de cierre</label>
+                        <input type="date" class="form-control" id="id-date-closing"
+                               name="date-closing"
+                               value="{{ date_now }}" required>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <tbody>
+                                <tr>
+                                    <td class="align-middle">TOTAL APERTURA</td>
+                                    <td class="amount-aperture-casing align-middle text-right font-weight-bold">{{ total.0.total_aperture|safe }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">TOTAL INGRESOS</td>
+                                    <td class="amount-entry-casing align-middle text-right font-weight-bold">{{ total.0.total_cash_entry|safe }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">TOTAL EGRESOS</td>
+                                    <td class="amount-egress-casing align-middle text-right font-weight-bold">{{ total.0.total_cash_egress|safe }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">EFECTIVO TOTAL</td>
+                                    <td class="amount-cash-casing align-middle text-right font-weight-bold">{{ total.0.total_cash|safe }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">TOTAL EN CAJA</td>
+                                    <td class="total-cash align-middle text-right font-weight-bold p-1">
+                                        <input type="text" id="total-cash" name="total-cash" class="form-control text-right" readonly required value="{{ total.0.total|safe }}"/>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button> &nbsp;
+                <button type="submit" id="btn-closing-casing" class="btn btn-light">Cerrar caja
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#formClosing').submit(function (event) {
+        event.preventDefault();
+        if ($('#id-casing-close').val() === '0' || $('#id-casing-close').val() === '') {
+            toastr.warning('Especifique la caja que desea cerrar')
+            return false;
+        }
+        if ($('#id-date-closing').val() === '') {
+            toastr.warning('Seleccione la fecha de cierre')
+            return false;
+        }
+        let data = new FormData($('#formClosing').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                    {#if (response.pk) {#}
+                    {#    window.open("/accounting/print_ticket_closing_cash/" + response.pk + "/", '_blank');#}
+                    {# }#}
+                } else {
+                    toastr.success(response.message);
+                }
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un problema');
+            }
+        });
+    });
+</script>

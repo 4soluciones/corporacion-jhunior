@@ -1,0 +1,138 @@
+<table id="table-payment-list" class="table table-sm table-bordered" style="width: 100%">
+    <thead>
+    <tr class="text-center">
+{#        <th style="width: 4%">Nº</th>#}
+        <th style="width: 8%">Nº Orden</th>
+        <th style="width: 8%">Tipo</th>
+        <th style="width: 12%">Estado</th>
+        <th style="width: 12%">Comprobante</th>
+        <th style="width: 12%">Guia Remisión</th>
+        <th style="width: 12%">Descuento</th>
+        <th style="width: 12%">Total</th>
+        <th style="width: 12%">Pagado</th>
+        <th style="width: 12%">Deuda</th>
+    </tr>
+    </thead>
+    <tbody id="payment-detail-list">
+    {% for o in order_set %}
+        <tr class="text-center" order="{{ o.id }}">
+{#            <td class="align-middle p-1">{{ o.number }}</td>#}
+            <td class="align-middle p-1">{{ o.number }}</td>
+            <td class="align-middle p-1">{{ o.get_type_display }}</td>
+            <td class="align-middle p-1">
+                {% if o.status == 'N' %}
+                    <a type="button" class="btn btn-light w-100"
+                       href="{{ o.note_enlace_pdf }}">
+                        <i class="icon-trash"></i>
+                        {{ o.note_serial }}-{{ o.note_number }}
+                    </a>
+{#                    {% if check_quantity_product %}#}
+{#                        <ul class="nav nav-pills">#}
+{#                            <li class="nav-item">#}
+{#                                <a type="button" class="btn btn-light mt-1" onclick="createCreditNote({{ o.id }})">Nueva NC</a>#}
+{#                            </li>#}
+{#                            <li class="nav-item dropdown">#}
+{#                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"#}
+{#                                   aria-haspopup="true" aria-expanded="false">Ver NC</a>#}
+{#                                <div class="dropdown-menu">#}
+{#                                    <a type="button" class="btn btn-light w-100"#}
+{#                                       href="{{ o.note_enlace_pdf }}">#}
+{#                                        <i class="icon-trash"></i>#}
+{#                                        {{ o.note_serial }}-{{ o.note_number }}#}
+{#                                    </a>#}
+{#                                </div>#}
+{#                            </li>#}
+{#                        </ul>#}
+{#                    {% endif %}#}
+                {% elif o.status == 'A' %}
+                    <button type="button" class="btn btn-light w-100 text-danger">
+                        <i class="icon-trash"></i>
+                        Anulado
+                    </button>
+                {% elif o.status == 'E' and o.bill_enlace_pdf %}
+                    <button type="button" class="btn btn-light w-100" onclick="createCreditNote({{ o.id }})">
+                        <i class="icon-trash"></i>
+                        Nota de Credito
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-light w-100" onclick="CancelReceipt({{ o.id }})">
+                        <i class="icon-trash"></i>
+                        Anular
+                    </button>
+                {% endif %}
+            </td>
+            <td class="align-middle p-1">
+                {% if o.doc == '1' or o.doc == '2' %}
+                    {% if o.status == 'E' %}
+                        <button type="button" class="btn btn-light w-100" onclick="DownloadInvoice({{ o.number }})">
+                            <i class="icon-arrow-down-circle"></i>
+                            {{ o.bill_serial }}-{{ o.bill_number }}
+                        </button>
+                    {% elif o.status == 'R' and o.bill_number %}
+                        <button type="button" class="btn btn-light w-100" onclick="DownloadInvoice({{ o.number }})">
+                            <i class="icon-arrow-down-circle"></i>
+                            {{ o.bill_serial }}-{{ o.bill_number }}
+                        </button>
+                    {% elif o.status == 'R' %}
+                        <button type="button" class="btn btn-light w-100" onclick="PaymentModal({{ o.id }})">
+                            <i class="icon-badge"></i>
+                            Realizar
+                        </button>
+                    {% else %}
+                        {% if o.status == 'A' or o.status == 'N' %}
+                            <button type="button" class="btn btn-light w-100">
+                                <i class="icon-badge"></i>
+                                Cancelada
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-light w-100" onclick="PaymentModal({{ o.id }})">
+                                <i class="icon-badge"></i>
+                                Realizar
+                            </button>
+                        {% endif %}
+                    {% endif %}
+
+                {% else %}
+                    <button type="button" class="btn btn-light w-100" onclick="PaymentModal({{ o.id }})">
+                        <i class="icon-badge"></i>
+                        Realizar
+                    </button>
+                {% endif %}
+            </td>
+            <td class="align-middle p-1">
+                {% if o.add == 'G' %}
+                    <button type="button" class="btn btn-light w-100" onclick="DownloadGuide({{ o.id }})">
+                        <i class="icon-arrow-down-circle"></i>
+                        {{ o.guide_serial }}-{{ o.guide_number }}
+                    </button>
+                {% else %}
+                    {% if o.status == 'A' or o.status == 'N' %}
+                        <button type="button" class="btn btn-light w-100">
+                            <i class="icon-badge"></i>
+                            Cancelada
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-light w-100" onclick="CreateGuide({{ o.id }})">
+                            <i class="icon-badge"></i>
+                            Realizar
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td class="text-right align-middle item-discount p-1">S/. {{ o.total_discount|safe }}</td>
+            <td class="text-right align-middle item-total p-1">S/. <b>{{ o.total|safe }}</b></td>
+            <td class="text-right align-middle item-total-payment p-1">S/. <b>{{ o.total_payment|safe }}</b>
+            </td>
+            <td class="text-right align-middle item-total-debt p-1">S/. <b>{{ o.total_debt|safe }}</b></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script type="text/javascript">
+    {#let total = parseFloat("0.00")#}
+    {#$('tbody#payment-detail-list tr td.item-total-debt').each(function () {#}
+    {#    total = total + parseFloat($(this).text());#}
+    {##}
+    {#    });#}
+    {#    $('#total-debt').val(total.toFixed(2));#}
+</script>

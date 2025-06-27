@@ -1,0 +1,113 @@
+
+<style>
+    .bg-transparent{
+        background-color: #6f42c166!important;
+        border: 1px solid #6f42c1;
+    }
+</style>
+<div class="row mb-3">
+
+        <label for="review-credit-note-invoice-number" class="col-sm-2 col-form-label">Nro nota credito</label>
+        <div class="col-sm-4">
+          <input type="text" class="form-control" id="review-credit-note-invoice-number-name" value="{{ credit_note_obj.invoice_number }}" maxlength="50">
+        </div>
+
+
+        <label for="review-credit-note-date-document" class="col-sm-2 col-form-label">Fecha Emisión</label>
+        <div class="col-sm-4">
+          <input type="date" class="form-control" id="review-credit-note-date-document" value="{{ credit_note_obj.date_document|date:'Y-m-d' }}">
+        </div>
+</div>
+
+<div class="row mb-3">
+    <label for="review-credit-note-invoice-date" class="col-sm-2 col-form-label">Fecha Ingreso</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="review-credit-note-invoice-date" value="{{ credit_note_obj.invoice_date|date:'Y-m-d' }}">
+    </div>
+
+    <label for="review-credit-note-date" class="col-sm-2 col-form-label">Fecha Validez</label>
+    <div class="col-sm-4">
+      <input type="date" class="form-control" id="review-credit-note-date" value="{{ credit_note_obj.note_date|date:'Y-m-d' }}">
+    </div>
+</div>
+
+
+<div class="form-group row">
+    <label for="static-review-purchase-supplier-name" class="col-sm-2 col-form-label">Proveedor</label>
+    <div class="col-sm-10">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-supplier-name" value="{{ credit_note_obj.parent_order.person.names }}">
+    </div>
+  </div>
+
+<div class="row mb-3">
+    <label for="static-review-purchase-doc" class="col-sm-2 col-form-label">COMPROBANTE</label>
+    <div class="col-sm-4">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-doc" value="{{ credit_note_obj.parent_order.get_doc_display }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="text" readonly class="form-control bg-transparent" id="static-review-purchase-invoice-related-id" value="{{ credit_note_obj.parent_order.invoice_number }}">
+    </div>
+
+    <div class="col-sm-3">
+      <input type="date" readonly class="form-control bg-transparent" id="static-review-purchase-create-at" value="{{ credit_note_obj.parent_order.date_document|date:'Y-m-d' }}">
+    </div>
+
+  </div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-bordered table-striped table-credit-note-detail">
+        <thead>
+        <tr>
+            <td>CODIGO</td>
+            <td>PRODUCTO</td>
+            <td>MEDIDAS</td>
+            <td>UNIDAD</td>
+            <td>PRECIO</td>
+            <td>CANT. DEVUELTA</td>
+            <td>SUBTOTAL</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in credit_note_obj.orderdetail_set.all %}
+            <tr pk="{{ d.id }}">
+                <td class="align-middle">{{ d.product.code }}</td>
+                <td class="align-middle">{{ d.product.name }}</td>
+                <td class="align-middle" a="{{ d.product.width }}" l="{{ d.product.length }}" h="{{ d.product.height }}">
+                    <strong>ANCHO: {{ d.product.width }}<br>LARGO: {{ d.product.length }}<br>ALTO: {{ d.product.height }}</strong>
+                </td>
+                <td class="align-middle">{{ d.unit }}</td>
+                <td class="align-middle">{{ d.price|safe }}</td>
+                <td class="align-middle"><input type="text" class="form-control text-right quantity-returned" value="{{ d.quantity|safe }}" readonly /></td>
+                <td class="align-middle"><input type="text" class="form-control bg-transparent text-right new-subtotal" value="{{ d.amount|safe }}" readonly /></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr>
+            <td class="small align-bottom" colspan="5">MONEDA: {{ credit_note_obj.get_coin_display }}</td>
+            <td>BASE</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-base" value="{{ credit_note_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td class="small align-bottom" colspan="5">T.C.: {{ credit_note_obj.change|safe }}</td>
+            <td>IGV</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-igv" value="{{ credit_note_obj.total|safe }}" readonly /></td>
+        </tr>
+
+        <tr>
+            <td colspan="5"></td>
+            <td>TOTAL</td>
+            <td><input type="text" class="form-control bg-transparent text-right old-total" value="{{ credit_note_obj.get_purchase_total|safe }}" readonly /></td>
+        </tr>
+
+        </tfoot>
+
+    </table>
+</div>
+
+<script>
+
+</script>
+

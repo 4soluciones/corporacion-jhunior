@@ -1,0 +1,124 @@
+<form id="formSearchProduct" method="POST" enctype="multipart/form-data" action="">
+    {% csrf_token %}
+    <div class="row">
+        <div class="mb-1">
+            <label class="form-label" for="code">Codigo Producto</label>
+            <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-fullname2" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="code"
+                        name="code"
+                        placeholder="Codigo Producto"
+                        value="{{ product_obj.code }}"
+                        required
+                />
+
+            </div>
+            <input type="hidden" id="product-pk" name="product-pk"
+                   value="{% if product_obj %}{{ product_obj.id }}{% else %}0{% endif %}"/>
+        </div>
+        <div class="mb-1">
+            <label class="form-label" for="name">Nombre Producto</label>
+            <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-fullname2" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        name="name"
+                        placeholder="Nombre Producto"
+                        aria-label="Nombre Producto"
+                        aria-describedby="basic-icon-default-fullname2"
+                        value="{{ product_obj.name }}"
+                        required
+                />
+            </div>
+        </div>
+        <div class="mb-1">
+            <label class="form-label" for="description">Descripción</label>
+            <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-company2" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        class="form-control"
+                        placeholder="Descripción"
+                        aria-label="Descripción"
+                        aria-describedby="basic-icon-default-company2"
+                        value="{{ product_obj.description }}"
+                />
+            </div>
+        </div>
+        <div class="mb-1">
+            <label for="brand" class="form-label">Marca Producto</label>
+            <select class="form-select" id="brand" name="brand" aria-label="brand">
+                <option value="0">Seleccione</option>
+                {% for b in brand_set %}
+                    {% if b.id == product_obj.brand.id %}
+                        <option selected value="{{ b.id }}">{{ b.name }}</option>
+                    {% else %}
+                        <option value="{{ b.id }}">{{ b.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-1">
+            <label for="family" class="form-label">Familia Producto</label>
+            <select class="form-select" id="family" name="family" aria-label="family">
+                <option value="0">Seleccione</option>
+                {% for f in family_set %}
+                    {% if f.id == product_obj.family.id %}
+                        <option selected value="{{ f.id }}">{{ f.name }}</option>
+                    {% else %}
+                        <option value="{{ f.id }}">{{ f.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-2 d-grid w-100">Seleccionar</button>
+    <button
+            type="button"
+            id="product-cancel"
+            class="btn btn-outline-secondary d-grid w-100"
+            data-bs-dismiss="offcanvas"
+    >
+        Cancel
+    </button>
+</form>
+<script type="text/javascript">
+    $('#formSearchProduct').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formSearchProduct').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    let obj = response['product']
+                    let brand = response['brand']
+                    let family = response['family']
+                    let type = response['type']
+                    let t = response['t']
+                } else {
+
+                }
+                $('#product-cancel').trigger('click')
+            },
+            error: function (response) {
+                console.log(response)
+            }
+        });
+    });
+</script>

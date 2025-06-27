@@ -1,0 +1,160 @@
+<div class="row">
+    <label class="text-primary">{{ product_obj.name }}</label>
+    <form id="formStore" method="POST" enctype="multipart/form-data"
+          action="{% url 'sales:store_save' %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="mb-1">
+                <label class="form-label" for="unit">Almacén</label>
+                <select id="subsidiary_store" name="subsidiary_store" class="form-select">
+                    {% for s in subsidiary_store_set %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 mb-1">
+                <label class="form-label" for="s">Stock</label>
+                <div class="input-group input-group-merge">
+                    <span id="s" class="input-group-text">
+                        <i class='bx bxl-product-hunt'></i>
+                    </span>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="stock"
+                            name="stock"
+                            placeholder="0.00"
+                            value=""
+                            required
+                    />
+                </div>
+                <input type="hidden" id="product-pk" name="product-pk"
+                       value="{{ product_obj.id }}" required/>
+                <input type="hidden" id="store-pk" name="store-pk"
+                       value=""/>
+            </div>
+            <div class="col-md-6 mb-1">
+                <label class="form-label" for="m">Stock Minimo</label>
+                <div class="input-group input-group-merge">
+                            <span id="m" class="input-group-text"
+                            ><i class='bx bxl-product-hunt'></i></span>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="minimum"
+                            name="minimum"
+                            placeholder="0.00"
+                            value=""
+                            required
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary mb-2 d-grid w-100">Agregar</button>
+            </div>
+            <div class="col-md-6">
+                <button type="button"
+                        id="store-cancel"
+                        class="btn btn-outline-secondary d-grid w-100"
+                        data-bs-dismiss="offcanvas"
+                >Cancel
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <small class="text-light fw-semibold text-primary">STOCK POR ALMACÉN</small>
+        <div class="demo-inline-spacing mt-3">
+            <div class="row text-success">
+                <div class="col">Almacén</div>
+                <div class="col">Stock</div>
+                <div class="col">Minimo</div>
+                <div class="col">Eliminar</div>
+            </div>
+            <div class="list-group" id="inventory_detail">
+                {% for p in store_set %}
+                    <label class="list-group-item d-flex justify-content-between align-items-center" pk="{{ p.id }}"
+                           store="{{ p.subsidiary_store.id }}">
+                        <span class="badge bg-warning p-2 item-store">{{ p.subsidiary_store.name }}</span>
+                        <span class="badge bg-warning p-2 item-stock">{{ p.stock|safe }}</span>
+                        <span class="badge bg-warning p-2 item-minimum">{{ p.minimum|safe }}</span>
+                        <button type="button" class="btn btn-sm rounded-pill btn-icon btn-outline-warning item-edit">
+                            <span class="tf-icons bx bxs-edit-alt"></span>
+                        </button>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#formStore').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formStore').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message)
+                    let id = response.id
+                    let store = response.store
+                    let stock = response.stock
+                    let minimum = response.minimum
+                    let s = response.s
+                    if ($('#store-pk').val() == '' || $('#store-pk').val() == '0') {
+                        AddRowStore(id, store, s, stock, minimum)
+                    } else {
+                        let label = $('div#inventory_detail').find("label[pk=" + id + "]")
+                        label.attr('store', s)
+                        label.find('span.item-store').text(store)
+                        label.find('span.item-stock').text(parseFloat(stock).toFixed(2))
+                        label.find('span.item-minimum').text(parseFloat(minimum).toFixed(2))
+                    }
+                    $('#stock').val('')
+                    $('#minimum').val('')
+                    $('#store-pk').val('')
+                } else {
+                    toastr.error(response.message)
+                }
+            },
+            error: function (response) {
+                toastr.error('ocurrio un problema')
+            }
+        });
+    });
+
+    function AddRowStore(p, store, s, stock, minimum) {
+        $('div#inventory_detail').append(
+            '<label class="list-group-item d-flex justify-content-between align-items-center" pk="' + p + '" store="' + s + '">' +
+            '<span class="badge bg-warning p-2 item-store">' + store + '</span>' +
+            '<span class="badge bg-warning p-2 item-stock">' + parseFloat(stock).toFixed(2) + '</span>' +
+            '<span class="badge bg-warning p-2 item-minimum">' + parseFloat(minimum).toFixed(2) + '</span>' +
+            '<button type="button" class="btn btn-sm rounded-pill btn-icon btn-outline-warning item-edit">' + '<span class="tf-icons bx bxs-edit-alt">' + '</span>' + '</button>' +
+            '</label>'
+        );
+    }
+
+    $(document).on('click', 'div#inventory_detail label button.item-edit', function () {
+        let label = $(this).parent('label')
+        let pk = label.attr('pk')
+        let store = label.attr('store')
+        let stock = label.find('span.item-stock').text()
+        let minimum = label.find('span.item-minimum').text()
+        $('#store-pk').val(pk)
+        $('#subsidiary_store').val(store)
+        $('#stock').val(parseFloat(stock).toFixed(2))
+        $('#minimum').val(parseFloat(minimum).toFixed(2))
+    });
+</script>

@@ -1,0 +1,119 @@
+{% load static %}
+<div class="modal-dialog" role="document" style="max-width: 1380px!important;">
+    <div class="modal-content bg-primary">
+        <div class="modal-header">
+            <h6 class="modal-title">KARDEX DEL PRODUCTO: <span class="font-weight-bolder">{{ product_obj.name }}</span>
+                CODIGO: <span class="font-weight-bolder">{{ product_obj.code }}</span></h6>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card">
+                <div class="card-header row">
+                    <input type="hidden" class="form-control" id="product-pk" value="{{ product_obj.id }}">
+                    {#                    <div class="form-group col-md-3 text-center">#}
+                    {#                        <label for="month">Seleccione el mes</label>#}
+                    {#                        <input type="month" class="form-control text-center" id="month" value="">#}
+                    {#                    </div>#}
+                    <div class="form-group col-md-2 text-center">
+                        <label for="month">Inicio</label>
+                        <input type="date" class="form-control text-center" id="init-find" value="{{ date_now }}">
+                    </div>
+                    <div class="form-group col-md-2 text-center">
+                        <label for="month">Final</label>
+                        <input type="date" class="form-control text-center" id="end-find" value="{{ date_now }}">
+                    </div>
+                    <div class="form-group col-md-1 text-center">
+                        <label for="month">&nbsp;</label>
+                        <button type="button" class="btn btn-secondary" pk="{{ product_obj.id }}"
+                                onclick="SearchKardexAccounting({{ product_obj.id }})">
+                            Buscar
+                        </button>
+                    </div>
+                    <div class="form-group col-md-1 text-center">
+                        <label for="month">&nbsp;</label>
+                        <button type="button" class="btn btn-success" onclick="KardexExcelFind()">
+                            Excel
+                        </button>
+                    </div>
+                    <div class="form-group col-md-4 text-center">
+                        <label for="store">Nombre producto</label>
+                        <input type="text" class="form-control text-center" id="name" value="{{ product_obj.name }}" disabled>
+                    </div>
+                    <div class="form-group col-md-2 text-center">
+                        <label for="store">Almacen</label>
+                        <input type="text" class="form-control text-center" id="store" value="{{ product_obj.store }}" disabled>
+                    </div>
+                </div>
+                <div class="card-body" id="kardex-detail">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    {#$(document).on('change keyup', '#month', function () {#}
+    {#    SearchKardex()#}
+    {# });#}
+    $(document).on('change', '#init-find', function () {
+        if ($(this).val()) {
+            if ($('#init-find').val() === "") {
+                toastr.warning('Seleccione la fecha inicial')
+                return false
+            }
+            if ($('#end-find').val() === "") {
+                toastr.warning('Seleccione la fecha final')
+                return false
+            }
+            //SearchKardexAccounting()
+        }
+    });
+    $(document).on('change', '#end-find', function () {
+        if ($(this).val()) {
+            if ($('#init-find').val() === "") {
+                toastr.warning('Seleccione la fecha inicial')
+                return false
+            }
+            if ($('#end-find').val() === "") {
+                toastr.warning('Seleccione la fecha final')
+                return false
+            }
+            //SearchKardexAccounting()
+        }
+    });
+
+    async function SearchKardexAccounting(product) {
+        {#let month = $('#month').val()#}
+        {#let product = $('#product-pk').val();#}
+        console.log(product + '-' + {{ product_obj.code }})
+        if (product !== '') {
+            await $.ajax({
+                url: '/sales/get_kardex_table/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'init': $('#init-find').val(), 'end': $('#end-find').val(), 'product': product},
+                success: function (data) {
+                    $('#kardex-detail').empty();
+                    $('#kardex-detail').html(data.grid);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+    };
+
+    function KardexExcelFind() {
+        let init = $('#init-find').val()
+        let end = $('#end-find').val()
+        let p = $('#product-pk').val()
+        if (p && init && end) {
+            window.open("/sales/report_kardex_cont/" + init + "/" + end + "/" + p + "/", '_top');
+        }
+    }
+</script>

@@ -1,0 +1,73 @@
+<table id="table-product" class="table table-striped small" style="width: 100%">
+    <thead>
+    <tr class="text-center">
+        <th style="width: 1%"><i class='icon-check text-white'></i></th>
+        <th style="width: 3%">Nº</th>
+        <th style="width: 20%">Descripción</th>
+        <th style="width: 7%">Marca</th>
+        <th style="width: 7%">Familia</th>
+        <th style="width: 8%">Tipo</th>
+        <th style="width: 7%">Estado</th>
+        <th style="width: 10%">Medidas</th>
+        <th style="width: 12%">Almacen</th>
+        <th style="width: 12%">Relacion</th>
+        <th style="width: 13%">Acción</th>
+    </tr>
+    </thead>
+    <tbody class="product_detail">
+    {% for p in product_set %}
+        <tr pk="{{ p.id }}" i="{{ forloop.counter }}" class="{% if p.stock <= p.minimum %} bg-danger{% endif %}">
+            <td class="align-middle text-center item-check" >
+                <input type="checkbox" class="requirement align-middle" pk="{{ p.id }}" style=" transform: scale(1.2);">
+            </td>
+            <td class="align-middle text-center item-number p-1">{{ forloop.counter }}</td>
+            <td class="align-middle item-name p-1" code="{{ p.code }}" name="{{ p.name }}">
+                <strong>CODIGO: {{ p.code }}<br>{{ p.name }}<br>{{ p.description }}
+                </strong>
+            </td>
+            <td class="align-middle text-center item-brand p-1">{{ p.brand.name }}</td>
+            <td class="align-middle text-center item-family p-1">{{ p.family.name }}</td>
+            <td class="align-middle text-center item-type p-1">
+                    {{ p.get_type_display }}
+            </td>
+            <td class="align-middle text-center item-state p-1" state="{{ p.is_state }}">
+                {% if p.is_state %}
+                    <i class='icon-check text-white'></i>
+                {% else %}
+                    <i class='icon-close text-white'></i>
+                {% endif %}
+            </td>
+            <td class="align-middle item-measure p-1" a="{{ p.width }}" l="{{ p.length }}" h="{{ p.height }}">
+                <strong>ANCHO: {{ p.width }}<br>LARGO: {{ p.length }}<br>ALTO: {{ p.height }}</strong>
+            </td>
+            <td class="align-middle item-store p-1" store="{{ p.store }}" stock="{{ p.stock|safe }}" minimum="{{ p.minimum|safe }}">
+                <strong>ALMACÉN: {{ p.store }}<br>STOCK : {{ p.stock|safe }}<br>MINIMO: {{ p.minimum|safe }}</strong>
+            </td>
+            <td class="align-middle item-relation p-1">
+              <input type="text" maxlength="50" class="form-control text-uppercase" value="{{ p.relation }}">
+            </td>
+            <td class="align-middle text-center item-action p-1">
+                <button type="button"
+                        class="btn btn-light"
+                        onclick="showModal({{ p.id }})"
+                >
+                    <i class="icon-note"></i>
+                </button>
+                <button type="button" class="btn btn-light"
+                        onclick="showPrice({{ p.id }})">
+                    <i class="icon-paypal"></i>
+                </button>
+{#                <button type="button" class="btn btn-light"#}
+{#                        onclick="showKardex({{ p.id }})">#}
+{#                    <i class="icon-home"></i>#}
+{#                </button>#}
+                <button type="button" class="btn btn-light button-kardex" pk="{{ p.id }}"
+                        onclick="showKardexAccounting({{ p.id }})"
+                >
+                    <i class="icon-home"></i>
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

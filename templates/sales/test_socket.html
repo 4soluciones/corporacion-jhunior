@@ -1,0 +1,62 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    test
+{% endblock title %}
+
+{% block body %}
+
+    TESTEADOR OFICIAL BY JHON A.K.A. EL TIBU
+    <div class="card">
+        <div class="card-header pr-3 border-0 pb-2">
+            <div class="row">
+                <div class="col-md-2">
+                    <input type="text" class="form-control form-control-rounded"
+                           id="search-code"
+                           name="search-code"
+                           placeholder="NUMBER"/>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="btn-new-window" class="btn btn-light w-100">
+                        <i class="fa fa-file" aria-hidden="true"></i> SOCKETE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        const btnNewWindow = document.getElementById('btn-new-window');
+        const searchCodeInput = document.getElementById('search-code');
+
+        btnNewWindow.addEventListener('click', function () {
+            const inputValue = searchCodeInput.value;
+
+            // Abrir una nueva conexión WebSocket en cada clic
+            const socket = new WebSocket("ws://localhost:5000/ws");
+
+            socket.onopen = () => {
+                console.log("✅ Conectado al servidor WebSocket");
+                socket.send(inputValue); // Enviar el texto del input
+                console.log("📤 Mensaje enviado:", inputValue);
+
+                // Cerrar la conexión inmediatamente después del envío
+                socket.close();
+            };
+
+            socket.onerror = (error) => {
+                console.error("❌ Error en el WebSocket:", error);
+            };
+
+            socket.onclose = (event) => {
+                console.log("🔌 Conexión cerrada:", event);
+            };
+        });
+
+
+    </script>
+{% endblock extrajs %}

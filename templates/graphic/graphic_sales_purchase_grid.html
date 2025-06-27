@@ -1,0 +1,88 @@
+<div class="card p-0  m-0 mt-1" style="border-color: #2681d0">
+    <div class="card-header text-center p-1" style="background: #2681d0">
+        <h6 class="card-title text-white m-0 p-0 roboto-condensed-regular">GRAFICO ESTADISTICO</h6>
+    </div>
+    <div class="card-body p-0 m-0">
+        <figure class="highcharts-figure col-sm-12 col-md-12 col-lg-12 response">
+            <div class="col-sm-12 col-md-12 col-lg-12 p-0 m-0" id="container"></div>
+        </figure>
+    </div>
+</div>
+<script type="text/javascript">
+
+    Highcharts.chart('container', {
+        chart: {
+            zoomType: 'xy',
+        },
+        title: {
+            text: 'COMPRAS - VENTAS'
+        },
+        subtitle: {
+            text: 'SEDE: {{ subsidiary_obj.name }}'
+        },
+        xAxis: [{
+            categories: ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado',
+                'Domingo'],
+            crosshair: true
+        }],
+        yAxis: [{ // Primary yAxis
+            labels: {
+                format: 'S/. {value}',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            },
+            title: {
+                text: 'Compras',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            }
+        }, { // Secondary yAxis
+            title: {
+                text: 'Ventas',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                format: 'S/. {value}',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+            shared: true
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 120,
+            verticalAlign: 'top',
+            y: 100,
+            floating: true,
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || // theme
+                'rgba(255,255,255,0.25)'
+        },
+        series: [{
+            name: 'Ventas',
+            type: 'column',
+            yAxis: 1,
+            data: {{ sales|safe }},
+            tooltip: {
+                valueSuffix: ' Soles'
+            }
+
+        }, {
+            name: 'Compras',
+            type: 'spline',
+            data: {{ purchase|safe }},
+            tooltip: {
+                valueSuffix: ' Soles'
+            }
+        }]
+    });
+</script>

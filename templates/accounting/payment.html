@@ -1,0 +1,781 @@
+<div class="modal-dialog modal-xl">
+    <div class="modal-content bg-primary">
+        <div id="modal-loader" class="overlay" style="display: none">
+            <i class='bx bx-loader'></i>
+        </div>
+        <div class="modal-header">
+            <h6 class="modal-title text-uppercase" id="backDropModalTitle"><b
+                    class="text-warning">{{ order_obj.get_type_display }} Nº=00{{ order_obj.number }}</b>
+            </h6>
+            <input type="hidden" class="form-control" id="id-order" name="id-order"
+                   value="{{ order_obj.id }}"/>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body p-1">
+            <div class="card m-0">
+                <div class="card-body row pt-1 pb-1">
+                    <div class="col-md-1 p-1">
+                        <label for="doc" class="form-label mb-0">Documento</label>
+                        <select class="form-control" id="person-document" name="person-document">
+                            {% for d in document_set %}
+                                {% if d.0 == order_obj.person.document %}
+                                    <option selected value="{{ d.0 }}">{{ d.1 }}</option>
+                                {% else %}
+                                    <option value="{{ d.0 }}">{{ d.1 }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 p-1">
+                        <label for="doc" class="form-label mb-0">N° Documento</label>
+                        <input type="text" maxlength="15" class="form-control" id="client-number" placeholder="..."
+                               value="{{ order_obj.person.number }}">
+                        <input type="hidden" value="{{ order_obj.person.id }}" id="client-pk" name="client-pk">
+                    </div>
+                    <div class="col-md-9 p-1">
+                        <label for="doc" class="form-label mb-0">Nombres/Rason Social</label>
+                        <input type="text" class="form-control" id="client-names"
+                               placeholder="..." value="{{ order_obj.person.names }}" disabled>
+                    </div>
+{#                    <div class="col-md-3 p-1">#}
+{#                        <label for="doc" class="form-label mb-0">Correo</label>#}
+{#                        <input type="text" class="form-control" id="client-email"#}
+{#                               placeholder="email@example.com" value="{{ order_obj.person.email }}" maxlength="100">#}
+{#                    </div>#}
+                </div>
+            </div>
+            <div class="card m-0 mt-1 p-1">
+                <div class="card-header table-responsive">
+                    <table class="table table-sm" style="width: 100%">
+                        <thead>
+                        <tr class="text-center p-1">
+                            <th style="width: 5%">Nº</th>
+                            <th style="width: 45%">Producto</th>
+                            <th style="width: 10%">Cantidad</th>
+                            <th style="width: 10%">Unidad</th>
+                            <th style="width: 10%">Precio</th>
+                            <th style="width: 10%">Importe</th>
+                            <th style="width: 10%">Factura</th>
+                        </tr>
+                        </thead>
+                        <tbody id="order_detail">
+                        {% for d in order_obj.orderdetail_set.all %}
+                            <tr class="text-center" d="{{ d.id }}">
+                                <td class="align-middle p-1">{{ forloop.counter }}</td>
+                                <td class="align-middle p-1 text-left text-uppercase">{{ d.product.name }}</td>
+                                <td class="align-middle p-1">{{ d.quantity|floatformat:2|safe }}</td>
+                                <td class="align-middle p-1">{{ d.get_unit_display }}</td>
+                                <td class="align-middle p-1 text-right">S/. {{ d.price|floatformat:2|safe }}</td>
+                                <td class="align-middle p-1 text-right item-amount">S/. <b>{{ d.amount|floatformat:2|safe }}</b></td>
+                                <td class="align-middle p-1 item-check">
+                                    <div class="icheck-material-warning m-0">
+                                        <input type="checkbox" class="value-check" id="{{ d.id }}"
+                                                {% if d.is_invoice %}
+                                               checked{% endif %}>
+                                        <label for="{{ d.id }}"><i class="icon-user"></i></label>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                        <tr class="text-warning" style="font-size: 16px">
+                            <td class="align-middle p-1" colspan="4"></td>
+                            <td class="align-middle p-1 text-right">TOTAL</td>
+                            <td class="align-middle text-right p-1">S/. <b
+                                    id="invoice-total">{{ order_obj.invoice_total|floatformat:2|safe }}</b>
+                            </td>
+                            <td class="align-middle p-1"></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="card-body">
+                    <hr class="my-0"/>
+                    <div class="row mt-2">
+                        <div class="col-md-10 table-responsive">
+                            <table class="table" id="id-table-payment"
+                                   style="width: 100%;">
+                                <thead class="text-center">
+                                <tr class="text-center p-1">
+                                    <th style="width: 3%;">Nº</th>
+                                    <th style="width: 16%;">Fecha
+                                    </th>
+                                    <th style="width: 20%;">
+                                        Modalidad
+                                    </th>
+                                    <th style="width: 27%;">
+                                        Caja/Cuenta
+                                    </th>
+                                    <th style="width: 17%;">Monto
+                                    </th>
+                                    <th style="width: 14%;">
+                                        Codigo
+                                    </th>
+                                    <th style="width: 3%;"><i class="icon-close"></i></th>
+                                </tr>
+                                </thead>
+                                <tbody id="payments_detail" style="font-size: 16px;">
+                                {% for p in payment_set %}
+                                    <tr class="text-uppercase text-center p-0 item-row" pk="{{ p.id }}"
+                                        i="{{ forloop.counter }}">
+                                        <td class="align-middle p-1 item-number">{{ forloop.counter }}</td>
+                                        <td class="align-middle p-1 item-date">
+                                            <input type="date" class="form-control value-date"
+                                                   value="{{ p.date_payment|date:'Y-m-d' }}"
+                                                   style="width: 140px;"/>
+                                        </td>
+                                        <td class="align-middle p-1 item-type">
+                                            <select class="form-control value-type">
+                                                <option value="0">Seleccione</option>
+                                                {% for t in type_payment_set %}
+                                                    {% if t.0 == p.payment %}
+                                                        <option selected value="{{ t.0 }}">{{ t.1 }}</option>
+                                                    {% else %}
+                                                        <option value="{{ t.0 }}">{{ t.1 }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td class="align-middle p-1 item-account">
+                                            <select class="form-control value-account">
+                                                <option value="0">Seleccione</option>
+                                                {% if p.payment == 'E' %}
+                                                    {% for ca in casing_set %}
+                                                        {% if ca.id == p.casing.id %}
+                                                            <option selected
+                                                                    value="{{ ca.id }}">{{ ca.name }}</option>
+                                                        {% else %}
+                                                            <option value="{{ ca.id }}">{{ ca.name }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% elif p.payment == 'D' %}
+                                                    {% for b in bank_set %}
+                                                        {% if b.id == p.casing.id %}
+                                                            <option selected
+                                                                    value="{{ b.id }}">{{ b.name }}</option>
+                                                        {% else %}
+                                                            <option value="{{ b.id }}">{{ b.name }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% elif p.payment == 'C' %}
+                                                    <option selected value="C">CUOTA</option>
+                                                {% endif %}
+                                            </select>
+                                        </td>
+                                        <td class="align-middle p-1 item-amount">
+                                            <input type="number" step="0.01" min="0.00"
+                                                   class="form-control text-end value-amount"
+                                                   value="{{ p.amount|floatformat:2|safe }}" placeholder="0.00"/>
+                                        </td>
+                                        <td class="align-middle p-1 item-code">
+                                            <input type="text" class="form-control value-code"
+                                                   value="{{ p.code_operation }}" placeholder="Operación"/>
+                                        </td>
+                                        <td class="align-middle p-1 item-option">
+                                            <button type="button" class="btn btn-light value-delete"
+                                                    onclick="DeletePayment({{ forloop.counter }},{{ p.id }})">
+                                                <i class="icon-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td class="align-middle text-center" colspan="2">
+                                        <button type="button" class="btn btn-warning" onclick="AddRow()"><i
+                                                class="icon-magnifier-add"></i> Agregar
+                                        </button>
+                                    </td>
+                                    <td class="align-middle text-center" colspan="2">
+                                        <div class="row">
+                                            <label class="col-sm-4 col-form-label mt-1"
+                                                   for="basic-icon-default-fullname">Total Pagar</label>
+                                            <div class="col-sm-8">
+                                                <input
+                                                        type="text"
+                                                        id="total-payment"
+                                                        name="total-payment"
+                                                        class="form-control text-right font-weight-bold"
+                                                        placeholder="0.00"
+                                                        value="{{ order_obj.total|floatformat:2|safe }}"
+                                                        aria-label="Total"
+                                                        readonly
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle text-center" colspan="3">
+                                        <div class="row content-center">
+                                            <label class="col-sm-4 col-form-label mt-1"
+                                                   for="basic-icon">Total</label>
+                                            <div class="col-sm-8">
+                                                <input
+                                                        type="text"
+                                                        id="sum-payment"
+                                                        name="sum-payment"
+                                                        class="form-control text-right  font-weight-bold"
+                                                        placeholder="0.00"
+                                                        aria-label="Total"
+                                                        readonly
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group align-self-center mb-0">
+                                <div class="form-group align-self-center mb-0">
+                                    <label for="date-invoice" class="form-label mb-0">Fecha</label>
+                                    <input class="form-control" type="date" value="{{ date_now }}" id="date-invoice"
+                                           name="date-invoice">
+                                </div>
+                                <div class="form-group align-self-center mb-0" id="form-check">
+                                    <hr class="my-0"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input"
+                                                {% if order_obj.doc == '0' %} checked{% endif %}
+                                               id="radioSuccess1">
+                                        <label class="form-check-label" for="radioSuccess1">Ninguna
+                                        </label>
+                                    </div>
+                                    <hr class="my-0"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input" id="radioSuccess2"
+                                                {% if order_obj.doc == '1' %} checked{% endif %}>
+                                        <label class="form-check-label" for="radioSuccess2">Factura
+                                        </label>
+                                    </div>
+                                    <hr class="my-0"/>
+                                    <div class="icheck-material-success">
+                                        <input type="radio" name="r3" class="form-check-input" id="radioSuccess3"
+                                                {% if order_obj.doc == '2' %} checked{% endif %}>
+                                        <label class="form-check-label" for="radioSuccess3">Boleta
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label mb-0 mt-0"
+                                           for="basic-icon">Total Dinero</label>
+                                    <input
+                                            type="text"
+                                            id="total-paid"
+                                            name="total-paid"
+                                            autofocus
+                                            class="form-control text-right  font-weight-bold"
+                                            placeholder="S/. 0.00"
+                                            value="{{ order_obj.paid|safe }}"
+                                            aria-label="Total Paid"
+                                    />
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label mb-0 mt-1"
+                                           for="basic-icon">Total Vuelto</label>
+                                    <input
+                                            type="text"
+                                            id="total-turned"
+                                            name="total-turned"
+                                            autofocus
+                                            class="form-control text-right  font-weight-bold"
+                                            placeholder="S/. 0.00"
+                                            disabled
+                                            aria-label="Total Paid"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-print" onclick="printSocketCash({{ order_obj.number }})" class="btn btn-success">
+                Imprimir
+            </button> &nbsp;
+            <button type="button" id="btn-close" onclick="FocusNumber()" class="btn btn-light" data-dismiss="modal">
+                Cerrar
+            </button> &nbsp;
+            <button type="button" class="btn btn-light" onclick="SavePayments({{ order_obj.number }})">Registrar
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var payments_set =
+        [
+            {% for p in type_payment_set %}
+                [
+                    '{{ p.0 }}',
+                    '{{ p.1 }}'
+                ],
+            {% endfor %}
+        ];
+    var casing_set =
+        [
+            {% for c in casing_set %}
+                [
+                    '{{ c.id }}',
+                    '{{ c.name }}'
+                ],
+            {% endfor %}
+        ];
+    var bank_set =
+        [
+            {% for b in bank_set %}
+                [
+                    '{{ b.id }}',
+                    '{{ b.name }}'
+                ],
+            {% endfor %}
+        ];
+    TotalPayment()
+    $('tbody#order_detail tr td.item-check div input.value-check').click(function () {
+        let tr = $(this).parent('div').parent('td.item-check').parent('tr')
+        let pk = tr.attr('d')
+        let amount = parseFloat(tr.find('td.item-amount b').text())
+        let total = parseFloat($('#invoice-total').text())
+        if ($(this).is(':checked')) {
+            UpdateOrderDetail(pk, 1)
+            $('#invoice-total').text(parseFloat(total + amount).toFixed(2))
+        } else {
+            UpdateOrderDetail(pk, 0)
+            $('#invoice-total').text(parseFloat(total - amount).toFixed(2))
+        }
+    });
+
+    function UpdateOrderDetail(od, value) {
+        $.ajax({
+            url: '/sales/update_order_detail/',
+            async: true,
+            dataType: 'json',
+            type: 'GET',
+            data: {'od': od, 'value': value},
+            success: function (response) {
+                if (response.status) {
+                    toastr.success(response.message)
+                } else {
+                    toastr.error(response.message)
+                }
+            },
+            fail: function (response) {
+                toastr.error('Error de operación!');
+            }
+        });
+    }
+
+    function AddRow() {
+        let payment = $('#sum-payment').val()
+        let total = parseFloat($('#total-payment').val())
+        if (payment === '') {
+            payment = parseFloat('0.00')
+        } else {
+            payment = parseFloat(payment)
+        }
+        let options = '<option value="0">Seleccione</option>';
+        for (let i = 0; i < payments_set.length; i++) {
+            options = options + '<option value="' + payments_set[i][0] + '">' + payments_set[i][1] + '</option>'
+        }
+        let account = '<option value="0">Seleccione</option>';
+        let amount = total - payment
+        if (amount <= 0) {
+            toastr.info('El monto maximo de pago es ' + total.toString())
+            return false
+        }
+        $('tbody#payments_detail').append(
+            '<tr class="text-uppercase text-center p-0 item-row" pk="0">' +
+            '<td class="align-middle p-1 item-number"></td>' +
+            '<td class="align-middle p-1 item-date">' + '<input type="date" class="form-control value-date" value="{{ date_now }}" style="width: 140px;">' + '</td>' +
+            '<td class="align-middle p-1 item-type">' + '<select class="form-control value-type">' + options + '</td>' +
+            '<td class="align-middle p-1 item-account">' + '<select class="form-control value-account">' + account + '</td>' +
+            '<td class="align-middle p-1 item-amount">' + '<input type="number" step="0.01" min="0.00" class="form-control text-end value-amount" value="' + parseFloat(amount).toFixed(2) + '" placeholder="0.00">' + '</td>' +
+            '<td class="align-middle p-1 item-code">' + '<input type="text" class="form-control value-code" value="" placeholder="Operación">' + '</td>' +
+            '<td class="align-middle p-1 item-option">' +
+            '<button type="button" class="btn btn-light value-delete">' +
+            '<i class="icon-trash"></i>' +
+            '</button>' +
+            '</td>' +
+            '</tr>'
+        );
+        CountPayment();
+        TotalPayment()
+    }
+
+    function CountPayment() {
+        let index = 1;
+        $('tbody#payments_detail tr').each(function () {
+            $(this).attr('i', index);
+            let pk = $(this).attr('pk');
+            $(this).children('td:first').text(index);
+            $(this).find('td.item-option button.value-delete').attr('onclick', 'DeletePayment(' + index + ',' + pk + ')')
+            index++;
+        });
+    };
+
+    function DeletePayment(i, pk) {
+        let rows = $('tbody#payments_detail').find("tr[i=" + i + "]")
+        if (pk != '0' || pk != 0) {
+            let r = confirm('¿Esta seguro de eliminar el pago?');
+            if (r == true) {
+                $.ajax({
+                    url: '/accounting/delete_payment/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': pk},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                            rows.remove();
+                            CountPayment();
+                            TotalPayment()
+                        } else {
+                            toastr.error(response.message)
+                        }
+                    },
+                    fail: function (response) {
+                        toastr.error('Error de operación!');
+                    }
+                });
+            } else {
+                return false
+            }
+        } else {
+            rows.remove();
+            CountPayment();
+            TotalPayment()
+        }
+
+    }
+
+    function TotalPayment() {
+        let t = parseFloat('0.00')
+        $('tbody#payments_detail tr td.item-amount input.value-amount').each(function () {
+            let v = $(this).val()
+            if (isNaN(v) || v == '') {
+                v = parseFloat('0.00')
+            } else {
+                v = parseFloat($(this).val())
+            }
+            t = t + v;
+        });
+        $('#sum-payment').val(t.toFixed(2));
+    };
+
+
+    function SavePayments(n) {
+        let person_type = $('#person-document').val()
+        let option = ''
+        let total_payment = parseFloat($('#total-payment').val())
+        let total_invoice = parseFloat($('#invoice-total').text())
+        if (total_invoice <= 0) {
+            toastr.warning('Es necesario chekear almenos un item')
+            return false
+        }
+        $('#modal-loader').css('display', '')
+        let none = $('#radioSuccess1').is(":checked")
+        if (none) {
+            option = '0'
+        }
+        let invoice = $('#radioSuccess2').is(":checked")
+        if (invoice) {
+            option = '1'
+            if (person_type != '6') {
+                toastr.warning('El tipo de documento debe ser RUC')
+                return false
+            }
+        }
+        let ticket = $('#radioSuccess3').is(":checked")
+        if (ticket) {
+            option = '2'
+            if (person_type != '1') {
+                toastr.warning('El tipo de documento debe ser DNI')
+                return false
+            }
+        }
+
+        let Payment = {
+            "Detail": [],
+            "order": $('#id-order').val(),
+            "date": $('#date-invoice').val(),
+            "person": $('#client-pk').val(),
+            "voucher": option,
+            "total": total_payment,
+            "total_invoice": total_invoice,
+            "total_paid": $('#total-paid').val()
+        };
+        let validate = true
+        let payment_type = true
+        $("tbody#payments_detail tr").each(function () {
+            let row = $(this)
+            let date = row.find('td.item-date input.value-date').val()
+            if (date === '' || date === '0') {
+                toastr.warning('Ingrese la fecha en la fila = ' + row.attr('i'))
+                validate = false
+                return validate
+            }
+            let type = row.find('td.item-type select.value-type').val()
+            if (type === '' || type === '0') {
+                toastr.warning('Seleccione la modalidad de pago en la fila = ' + row.attr('i'))
+                validate = false
+                return validate
+            }
+            if (type === 'C') {
+                payment_type = false
+            }
+            let account = row.find('td.item-account select.value-account').val()
+            if (account === '' || account === '0') {
+                toastr.warning('Seleccione la cuenta en la fila = ' + row.attr('i'))
+                validate = false
+                return validate
+            }
+            let amount = row.find('td.item-amount input.value-amount').val()
+            if (amount === '' || parseFloat(amount) === 0) {
+                toastr.warning('Ingrese el monto en la fila = ' + row.attr('i'))
+                validate = false
+                return validate
+            }
+            let code = row.find('td.item-code input.value-code').val()
+            let pk = row.attr('pk')
+
+            let PaymentDetail = {
+                "pk": pk,
+                "date": date,
+                "type": type,
+                "casing": account,
+                "amount": parseFloat(amount).toFixed(2),
+                "code": code
+            };
+            Payment.Detail.push(PaymentDetail);
+        })
+        if (payment_type === false && option !== '0') {
+            toastr.warning('Necesita realizar el pago en su totalidad para poder generar un comprobante electrónico')
+            return false
+        }
+        if (validate === false) {
+            return false
+        }
+        let payment_total = parseFloat($('#total-payment').val())
+        let total = parseFloat($('#sum-payment').val())
+        if ((payment_total !== total) && (option !== 'N')) {
+            toastr.warning('Es necesario realizar el pago en su totalidad para la emisión del comprobante')
+            return false
+        }
+        let r = confirm('¿Esta seguro de registrar el pago?');
+        if (r === true && validate === true) {
+            $.ajax({
+                url: '/accounting/payment_save/',
+                async: true,
+                dataType: 'json',
+                type: 'POST',
+                data: {'payment': JSON.stringify(Payment)},
+                success: function (response) {
+                    if (response.success) {
+
+                        if (response.pk) {
+                            let codeText = 'pago_' + response.pk + '|' + response.pk;
+                            toastr.success('Pago registrado correctamente')
+                            {#if (option === '0') {#}
+                            {#    toastr.success('Pago registrado correctamente')#}
+                            {#    window.open("/accounting/ticket/" + response.pk + "/", '_blank');#}
+                            {# } else {#}
+                            {#    codeText = 'pago_' + response.pk + '|' + response.pk;#}
+                            {#    window.open("/accounting/invoice/" + response.pk + "/", '_blank');#}
+                            {# }#}
+                            {#sendFirebaseCash(codeText, 'C', 1)#}
+                            SearchOrder(response.number)
+                            $('#btn-close').trigger('click')
+                        }else{
+                            toastr.error(response.message)
+                        }
+                    } else {
+                         console.log(response)
+                        toastr.error(response.message)
+                    }
+                    $('#modal-loader').css('display', 'none')
+                },
+                fail: function (response) {
+                    toastr.error('Error de operación!');
+                    $('#modal-loader').css('display', 'none')
+                }
+            });
+        } else {
+            $('#modal-loader').css('display', 'none')
+        }
+    }
+
+    function sendFirebaseCash(codeText, userOffice, userPrinter) {
+        firebase.database().ref(`printers/Junior/1/${userOffice}/${userPrinter}/order`).set(codeText);
+    }
+
+
+    $('#client-number').keypress(function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault()
+            $(this).trigger("enterKey");
+            let number = $('#client-number').val();
+            let document = $('#person-document').val();
+            if ((document === '1') && (number.length !== 8)) {
+                toastr.warning('El DNI debe contener 8 digitos');
+                return false;
+            } else {
+                if ((document === '6') && (number.length !== 11)) {
+                    toastr.warning('El RUC debe contener 11 digitos');
+                    return false;
+                }
+            }
+            $('#id-loading').css('display', '')
+            $.ajax({
+                url: '/sales/get_person_by_document/',
+                dataType: 'json',
+                type: 'GET',
+                data: {
+                    'number': number,
+                    'document': document,
+                    'type': 'C'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#client-pk").val(response.id);
+                        $("#client-names").val(response.names);
+                        $("#client-email").val(response.email);
+                    } else {
+                        toastr.error(response.message)
+                    }
+                    $('#id-loading').css('display', 'none')
+                },
+                fail: function (response) {
+                    toastr.error('Ocurrio un problema en el proceso')
+                }
+            });
+        }
+    });
+    $('#client-email').keypress(function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault()
+            $(this).trigger("enterKey");
+            UpdateClient($('#client-email').val());
+        }
+    });
+
+    function UpdateClient(value) {
+        if ($('#client-pk').val() === '' || $('#client-pk').val() === '0') {
+            toastr.warning('No existe ningun cliente seleccionado');
+            return false;
+        }
+        if ($('#client-number').val() === '') {
+            toastr.warning('Ingrese el numero de documento');
+            return false;
+        }
+        if ($('#client-names').val() === '') {
+            toastr.warning('Ingrese el nombre/razon social correctamente');
+            return false;
+        }
+        if (value === '') {
+            toastr.warning('Ingrese el valor principal a actualizar');
+            return false;
+        }
+
+        $.ajax({
+            url: '/hrm/update_person/',
+            dataType: 'json',
+            type: 'POST',
+            data: {
+                'pk': $('#client-pk').val(),
+                'number': $('#client-number').val(),
+                'names': $("#client-names").val(),
+                {#'address': $("#person-address").val(),#}
+                {#'phone': $("#person-phone").val(),#}
+                'email': $("#client-email").val(),
+            },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.error(response.message)
+                }
+            },
+            error: function (response) {
+                toastr.error('Ocurrio problemas en el proceso')
+            }
+        });
+    }
+
+    $(document).on('change keyup', '#person-document', function () {
+        let valor = $(this).val();
+        $('#client-pk').val('')
+        $('#client-number').val('')
+        $('#client-names').val('')
+        $('#client-email').val('')
+        if (valor === '1') {
+            $('#client-number').attr('maxlength', 8)
+        } else {
+            if (valor === '6') {
+                $('#client-number').attr('maxlength', 11)
+            }
+        }
+    })
+    $('#total-paid').keypress(function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault()
+            $(this).trigger("enterKey");
+            SavePayments('')
+        }
+    });
+    $(document).on('change keyup', '#total-paid', function () {
+        let valor = $(this).val();
+        let sum_payment = $('#sum-payment').val()
+        if (valor === '' || isNaN(valor)) {
+            valor = parseFloat('0.00').toFixed(2)
+        }
+        if (sum_payment === '' || isNaN(sum_payment)) {
+            sum_payment = parseFloat('0.00').toFixed(2)
+        }
+        if (parseFloat(valor) >= parseFloat(sum_payment)) {
+            $('#total-turned').val(parseFloat(valor - sum_payment).toFixed(2))
+        } else {
+            $('#total-turned').val(parseFloat('0.00').toFixed(2))
+        }
+
+    })
+    if ($('tbody#payments_detail tr').length == 0) {
+        AddRow();
+        $('tbody#payments_detail tr td.item-type select.value-type').val('E')
+        $('tbody#payments_detail tr td.item-type select.value-type').trigger('change')
+        $('tbody#payments_detail tr td.item-account select.value-account').val(1)
+        $('tbody#payments_detail tr td.item-account select.value-account').trigger('change')
+    }
+
+    function FocusNumber() {
+        $('#order-number').val('')
+        setTimeout(() => {
+            $('#order-number').focus()
+        }, 500);
+    }
+
+    async function printSocketCash($data) {
+
+        let codeText = $data + ' ' + 'C';
+
+        socket = await new WebSocket("ws://localhost:5000/ws");
+        socket.onopen = async function (data) {
+            console.log("Socket connected");
+            await socket.send(codeText);
+            await socket.close();
+        };
+        socket.onmessage = function (data) {
+            console.log("Socket message received: " + data.data);
+        };
+        socket.onclose = function (data) {
+            console.log("Socket closed");
+        };
+    }
+
+
+</script>

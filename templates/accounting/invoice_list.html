@@ -1,0 +1,356 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Comprobantes
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3 h-100">
+        <div class="card-header pt-2 pb-2">
+            <div class="row d-flex">
+                <div class="col-sm-3 col-md-3">
+                    <h5 class="card-title fw-">Envio de comprobantes pendientes a la sunat</h5>
+                    <h6 class="card-subtitle text-muted">Facturas Electrónicas y Boletas Electrónicas</h6>
+                </div>
+
+                <div class="col-sm-5 col-md-5">
+                    <button type="button" class="btn btn-success mr-1 btn-selectall" id="btn-selectall">
+                        <i class="fa fa-check-circle-o" aria-hidden="true"></i> Seleccionar todo
+                    </button>
+
+                    <button type="button" class="btn btn-light mr-1 btn-undoselect" id="btn-undoselect">
+                        <i class="fa fa-undo" aria-hidden="true"></i> Deseleccionar todo
+                    </button>
+                </div>
+
+
+                <div class="col-sm-3 col-md-3 align-self-center">
+                    <div class="form-group align-self-center form-check-inline m-0" id="form-check">
+                        <div class="icheck-material-warning p-1">
+                            <input type="radio" name="inlineRadioOptions" class="form-check-input" id="invoice-f"
+                                   value="1" checked>
+                            <label class="form-check-label text-white" for="invoice-f">Factura
+                            </label>
+                        </div>
+                        <div class="icheck-material-warning p-1">
+                            <input type="radio" name="inlineRadioOptions" class="form-check-input" id="invoice-b"
+                                   value="2">
+                            <label class="form-check-label text-white" for="invoice-b">Boleta
+                            </label>
+                        </div>
+                        <div class="icheck-material-warning p-1">
+                            <input type="radio" name="inlineRadioOptions" class="form-check-input" id="invoice-pending"
+                                   value="D">
+                            <label class="form-check-label text-white" for="invoice-pending">Pendientes por Anular
+                            </label>
+                        </div>
+                    </div>
+
+
+                    {#                    <small class="text-light fw-semibold d-block">Comprobante</small>#}
+                    {#                    <div class="form-check form-check-inline mt-1">#}
+                    {#                        <input class="form-check-input" type="radio" name="inlineRadioOptions"#}
+                    {#                               id="invoice-f" value="1" checked>#}
+                    {#                        <label class="form-check-label" for="invoice-f">Factura Electrónica</label>#}
+                    {#                    </div>#}
+                    {#                    <div class="form-check form-check-inline">#}
+                    {#                        <input class="form-check-input" type="radio" name="inlineRadioOptions"#}
+                    {#                               id="invoice-b" value="2">#}
+                    {#                        <label class="form-check-label" for="invoice-b">Boleta Electrónica</label>#}
+                    {#                    </div>#}
+                </div>
+
+
+                <div class="col-sm-1 col-md-1 text-center send-invoice">
+                    <button class="btn btn-light" onclick="SendNubefact()">
+                        <i class="icon-control-play"></i>
+                    </button>
+                </div>
+                <div class="col-sm-1 col-md-1 text-center cancel-invoice d-none">
+                    <button class="btn btn-danger" onclick="cancelInvoices()">
+                        <i class="icon-control-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0"/>
+        <div class="card-body p-2 h-100">
+            <div id="detail-invoice" class="table-responsive-sm">
+                {% include "accounting/invoice_grid_list.html" %}
+            </div>
+        </div>
+        {#        <div class="card">#}
+        {#            <div class="card-body p-2">#}
+        {#                <div class="row">#}
+        {#                    <div class="col-md-8"></div>#}
+        {#                    <div class="col-md-3">#}
+        {#                        <div class="row mb-2 pe-4 ps-4">#}
+        {#                            <label class="col-sm-4 col-form-label pe-1 ps-1"#}
+        {#                                   for="total">Total</label>#}
+        {#                            <div class="col-sm-8 pr-1 pl-1">#}
+        {#                                    <input#}
+        {#                                            type="text"#}
+        {#                                            id="total"#}
+        {#                                            name="total"#}
+        {#                                            class="form-control text-right text-danger"#}
+        {#                                            placeholder="S/. 0.00"#}
+        {#                                            aria-label="Total"#}
+        {#                                            readonly#}
+        {#                                    />#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                    <div class="col-md-1"></div>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+    </div>
+    <div class="text-center align-self-center" id="id-loading" style="
+                display: none;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                background: #e9ecef;
+                opacity: 0.5;
+                width: 100%;
+                height: 100%;
+                padding-top: 21em;"><p class="text-primary">Cargando...</p>
+        <div class="loader5"></div>
+    </div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $("#invoice-f,#invoice-b,#invoice-pending").click(function () {
+            if ($("#invoice-f").is(':checked')) {
+                $('.cancel-invoice').addClass('d-none');
+                $('.send-invoice').removeClass('d-none');
+                SearchInvoice($("#invoice-f").val())
+            }
+            if ($("#invoice-b").is(':checked')) {
+                $('.cancel-invoice').addClass('d-none');
+                $('.send-invoice').removeClass('d-none');
+                SearchInvoice($("#invoice-b").val())
+            }
+            if ($("#invoice-pending").is(':checked')) {
+                $('.cancel-invoice').removeClass('d-none');
+                $('.send-invoice').addClass('d-none');
+                SearchInvoiceToCanceled($("#invoice-pending").val())
+            }
+        });
+
+        function SearchInvoice(type) {
+            $.ajax({
+                url: '/accounting/get_type_invoice/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'type': type},
+                success: function (data) {
+                    $('#detail-invoice').empty().html(data.grid);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        function SearchInvoiceToCanceled(status) {
+            $.ajax({
+                url: '/accounting/get_pending_invoices_to_canceled/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'status': status},
+                success: function (data) {
+                    $('#detail-invoice').empty().html(data.grid);
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        }
+
+        function sendNubefactInvoiceAndCancel(order_id) {
+            $('#id-loading').css('display', '')
+            if (order_id) {
+                if (parseInt(order_id) > 0) {
+                    $.ajax({
+                        url: '/accounting/invoice_sunat_and_cancel/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'order_id': order_id},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                console.log(response)
+                                {#toastr.warning(response.messageTwo);#}
+                                $('#id-loading').css('display', 'none')
+                                row.remove()
+                            } else {
+                                toastr.error("Error al enviar: " + response.error, response.code);
+                                toastr.error("Error al anular: " + response.errorA, response.codeA);
+                            }
+                            $('#id-loading').css('display', 'none')
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                            $('#id-loading').css('display', 'none')
+                        }
+                    });
+                }
+            }
+        }
+
+        function sendReceipt(order_id) {
+            $('#id-loading').css('display', '')
+            if (order_id) {
+                if (parseInt(order_id) > 0) {
+                    $.ajax({
+                        url: '/accounting/send_receipt_sunat/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'order_id': order_id},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                //row.remove()
+                            } else {
+                                toastr.error("Error al enviar: " + response.error, response.code);
+                            }
+                            $('#id-loading').css('display', 'none')
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                            $('#id-loading').css('display', 'none')
+                        }
+                    });
+                }
+            }
+        }
+        function sendReceiptCancel(order_id) {
+            $('#id-loading').css('display', '')
+            if (order_id) {
+                if (parseInt(order_id) > 0) {
+                    $.ajax({
+                        url: '/accounting/send_receipt_cancel/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'order_id': order_id},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                row.remove()
+                            } else {
+                                toastr.error(response.error, "Error al enviar");
+                            }
+                            $('#id-loading').css('display', 'none')
+                        },
+                        error: function (response) {
+                            toastr.error('Ocurrio un problema')
+                            $('#id-loading').css('display', 'none')
+                        }
+                    });
+                }
+            }
+        }
+        function cancelInvoices() {
+            if (checkGrid() === false) {
+                toastr.warning('¡Favor de seleccionar al menos Comprante un antes de enviar!', 'Error de LLenado!');
+                return false;
+            }
+            $('#id-loading').css('display', '')
+            $("tbody#invoice-nubefact tr").each(function () {
+                let row = $(this);
+                let order = row.attr('order');
+                let condition = row.attr('condition');
+                let status = row.attr('status');
+                let check = row.find('td.item-check div input.value-check').is(':checked');
+                if (check) {
+                    if (condition === 'PA' && status === 'E'){
+                        if (parseInt(order) > 0) {
+                            $.ajax({
+                                url: '/accounting/invoice_cancel_sunat/',
+                                async: true,
+                                dataType: 'json',
+                                type: 'GET',
+                                data: {'o': order},
+                                success: function (response) {
+                                    if (response.success) {
+                                        toastr.success(response.message);
+                                        row.remove()
+                                    } else {
+                                        toastr.error(response.error, "Error al enviar");
+                                    }
+                                    $('#id-loading').css('display', 'none')
+                                },
+                                error: function (response) {
+                                    toastr.error('Ocurrio un problema')
+                                    $('#id-loading').css('display', 'none')
+                                }
+                            });
+                        }
+                    } else {
+                        toastr.warning('¡El comprobante seleccionado no se anulo porque no cumple las condiciones!, Contactar con Sistemas', 'Mensaje!');
+                    }
+                }
+            });
+        }
+
+        function SendNubefact() {
+            if (checkGrid() === false) {
+                toastr.warning('¡Favor de seleccionar al menos Comprante un antes de enviar!', 'Error de LLenado!');
+                return false;
+            }
+            $('#id-loading').css('display', '')
+            $("tbody#invoice-nubefact tr").each(function () {
+                let row = $(this)
+                let order = row.attr('order')
+                let check = row.find('td.item-check div input.value-check').is(':checked')
+                if (check) {
+                    if (parseInt(order) > 0) {
+                        $.ajax({
+                            url: '/accounting/invoice_sunat/',
+                            async: true,
+                            dataType: 'json',
+                            type: 'GET',
+                            data: {'o': order},
+                            success: function (response) {
+                                if (response.success) {
+                                    row.remove()
+                                } else {
+                                    toastr.error(response.error, response.code)
+                                }
+                                $('#id-loading').css('display', 'none')
+                            },
+                            error: function (response) {
+                                toastr.error('Ocurrio un problema')
+                                $('#id-loading').css('display', 'none')
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function checkGrid() {
+            let fchek = false;
+            $('#invoice-nubefact tr td input[type="checkbox"]').each(function () {
+                if ($(this).prop('checked')) {
+                    fchek = true;
+                }
+            });
+            return fchek;
+        }
+
+        $(document).on('click', '.btn-selectall', function () {
+            $('input[type="checkbox"][class="value-check"]').prop('checked', true);
+        });
+        $(document).on('click', '.btn-undoselect', function () {
+            $('input[type="checkbox"][class="value-check"]').prop('checked', false);
+        });
+    </script>
+{% endblock extrajs %}

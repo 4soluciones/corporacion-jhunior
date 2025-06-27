@@ -1,0 +1,72 @@
+<table class="table table-sm table-bordered">
+    <thead>
+    <tr class="text-center">
+        <th>Nº Comprobante</th>
+        <th>Tipo Comprobante</th>
+        <th>Orden</th>
+        <th>Pago</th>
+        <th>Fecha</th>
+        <th>Nombres y Apellidos(Razón Social)</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody id="invoice-nubefact">
+    {% for o in order_set %}
+        <tr class="text-center" order="{{ o.id }}" condition="{{ o.condition }}" status="{{ o.status }}">
+            <td class="item-check align-middle p-1">
+                <div class="icheck-material-warning m-0">
+                    <input type="checkbox" class="value-check" value="" id="{{ o.bill_serial }}-{{ o.bill_number }}" checked>
+                    <label class="label-default" for="{{ o.bill_serial }}-{{ o.bill_number }}">{{ o.bill_serial }}-{{ o.bill_number }}</label>
+                </div>
+{#                <div class="form-check">#}
+{#                    <input class="form-check-input" type="checkbox" value=""#}
+{#                           id="{{ o.bill_serial }}-{{ o.bill_number }}" checked>#}
+{#                    <label class="form-check-label" for="{{ o.bill_serial }}-{{ o.bill_number }}">#}
+{#                        {{ o.bill_serial }}-{{ o.bill_number }}#}
+{#                    </label>#}
+{#                </div>#}
+            </td>
+            <td class="align-middle p-1">{{ o.get_doc_display }}</td>
+            <td class="align-middle p-1">
+                {{ o.number }}
+            </td>
+            <td class="align-middle p-1">
+                {{ o.payments_set.first.get_payment_display }}
+            </td>
+            <td class="align-middle p-1">{{ o.bill_date|date:'d-m-Y' }}</td>
+            <td class="text-left text-uppercase align-middle p-1" style="white-space: normal; word-wrap: break-word"><p>{{ o.person.names }}</p></td>
+            <td class="text-right align-middle p-1">S/. {{ o.payment_invoice|safe }}</td>
+{#            {% if o.status == 'D' and o.doc == '1' %}#}
+{#                <td class="text-center align-middle p-1">#}
+{#                    <button type="button" class="btn btn-danger btn-sm" pk="{{ o.id }}" onclick="sendNubefactInvoiceAndCancel({{ o.id }})">Enviar y Anular</button>#}
+{#                </td>#}
+{#            {% endif %}#}
+{#            {% if o.status == 'D' and o.doc == '2' %}#}
+{#                {% if o.bill_enlace_pdf %}#}
+{#                    {% if o.validate_bill_date %}#}
+{#                        <td class="text-center align-middle p-1">#}
+{#                            <button type="button" class="btn btn-danger btn-sm" pk="{{ o.id }}"#}
+{#                                    onclick="sendReceiptCancel({{ o.id }})">Anular#}
+{#                            </button>#}
+{#                        </td>#}
+{#                    {% else %}#}
+{#                        <td class="text-center align-middle p-1">#}
+{#                            Anulación Pendiente#}
+{#                        </td>#}
+{#                    {% endif %}#}
+{#                {% else %}#}
+{#                    <td class="text-center align-middle p-1">#}
+{#                        <button type="button" class="btn btn-danger btn-sm" pk="{{ o.id }}"#}
+{#                                onclick="sendReceipt({{ o.id }})">Enviar#}
+{#                        </button>#}
+{#                    </td>#}
+{#                {% endif %}#}
+{#            {% endif %}#}
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="7"><p class="text-primary">No existen comprobantes pendientes</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,91 @@
+{% load operations %}
+<table id="example1" class="table table-sm table-bordered table-striped table-responsive" >
+    <thead>
+    <tr class="text-center">
+{#        <th>Nº</th>#}
+        <th>Codigo</th>
+{#        <th>Tipo</th>#}
+        <th>Comprobante</th>
+{#        <th>Tipo Comprobante</th>#}
+        <th>Estado</th>
+        <th>Emision</th>
+        <th>Ingreso</th>
+        <th>Documento</th>
+        <th>Proveedor</th>
+        <th>Total</th>
+        <th>moneda</th>
+        <th>T/C</th>
+        <th class="text-success">TOTAL SOLES</th>
+        <th>Detalle de productos</th>
+    </tr>
+    </thead>
+    <tbody id="order_list">
+    {% for o in order_set %}
+        <tr class="text-center" order="{{ o.id }}" style="font-size: 13px">
+{#            <td class="align-middle p-1">{{ o.number }}- {{ forloop.counter }}</td>#}
+            <td class="align-middle p-1">
+                {{ o.get_code }}
+            </td>
+{#            <td class="align-middle p-1">{{ o.get_type_display }}</td>#}
+            <td class="align-middle p-1">{{ o.get_doc_display }}<br>{{ o.invoice_number }}</td>
+{#            <td class="align-middle p-1">{{ o.get_doc_display }}</td>#}
+            <td class="align-middle p-1">
+                {% if o.status == 'P' %}
+                    <button type="button" class="btn btn-warning" onclick="PassPurchase({{ o.id }})">APROBAR</button>
+                {% elif o.status == 'R' or o.status == 'E'%}
+                    <button type="button" class="btn btn-danger" onclick="CancelPurchase({{ o.id }})">ANULAR</button>
+                {% elif o.status == 'A' or o.status == 'N' %}
+                    ANULADO
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="align-middle p-1">{{ o.create_at|date:'d-m-Y' }}</td>
+            <td class="align-middle p-1">{{ o.invoice_date|date:'d-m-Y' }}</td>
+            <td class="align-middle p-1">{{ o.date_document|date:'d-m-Y' }}</td>
+            <td class="text-left text-uppercase align-middle p-1" style="white-space: normal; word-wrap: break-word"><p
+                    class="m-0">{{ o.person.names }}</p></td>
+            <td class="text-right align-middle p-1">{{ o.total|safe }}</td>
+            <td class="align-middle p-1">{{ o.get_coin_display }}</td>
+            <td class="text-right align-middle p-1">{{ o.change|safe }}</td>
+            <td class="text-right align-middle p-1 text-success font-weight-bold">{{ o.total|multiply_6:o.change }}</td>
+            <td class="align-middle p-1">
+                <div class="card m-0 p-0">
+                    <div class="card-body p-1">
+                        <div class="row ml-1 mr-1 bg-light text-warning" style="width: 1100px">
+{#                            <div class="col-md-1 p-1">Nº</div>#}
+                            <div class="col-md-1 p-1">CODIGO</div>
+                            <div class="col-md-5 p-1">DESCRIPCIÓN PRODUCTO</div>
+{#                            <div class="col-md-2 p-1">MEDIDAS</div>#}
+                            <div class="col-md-1 p-1 text-right">CANTIDAD</div>
+                            <div class="col-md-1 p-1">UNIDAD</div>
+                            <div class="col-md-1 p-1 text-right">PRECIO</div>
+                            <div class="col-md-1 p-1 text-right">SUBTOTAL</div>
+                            <div class="col-md-1 p-1 text-right text-success">PREC. SOLES</div>
+                            <div class="col-md-1 p-1 text-right text-success">SUB. SOLES</div>
+                        </div>
+                        {% for d in o.orderdetail_set.all %}
+                            <div class="row ml-1 mr-1" d="{{ d.id }}" style="width: 1100px">
+{#                                <div class="col-md-1 p-1">{{ forloop.counter }}</div>#}
+                                <div class="col-md-1 p-1">{{ d.product.code }}</div>
+                                <div class="col-md-5 p-1 text-left">{{ d.product.name }} {{ d.product.measure }}</div>
+{#                                <div class="col-md-2 p-1">{{ d.product.measure }}</div>#}
+                                <div class="col-md-1 p-1 text-right">{{ d.quantity|safe }}</div>
+                                <div class="col-md-1 p-1">{{ d.get_unit_display }}</div>
+                                <div class="col-md-1 p-1 text-right">{{ d.price|safe }}</div>
+                                <div class="col-md-1 p-1 text-right">{{ d.amount|safe }}</div>
+                                <div class="col-md-1 p-1 text-right text-success">{{ d.price|multiply_6:o.change }}</div>
+                                <div class="col-md-1 p-1 text-right text-success">{{ d.amount|multiply_6:o.change }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="15"><p class="text-white">No existen resultados</p></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

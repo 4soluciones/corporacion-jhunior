@@ -1,0 +1,135 @@
+{% load static %}
+<div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 1350px!important;">
+    <div class="modal-content bg-primary">
+        <div class="modal-header">
+            <h6 class="modal-title">
+                REPORTE DE CAJA
+            </h6>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body p-1" style="font-size: 13px;">
+            <div class="row row-group m-0">
+                <form class="col-md-2" id="formReport"
+                      action="{% url 'accounting:get_order_list' %}"
+                      method="POST">
+                    {% csrf_token %}
+                    <div class="form-group align-self-center mb-0">
+                        <hr class="my-1"/>
+                        <div class="icheck-material-success">
+                            <input type="radio" name="rd" class="form-check-input"
+                                   id="rd1" value="0">
+                            <label class="form-check-label" for="rd1">Todos
+                            </label>
+                        </div>
+                        <hr class="my-0"/>
+                        <div class="icheck-material-success">
+                            <input type="radio" name="rd" class="form-check-input" id="rd2" value="1">
+                            <label class="form-check-label" for="rd2">Solo Factura
+                            </label>
+                        </div>
+                        <hr class="my-0"/>
+                        <div class="icheck-material-success">
+                            <input type="radio" name="rd" class="form-check-input" id="rd3" value="2">
+                            <label class="form-check-label" for="rd3">Solo Boleta
+                            </label>
+                        </div>
+                        <hr class="my-0"/>
+                        <div class="icheck-material-success">
+                            <input type="radio" name="rd" class="form-check-input" id="rd4" value="3">
+                            <label class="form-check-label" for="rd4">Solo Ticket
+                            </label>
+                        </div>
+                        <hr class="my-0"/>
+                        <div class="icheck-material-success">
+                            <input type="radio" name="rd" class="form-check-input" id="rd5" checked value="4">
+                            <label class="form-check-label" for="rd5">Ordenes pendientes
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id-date-closing" class="m-0">Fecha Inicial</label>
+                        <input type="date" class="form-control" id="date-init"
+                               name="date-init" required
+                               value="{{ my_date }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="id-date-closing" class="m-0">Fecha Final</label>
+                        <input type="date" class="form-control" id="date-end"
+                               name="date-end" required
+                               value="{{ my_date }}">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success w-100"><i
+                                class="icon-magnifier"></i> Buscar
+                        </button>
+                    </div>
+{#                    <div class="form-group text-center">#}
+{#                        <button type="button" class="btn btn-warning w-100"#}
+{#                                class="icon-printer"></i> Imprimir#}
+{#                        </button>#}
+{#                    </div>#}
+{#                    <div class="form-group text-center">#}
+{#                        <button type="button" class="btn btn-danger w-100"#}
+{#                                class="icon-arrow-down"></i> PDF#}
+{#                        </button>#}
+{#                    </div>#}
+                </form>
+                <div class="col-md-6 p-0 m-0" id="table-detail">
+
+                </div>
+                <div class="col-md-4 p-0 m-0" id="order-detail">
+
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('#formReport').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formReport').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    $('#table-detail').empty().html(response.grid);
+                    $('#order-detail').empty()
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un error');
+            }
+        });
+    });
+
+
+    function OrderDetail(o) {
+        $.ajax({
+            url: '/accounting/get_order_detail/',
+            async: true,
+            dataType: 'json',
+            type: 'GET',
+            data: {'o': o},
+            success: function (data) {
+                $('#order-detail').empty().html(data.grid);
+            },
+            error: function (response) {
+                toastr.error('Ocurrio un problema')
+            }
+        });
+    }
+
+</script>

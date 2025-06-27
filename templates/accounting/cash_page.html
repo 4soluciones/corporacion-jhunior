@@ -1,0 +1,77 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Ordenes - Cliente
+{% endblock title %}
+{% block body %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 p-1">
+            <div class="card" style="background-color: #c6c7c18a">
+                <div class="input-group mb-4 mt-4">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Número Orden</span>
+                    </div>
+                    <input type="text"
+                           class="form-control"
+                           id="order-number"
+                           name="order-number"
+                           maxlength="15"
+                           autocomplete="off"
+                           placeholder="Numero Orden" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+
+                <div id="payment-grid">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        $('#order-number').focus()
+        $('#order-number').keypress(function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault()
+                $(this).trigger("enterKey");
+                let number = $('#order-number').val();
+                {#SearchOrder(number)#}
+                PaymentModalShow(number)
+            }
+        });
+
+        function PaymentModalShow(n) {
+            $.ajax({
+                url: '/accounting/cash_order/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'n': n},
+                success: function (response, textStatus, xhr) {
+                    if (xhr.status === 200) {
+                        //toastr.success(response.message, '¡Bien hecho!');
+                        //console.log('grid', response.grid);
+                        //$('#modal-payment').empty().html(data.grid).modal('show');
+                        $('#payment-grid').html(response.grid)
+                        setTimeout(() => {
+                            $('#total-paid').focus();
+                            $('#total-paid').select();
+                        }, 700);
+                    }
+                },
+                error: function (jqXhr, textStatus, xhr) {
+                    if (jqXhr.status === 500) {
+                        toastr.error(jqXhr.responseJSON.error, '¡Error!');
+                        $('#order-number').focus();
+                        $('#order-number').val("");
+                    }
+                }
+            });
+        }
+
+    </script>
+{% endblock extrajs %}

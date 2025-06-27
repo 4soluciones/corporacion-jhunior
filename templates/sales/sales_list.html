@@ -1,0 +1,220 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Ordenes
+{% endblock title %}
+
+{% block body %}
+    <div class="row h-100">
+        <div class="col-md-12 h-100">
+            <div class="card h-100">
+                <div class="card-header pt-2 pb-2">
+                    <div class="row d-flex">
+                        <div class="col-sm-7 col-md-7">
+                            <h5 class="card-title fw-">Listado de ordenes</h5>
+                            <h6 class="card-subtitle text-muted">Ventas</h6>
+                        </div>
+                        <div class="col-sm-4 col-md-4 align-self-center">
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text" id="basic-addon-search31"><i
+                                        class="bx bx-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Search..." aria-label="Search..."
+                                       aria-describedby="basic-addon-search31" id="search">
+                            </div>
+                        </div>
+                        <div class="col-sm-1 col-md-1 text-center">
+                            <button class="btn rounded-pill btn-icon btn-warning" onclick="ReloadPayment()">
+                                <span class="tf-icons bx bxs-analyse"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-0"/>
+                <div class="card-body p-2 h-100">
+                    <div id="detail-items" class="table-responsive-sm text-nowrap">
+                        <table id="table-payment-list" class="table table-sm table-bordered" style="width: 100%">
+                            <thead>
+                            <tr class="text-center">
+                                <th style="width: 5%">Nº</th>
+                                <th style="width: 10%">Tipo</th>
+                                <th style="width: 45%">Nombres y Apellidos(Razón Social)</th>
+                                <th style="width: 10%">Total</th>
+                                <th style="width: 10%">Factura</th>
+                                <th style="width: 10%">Guia</th>
+                                <th style="width: 10%">Nota credito</th>
+                            </tr>
+                            </thead>
+                            <tbody id="payment-detail-list">
+                            {% for s in sales_set %}
+                                <tr class="text-center" order="{{ s.id }}">
+                                    <td>{{ s.number }}</td>
+                                    <td>{{ s.get_type_display }}</td>
+                                    <td class="text-start text-uppercase">{{ s.person.names }}</td>
+                                    <td class="text-end">S/. {{ s.total|safe }}</td>
+                                    <td class="text-end">
+                                        {% if s.bill_number %}
+                                            <button type="button"
+                                                    class="btn btn-sm rounded-pill btn-primary w-100">
+                                                {{ s.bill_serial }}-{{ s.bill_number }}
+                                            </button>
+                                        {% else %}
+                                            <button type="button"
+                                                    class="btn btn-sm rounded-pill btn-warning w-100">
+                                                Comprobante
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if s.guide_number %}
+                                            <button type="button"
+                                                    class="btn btn-sm rounded-pill btn-warning w-100">
+                                                {{ s.guide_serial }}-{{ s.guide_number }}
+                                            </button>
+                                        {% else %}
+                                            <button type="button" onclick="CreateGuia({{ s.id }})"
+                                                    class="btn btn-sm rounded-pill btn-warning w-100">
+                                                Guía
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if s.note_number %}
+                                            <button type="button"
+                                                    class="btn btn-sm rounded-pill btn-danger w-100">
+                                                {{ s.note_serial }}-{{ s.note_number }}
+                                            </button>
+                                        {% else %}
+                                            <button type="button"
+                                                    class="btn btn-sm rounded-pill btn-danger w-100">
+                                                Nota credito
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-guide" data-bs-backdrop="static" tabindex="-1" role="dialog"
+         aria-labelledby="ModalHelpTitle"
+         aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#search").keyup(function () {
+                _this = this;
+                // Show only matching TR, hide rest of them
+                $.each($("#table-payment-list tbody#payment-detail-list tr"), function () {
+                    if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+                        $(this).hide();
+                    else
+                        $(this).show();
+                });
+            });
+        });
+
+        function CreateGuia(pk) {
+            $('#modal-guide').empty();
+            $.ajax({
+                url: '/sales/modal_guide/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (data) {
+                    $('#modal-guide').html(data.grid);
+                    $('#modal-guide').modal('show');
+                },
+                error: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+         function NotaCredit(pk) {
+            window.open("/sales/credit_note/" + pk + "/", '_blank');
+        };
+        $(document).on('change', 'tbody#payments_detail tr td.item-type select.value-type', function () {
+            let val = $(this).val();
+            let row = $(this).parent('td.item-type').parent('tr')
+            let object = row.find('td.item-account select.value-account')
+            object.empty()
+            if (val === 'E') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < casing_set.length; i++) {
+                    object.append('<option value="' + casing_set[i][0] + '">' + casing_set[i][1] + '</option>')
+                }
+            } else if (val === 'D') {
+                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < bank_set.length; i++) {
+                    object.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>')
+                }
+            } else if (val === 'C') {
+                object.append('<option value="C">Cuota</option>')
+            } else {
+                object.append('<option value="0">Seleccione</option>')
+            }
+
+        });
+        $(document).on('change keyup', 'tbody#payments_detail tr td.item-amount input.value-amount', function () {
+            let val = $(this).val();
+            if (val != '' || val != '0' || val != 0 || isNaN(val) === false) {
+                TotalPayment()
+                let total = $('#sum-payment').val()
+                if (isNaN(total) || total == '') {
+                    total = parseFloat('0.00')
+                } else {
+                    total = parseFloat(total)
+                }
+                let t = total
+                if (t > parseFloat($('#id-debt').val())) {
+                    toastr.warning('El pago no puede superar el monto adeudado')
+                    $(this).val('')
+                    TotalPayment()
+                    return false
+                } else {
+                    TotalPayment()
+                }
+            }
+        });
+        $(document).on('change keyup', 'tbody#payments_detail tr td.item-account select.value-account', function () {
+            let select = $(this)
+            let type = select.parent('td.item-account').prev('td.item-type').find('select.value-type').val()
+            if (type === 'E') {
+                let val = select.val();
+                if (val != '' || val != '0' || val != 0 || isNaN(val) === false) {
+                    $.ajax({
+                        url: '/accounting/validate_casing/',
+                        async: true,
+                        dataType: 'json',
+                        type: 'GET',
+                        data: {'pk': val},
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message)
+                            } else {
+                                select.val(0)
+                                toastr.error(response.message)
+                            }
+                        },
+                        fail: function (response) {
+                            toastr.error('Error de operación!');
+                        }
+                    });
+                }
+            }
+        });
+
+        function ReloadPayment() {
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+    </script>
+{% endblock extrajs %}

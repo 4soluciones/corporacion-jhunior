@@ -1,0 +1,113 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Familia
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="row d-flex">
+                <div class="form-group col-sm-6 col-md-6 m-0 p-1 align-self-center">
+                    <h6 class="m-0">Familia Producto</h6>
+                </div>
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center text-center">
+                    <input type="text" class="form-control form-control-rounded" id="search"
+                           placeholder="Busqueda...">
+                </div>
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center text-center">
+                    <button type="button" onclick="showFamily('')" class="btn btn-light btn-round px-5"><i
+                            class="icon-lock"></i> Crear Familia
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-2">
+            <table id="table-family"
+                   class="table table-striped small w-100">
+                <thead>
+                <tr class="text-center">
+                    <th>N°</th>
+                    <th>Nombre Familia</th>
+                    <th>Editar</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for f in object_list %}
+                    <tr class="text-center" pk="{{ f.id }}">
+                        <td class="align-middle">{{ forloop.counter }}</td>
+                        <td class="align-middle text-left">
+                            {{ f.name }}
+                        </td>
+                        <td class="align-middle">
+                            <button class="btn btn-light" pk="{{ f.id }}"
+                                    onclick="showFamily({{ f.id }})">
+                                <i class="icon-note"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /Account -->
+    </div>
+    <div class="modal fade" id="modal-family" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+
+    <script type="text/javascript">
+        $("#search").keyup(function () {
+            _this = this;
+            $.each($("#table-family tbody tr"), function () {
+                if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+                    $(this).hide();
+                else
+                    $(this).show();
+            });
+        });
+
+        function showFamily(pk) {
+            $.ajax({
+                url: '/sales/modal_family/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-family').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+
+        {#function DeleteFamily(pk) {#}
+        {#    let row = $('#table-family tbody').find("tr[pk=" + pk + "]")#}
+        {#    if (parseInt(pk) != 0) {#}
+        {#        let r = confirm("¿Esta seguro de eliminar la familia?")#}
+        {#        if (r == true) {#}
+        {#            $.ajax({#}
+        {#                url: '/sales/delete_family/',#}
+        {#                async: true,#}
+        {#                dataType: 'json',#}
+        {#                type: 'GET',#}
+        {#                data: {'pk': pk},#}
+        {#                success: function (response) {#}
+        {#                    if (response.success) {#}
+        {#                        toastr.success(response.message)#}
+        {#                        row.remove();#}
+        {#                    } else {#}
+        {#                        toastr.success(response.message)#}
+        {#                    }#}
+        {#                },#}
+        {#            });#}
+        {#        }#}
+        {#    }#}
+        {# }#}
+    </script>
+{% endblock extrajs %}

@@ -1,0 +1,253 @@
+{% load static %}
+<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <form id="formProduct" method="POST" enctype="multipart/form-data" action="{% url 'sales:product_save' %}">
+        {% csrf_token %}
+        <div class="modal-content bg-primary">
+            <div class="modal-header">
+                <h6 class="modal-title">{% if product_obj %}PRODUCTO: {{ product_obj.name }}{% else %}NUEVO
+                    PRODUCTO{% endif %}</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="input-1">Codigo Producto</label>
+                            <input type="text" class="form-control text-uppercase" id="code" name="code"
+                                   placeholder="Codigo Producto"
+                                   value="{{ product_obj.code }}" maxlength="50" required>
+                            <input type="hidden" id="product-pk" name="product-pk"
+                                   value="{% if product_obj %}{{ product_obj.id }}{% else %}0{% endif %}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="input-1">Nombre Producto</label>
+                            <input type="text" class="form-control text-uppercase" id="name" name="name"
+                                   placeholder="Nombre Producto"
+                                   value="{{ product_obj.name }}" maxlength="300" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="input-1">Marca Producto</label>
+                            <select class="form-control" id="brand" name="brand" aria-label="brand" required>
+                                <option value="">Seleccione</option>
+                                {% for b in brand_set %}
+                                    {% if b.id == product_obj.brand.id %}
+                                        <option selected value="{{ b.id }}">{{ b.name }}</option>
+                                    {% else %}
+                                        <option value="{{ b.id }}">{{ b.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="input-1">Familia Producto</label>
+                            <select class="form-control" id="family" name="family" aria-label="family" required>
+                                <option value="">Seleccione</option>
+                                {% for f in family_set %}
+                                    {% if f.id == product_obj.family.id %}
+                                        <option selected value="{{ f.id }}">{{ f.name }}</option>
+                                    {% else %}
+                                        <option value="{{ f.id }}">{{ f.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Ancho</label>
+                            <input
+                                    type="text"
+                                    id="width"
+                                    name="width"
+                                    maxlength="15"
+                                    class="form-control text-uppercase"
+                                    placeholder="Ancho"
+                                    value="{{ product_obj.width }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Largo</label>
+                            <input
+                                    type="text"
+                                    id="length"
+                                    name="length"
+                                    maxlength="15"
+                                    class="form-control text-uppercase"
+                                    placeholder="Largo"
+                                    value="{{ product_obj.length }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Alto</label>
+                            <input
+                                    type="text"
+                                    id="height"
+                                    name="height"
+                                    maxlength="15"
+                                    class="form-control text-uppercase"
+                                    placeholder="Alto"
+                                    value="{{ product_obj.height }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Estado Producto</label>
+                            <div class="icheck-material-danger">
+                                <input type="checkbox" id="state" name="state"
+                                       {% if product_obj.is_state %}checked
+                                       {% else %}{% if product_obj.id %}{% else %}checked{% endif %}{% endif %}>
+                                <label for="state">Activo</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Tipo Producto</label>
+                            <select class="form-control" id="type" name="type" aria-label="type" required>
+                                <option value="">Seleccione</option>
+                                {% for t in type_set %}
+                                    {% if t.0 == product_obj.type %}
+                                        <option selected value="{{ t.0 }}">{{ t.1 }}</option>
+                                    {% else %}
+                                        <option value="{{ t.0 }}">{{ t.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-discount">Aplica 50%</label>
+                            <div class="icheck-material-danger">
+                                <input type="checkbox" id="is_discount" name="is_discount"
+                                       {% if product_obj.is_discount %}checked{% endif %}>
+                                <label for="is_discount">Aplica Descuento del 50%</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="input-1">Descripción Producto</label>
+                            <textarea class="form-control text-uppercase" maxlength="300" rows="1" id="description"
+                                      name="description"
+                                      placeholder="Descripción producto...">{{ product_obj.description }}</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Almacen</label>
+                            <input
+                                    type="text"
+                                    id="store"
+                                    name="store"
+                                    maxlength="100"
+                                    class="form-control text-uppercase"
+                                    placeholder="Almacén"
+                                    value="{{ product_obj.store }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Stock Minimo</label>
+                            <input
+                                    type="number"
+                                    id="minimum"
+                                    name="minimum"
+                                    step="0.01"
+                                    min="0.00"
+                                    class="form-control"
+                                    placeholder="0.00"
+                                    value="{{ product_obj.minimum|safe }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="input-1">Stock en Unidades</label>
+                            <input
+                                    type="number"
+                                    id="stock"
+                                    name="stock"
+                                    step="0.01"
+                                    min="0.00"
+                                    class="form-control"
+                                    placeholder="0.00"
+                                    value="{{ product_obj.stock|safe }}"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button> &nbsp;
+                <button type="submit" class="btn btn-light">{% if product_obj.id %}
+                    Actualizar{% else %}
+                    Registrar{% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#formProduct').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formProduct').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message)
+                    let obj = response['product']
+                    let brand = response['brand']
+                    let family = response['family']
+                    let type = response['type']
+                    let t = response['t']
+                    if (response.value) {
+                        AddRow(obj, brand, family, type, t)
+                    } else {
+                        let row = $('tbody.product_detail').find("tr[pk=" + obj.id + "]")
+                        row.find('td.item-name strong').html("CODIGO: " + (obj.code).toString() + "<br>" + (obj.name).toString() + "<br>" + (obj.description).toString())
+                        row.find('td.item-brand').text((brand).toString())
+                        row.find('td.item-family').text((family).toString())
+                        if (t === 'A') {
+                            row.find('td.item-type').empty().append('<button type="button" class="btn btn-light" onclick="showProductDetailCanvas(' + obj.id + ')"><i class="icon-calculator"></i>' + type + '</button>')
+                        } else {
+                            row.find('td.item-type').text((type).toString())
+                        }
+                        row.find('td.item-state').empty().append(obj.is_state ? '<i class="icon-check text-white"></i>' : '<i class="icon-close text-white"></i>')
+                        row.find('td.item-measure strong').html("ANCHO: " + obj.width + "<br>LARGO: " + obj.length + "<br>ALTO: " + obj.height)
+                        row.find('td.item-store strong').html("ALMACÉN: " + obj.store + "<br>STOCK: " + parseFloat(obj.stock).toFixed(2) + "<br>MINIMO: " + parseFloat(obj.minimum).toFixed(2))
+                        row.find('td.item-relation input').val(obj.relation)
+                    }
+                } else {
+                   toastr.error(response.message)
+                }
+                 $('#btn-close').trigger('click')
+            },
+            error: function (response) {
+                console.log(response)
+            }
+        });
+    });
+</script>

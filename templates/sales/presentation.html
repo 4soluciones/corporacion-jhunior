@@ -1,0 +1,342 @@
+{% load static %}
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content bg-primary">
+        <div class="modal-header">
+            <h6 class="modal-title">{% if product_obj %}PRECIOS PRODUCTO: {{ product_obj.name }}{% endif %}</h6>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="formPresentation" method="POST" enctype="multipart/form-data"
+                  action="{% url 'sales:presentation_save' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="input-1">Cantidad</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity"
+                                   placeholder="0.00"
+                                   value="" step="0.01" required>
+                        </div>
+                        <input type="hidden" id="product-pk" name="product-pk"
+                               value="{{ product_obj.id }}" required/>
+                        <input type="hidden" id="presenting-pk" name="presenting-pk"
+                               value=""/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="input-1" for="unit">Unidad Medida</label>
+                        <select id="unit" name="unit" class="form-control">
+                            {% for u in unit_set %}
+                                <option value="{{ u.0 }}">{{ u.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="input-1">Precio Unitario</label>
+                            <input type="number" class="form-control" id="price" name="price"
+                                   placeholder="S/. 0.00"
+                                   value="" step="0.0001" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="quantity-min">Cantidad en Unidades</label>
+                        <input
+                                type="number"
+                                step="0.01"
+                                class="form-control"
+                                id="quantity_niu"
+                                name="quantity_niu"
+                                placeholder="0"
+                                value=""
+                        />
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <label class="form-label" for="corporate_sale">Corporativa</label>
+                        <div class="form-check mt-1">
+                            <input class="form-check-input position-static"
+                                   type="checkbox" id="corporate_sale" name="corporate_sale"
+                                   value="1" aria-label="..." style="transform: scale(1.4)">
+                        </div>
+                        {#                        <div class="custom-control custom-checkbox">#}
+                        {#                            <input class="custom-control-input" value="1"#}
+                        {#                                   type="checkbox" id="corporate_sale">#}
+                        {#                            <label for="corporate_sale" class="custom-control-label"></label>#}
+                        {#                        </div>#}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col"></div>
+                    <div class="col">
+                        <button type="button" id="btn-update" class="btn btn-success" disabled
+                                onclick="UpdatePresenting()">Actualizar
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" id="btn-close" class="btn btn-light" data-dismiss="modal">Cerrar</button>
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-light">Agregar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <div class="col-md-12">
+                <table class="table table-light table-bordered">
+                    <thead>
+                    <tr class="text-center">
+                        <th>Nº</th>
+                        <th>CANTIDAD</th>
+                        <th>MEDIDA</th>
+                        <th>UNIDADES</th>
+                        <th>PRECIO</th>
+                        <th>VENTA<br>CORPORATIVA</th>
+                        <th>EDITAR</th>
+                        <th>ELIMINAR</th>
+                    </tr>
+                    </thead>
+                    <tbody id="presenting_detail">
+                    {% for p in product_obj.presentation_set.all %}
+                        <tr class="text-center" pk="{{ p.id }}" i="{{ forloop.counter }}">
+                            <td class="align-middle presenting-number">{{ forloop.counter }}</td>
+                            <td class="align-middle presenting-quantity">{{ p.quantity|safe }}</td>
+                            <td class="align-middle presenting-unit">{{ p.get_unit_display }}</td>
+                            <td class="align-middle presenting-quantity-niu">{{ p.quantity_niu|safe }}</td>
+                            <td class="align-middle presenting-price">{{ p.price|safe|floatformat:4 }}</td>
+                            <td class="align-middle presenting-check-corporate">
+                                {#                                <div class="custom-control custom-checkbox">#}
+                                {#                                    <input class="custom-control-input" type="checkbox" id="corporate_sale_check"#}
+                                {#                                           {% if p.is_corporate %}checked{% endif %} disabled>#}
+                                {#                                    <label for="corporate_sale_check" class="custom-control-label"></label>#}
+                                {#                                </div>#}
+                                <div class="form-check">
+                                    <input class="form-check-input position-static" type="checkbox" id="corporate_sale"
+                                           {% if p.is_corporate %}checked{% endif %}
+                                           value="option1" aria-label="..." style="transform: scale(1.4);">
+                                </div>
+                            </td>
+                            <td class="align-middle presenting-edit">
+                                <button type="button" class="btn btn-light"
+                                        onclick="GetPresentation({{ p.id }})">
+                                    <i class="icon-note"></i>
+                                </button>
+                            </td>
+                            <td class="align-middle presenting-delete">
+                                <button type="button" class="btn btn-light"
+                                        onclick="DeletePresentation({{ p.id }})">
+                                    <i class="icon-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('#formPresentation').submit(function (event) {
+        event.preventDefault();
+        let data = new FormData($('#formPresentation').get(0));
+        $.ajax({
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            headers: {"X-CSRFToken": '{{ csrf_token }}'},
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message)
+                    let id = response.id
+                    let price = response.price
+                    let quantity = response.quantity
+                    let unit = response.unit
+                    let quantity_niu = response.quantity_niu
+                    let is_corporate = response.is_corporate
+                    AddRowPresenting(id, price, quantity, unit, quantity_niu, is_corporate)
+                    $('#price').val('')
+                    $('#quantity').val('')
+                    $('#quantity_niu').val('')
+                    $('#corporate_sale').prop('checked', false)
+                } else {
+                    toastr.error(response.message)
+                }
+            },
+            error: function (response) {
+                console.log(response)
+            }
+        });
+    });
+
+    function AddRowPresenting(p, price, quantity, unit, quantity_niu, is_corporate) {
+        let _input_checkbox = '<input class="form-check-input position-static" type="checkbox" id="corporate_sale"' +
+            'value="option1" aria-label="..." style="transform: scale(1.4)">'
+        if (is_corporate === true) {
+            _input_checkbox = '<input class="form-check-input position-static" type="checkbox" id="corporate_sale"' +
+                'value="option1" aria-label="..." checked style="transform: scale(1.4)">'
+        }
+        $('tbody#presenting_detail').append(
+            '<tr class="text-center" pk="' + p + '">' +
+            '<td class="align-middle presenting-number">' + +'</td>' +
+            '<td class="align-middle presenting-quantity">' + parseFloat(quantity).toFixed(4) + '</td>' +
+            '<td class="align-middle presenting-unit">' + unit.toString() + '</td>' +
+            '<td class="align-middle presenting-quantity-niu">' + parseInt(quantity_niu) + '</td>' +
+            '<td class="align-middle presenting-price">' + parseFloat(price).toFixed(4) + '</td>' +
+            '<td class="align-middle presenting-check-corporate">' +
+            '<div class="form-check">' +
+            _input_checkbox +
+            '</div>' +
+            '</td>' +
+            '<td class="align-middle presenting-edit">' +
+            '<button type="button" class="btn btn-light" onclick="GetPresentation(' + p + ')">' + '<i class="icon-note">' + '</i>' + '</button>' +
+            '</td>' +
+            '<td class="align-middle presenting-delete">' +
+            '<button type="button" class="btn btn-light" onclick="DeletePresentation(' + p + ')">' + '<i class="icon-trash">' + '</i>' + '</button>' +
+            '</td>' +
+            '</tr>'
+        );
+        CountRow()
+    }
+
+    function DeletePresentation(pk) {
+        let row = $('tbody#presenting_detail').find("tr[pk=" + pk + "]")
+        if (parseInt(pk) != 0) {
+            let r = confirm("¿Esta seguro de eliminar la presentación?")
+            if (r == true) {
+                $.ajax({
+                    url: '/sales/delete_presentation/',
+                    async: true,
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': pk},
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message)
+                            row.remove();
+                            CountRow()
+                            $('#presenting-pk').val("")
+                            $('#quantity').val("")
+                            $('#quantity_niu').val("")
+                            $('#price').val("")
+                            $('#unit').val("NIU")
+                            $('#btn-update').attr('disabled', true)
+                            $('#corporate_sale').prop('checked', false)
+                        } else {
+                            toastr.success(response.message)
+                        }
+                    },
+                });
+            }
+        }
+    }
+
+    function UpdatePresenting() {
+        let pk = $('#presenting-pk').val()
+        let unit = $('#unit').val()
+        let q_n = $('#quantity_niu').val()
+        if (q_n === "" || parseFloat(q_n) === 0) {
+            q_n = 1
+        }
+        let q = $('#quantity').val()
+        let p = $('#price').val()
+        let _is_corporate = '0'
+        if ($('#corporate_sale').prop('checked')){
+            _is_corporate = '1'
+        }
+        if (pk !== "" || pk !== "0") {
+            let row = $('tbody#presenting_detail').find("tr[pk=" + pk + "]")
+            $.ajax({
+                url: '/sales/update_presentation/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {
+                    'pk': pk,
+                    'quantity': parseFloat(q),
+                    'quantity_niu': parseFloat(q_n),
+                    'unit': unit,
+                    'price': parseFloat(p),
+                    'is_corporate': _is_corporate
+                },
+                success: function (response) {
+                    if (response.success) {
+                        row.attr('pk', response.pk)
+                        row.find('td.presenting-quantity').text(parseFloat(response.quantity).toFixed(4))
+                        row.find('td.presenting-quantity-niu').text(parseFloat(response.quantity_niu))
+                        row.find('td.presenting-unit').text(response.unit)
+                        row.find('td.presenting-price').text(parseFloat(response.price).toFixed(4))
+                        if (response.is_corporate){
+                            row.find('td.presenting-check-corporate div.form-check input.position-static').prop('checked', true)
+                        }
+                        else {
+                            row.find('td.presenting-check-corporate div.form-check input.position-static').prop('checked', false)
+                        }
+                        toastr.success("Presentacion actualizada")
+                        $('#presenting-pk').val("")
+                        $('#quantity').val("")
+                        $('#quantity_niu').val("")
+                        $('#price').val("")
+                        $('#unit').val("NIU")
+                        $('#btn-update').attr('disabled', true)
+                        $('#corporate_sale').prop('checked', false)
+                    } else {
+                        toastr.success(response.message)
+                    }
+                },
+            });
+        } else {
+            $('#btn-update').attr('disabled', true)
+        }
+    }
+
+    function GetPresentation(pk) {
+        {#let row = $('tbody#presenting_detail').find("tr[pk=" + pk + "]")#}
+        $('#presenting-pk').val("")
+        if (parseInt(pk) !== 0) {
+            $.ajax({
+                url: '/sales/get_presentation/',
+                async: true,
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#presenting-pk').val(response.pk)
+                        $('#quantity').val(response.quantity)
+                        $('#unit').val(response.unit)
+                        $('#price').val(response.price)
+                        $('#quantity_niu').val(response.quantity_niu)
+                        $('#btn-update').removeAttr('disabled')
+                        if (response.is_corporate) {
+                            $('#corporate_sale').prop('checked', true)
+                        }
+                        else{
+                            $('#corporate_sale').prop('checked', false)
+                        }
+                    } else {
+                        toastr.success(response.message)
+                    }
+                },
+            });
+        }
+    }
+
+    function CountRow() {
+        let index = 1;
+        $('tbody#presenting_detail tr').each(function () {
+            $(this).attr('i', index);
+            $(this).find('td.presenting-number').text(index)
+            {#let pk = $(this).attr('pk');#}
+            {#$(this).find('td.item-delete button').attr('onclick', 'DeletePresentation(' + pk + ')')#}
+            index++;
+        });
+    };
+</script>

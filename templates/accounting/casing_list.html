@@ -1,0 +1,159 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Caja - Banco
+{% endblock title %}
+
+{% block body %}
+    <div class="card mt-3">
+        <div class="card-header pt-2 pb-2">
+            <div class="row d-flex">
+                <div class="form-group col-sm-5 col-md-5 m-0 p-1 align-self-center">
+                    <h5 class="card-title fw-">Finanzas</h5>
+                    <h6 class="card-subtitle text-muted">Cajas - Cuentas Bancarias</h6>
+                </div>
+                <div class="form-group col-sm-4 col-md-4 m-0 p-1 align-self-center text-center">
+                    <input type="text" class="form-control form-control-rounded" id="search"
+                           placeholder="Busqueda Cuenta...">
+                </div>
+                <div class="form-group col-sm-3 col-md-3 m-0 p-1 align-self-center text-center">
+                    <button type="button" class="btn btn-light btn-round" onclick="CasingModal('')"><i
+                            class="icon-lock"></i> Crear Caja/Cuenta
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-2 h-100">
+            <div id="detail-items" class="table-responsive-sm text-nowrap">
+                <table class="table table-sm table-bordered" style="width: 100%">
+                    <thead>
+                    <tr class="text-center">
+                        <th style="width: 5%">Nº</th>
+                        <th style="width: 30%">Caja/Cuenta</th>
+                        <th style="width: 30%">Descripción</th>
+                        <th style="width: 15%">Inicial</th>
+                        <th style="width: 15%">Total</th>
+                        <th style="width: 5%">Editar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="casing-list">
+                    {% for c in casing_set %}
+                        <tr class="text-center">
+                            <td class="align-middle p-1">{{ forloop.counter }}</td>
+                            <td class="align-middle p-1">{{ c.get_type_display }}</td>
+                            <td class="align-middle p-1">{{ c.name }}</td>
+                            <td class="align-middle text-right p-1">S/. {{ c.initial|safe }}</td>
+                            <td class="align-middle text-right item-total p-1">S/. <b>{{ c.total|safe }}</b></td>
+                            <td class="align-middle p-1">
+                                <button type="button"
+                                        class="btn btn-light"
+                                        onclick="CasingModal({{ c.id }})"
+                                >
+                                    <i class="icon-note"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer p-2">
+            <div class="row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Total</label>
+                        <div class="col-lg-6">
+                            <input type="text" value="Mark"
+                                   id="total"
+                                   name="total"
+                                   class="form-control text-right"
+                                   placeholder="0.00"
+                                   readonly>
+                        </div>
+                        <label class="col-lg-3 col-form-label form-control-label">Soles</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-casing" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-open-close" data-backdrop="static" data-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true"></div>
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        let total = parseFloat("0.00")
+        $('tbody#casing-list tr td.item-total b').each(function () {
+            total = total + parseFloat($(this).text());
+
+        });
+        $('#total').val(total.toFixed(2))
+        $("#search").keyup(function () {
+            _this = this;
+            // Show only matching TR, hide rest of them
+            $.each($("tbody#casing-list tr"), function () {
+                if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+                    $(this).hide();
+                else
+                    $(this).show();
+            });
+        });
+
+        function CasingModal(pk) {
+            $.ajax({
+                url: '/accounting/modal_casing/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-casing').empty().html(response.form).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición');
+                }
+            });
+        };
+
+        function OpenCasing(pk) {
+            $.ajax({
+                url: '/accounting/open_casing/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-open-close').empty().html(response.grid).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+
+        function CloseCasing(pk) {
+            $.ajax({
+                url: '/accounting/close_casing/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': pk},
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-open-close').empty().html(response.grid).modal('show');
+                    }
+                },
+                fail: function (response) {
+                    toastr.error('Ocurrio un problema')
+                }
+            });
+        };
+    </script>
+{% endblock extrajs %}

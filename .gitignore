@@ -1,0 +1,15 @@
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+
+# Backup files #
+# saUE5cHSVTPfAL5RAQXF #
+*.bak
+jhunior/settings.py
+#static
+migrations
+.idea
+media
+requirements.txt
