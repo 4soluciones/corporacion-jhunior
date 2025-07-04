@@ -13,7 +13,7 @@ GRAPHQL_URL = "https://ng.tuf4ctur4.net.pe/graphql"
 # GRAPHQL_URL = "http://192.168.1.80:9050/graphql"
 
 tokens = {
-    "20600854535": "gAAAAABoD6Ku3__gfh6U42mBHFVBB55RR4Sx_mvdSXLMp52FRNTPiJ1nwtg3ovWWQ3FFM3e0SNurzU0QD8MOn-nblnRe3HQD7Q==",
+    "20614357194": "gAAAAABoXwfF4kUG3BWN1Ac2tbOyH2YLxHklwr9lGDwmqTndA_nQzv_wjE-LOS0cV1rvMHHCed6fDpOYtsZXJtGA42xWtS0O2g==",
 }
 
 
@@ -151,7 +151,7 @@ def send_sunat_4_fact(order_id):  # FACTURA Y BOLETA 4 FACT
     """
     # print(graphql_query)
 
-    token = tokens.get("20600854535", "ID no encontrado")
+    token = tokens.get("20614357194", "ID no encontrado")
 
     HEADERS = {
         "Content-Type": "application/json",
@@ -312,7 +312,7 @@ def send_credit_note_fact(pk, details, motive):
         """
     # print(graphql_query)
 
-    token = tokens.get("20600854535", "ID no encontrado")
+    token = tokens.get("20614357194", "ID no encontrado")
 
     HEADERS = {
         "Content-Type": "application/json",
@@ -338,7 +338,7 @@ def send_credit_note_fact(pk, details, motive):
             order_obj.note_enlace_pdf = f'https://ng.tuf4ctur4.net.pe/operations/print_credit_note/{operation_id}/'
             # order_obj.note_enlace_pdf = f'http://192.168.1.80:9050/operations/print_credit_note/{operation_id}/'
             order_obj.note_date = datetime.datetime.now().strftime("%Y-%m-%d")
-            # order_obj.note_qr = '20600854535|07|FN01|000163|14.49|95.00|26/04/2025|6|20322628642|58wxWwjO/laYkdbvU5WQVrsEFNDCH2oOY5FCtnLQf6I=|'
+            # order_obj.note_qr = '20614357194|07|FN01|000163|14.49|95.00|26/04/2025|6|20322628642|58wxWwjO/laYkdbvU5WQVrsEFNDCH2oOY5FCtnLQf6I=|'
             # order_obj.note_hash = result.get("codigo_hash")
             order_obj.note_total = total_invoice
             order_obj.note_id = int(operation_id)
@@ -501,7 +501,7 @@ def send_guide_fact(pk=None):
     """
     # print(graphql_query)
 
-    token = tokens.get("20600854535", "ID no encontrado")
+    token = tokens.get("20614357194", "ID no encontrado")
 
     HEADERS = {
         "Content-Type": "application/json",
@@ -665,7 +665,7 @@ def send_guide_return_fact(pk=None):
     """
     # print(graphql_query)
 
-    token = tokens.get("20600854535", "ID no encontrado")
+    token = tokens.get("20614357194", "ID no encontrado")
 
     HEADERS = {
         "Content-Type": "application/json",
