@@ -306,6 +306,13 @@
                         {{ user.first_name|default:user.username|upper }}
                     </span>
                 </li>
+
+                <li class="nav-item ml-2">
+                    <a href="{% url 'hrm:subsidiaries' %}" class="btn btn-primary btn-sm" style="font-weight:600; border-radius:6px; padding:6px 16px;">
+                        <i class="zmdi zmdi-settings" style="font-size:1rem;"></i>
+                    </a>
+                </li>
+                <li class="dropdown-divider"></li>
                 <li class="nav-item" style="margin-left: 12px;">
                     <a href="{% url 'logout' %}" class="btn btn-light btn-sm" style="border-radius:50%; padding:7px 10px; box-shadow:0 2px 8px rgba(102,126,234,0.10);">
                         <i class="zmdi zmdi-power" style="color:#e74c3c; font-size:1.3rem;"></i>

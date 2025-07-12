@@ -123,7 +123,7 @@ pdfmetrics.registerFont(TTFont('Dot-line', 'Dotline-LA7g.ttf'))
 pdfmetrics.registerFont(TTFont('Dot-line-Light', 'DotlineLight-XXeo.ttf'))
 pdfmetrics.registerFont(TTFont('Jd-Lcd-Rounded', 'JdLcdRoundedRegular-vXwE.ttf'))
 
-logo = "static/assets/images/img/logo.png"
+logo = "static/assets/images/logo_corporation.png"
 watermark = "static/assets/images/img/agua.jpg"
 
 
@@ -1483,7 +1483,7 @@ def quotation_pdf(request, pk=None):
     ]
     qr_table.setStyle(TableStyle(style_qr))
     # ...............................................................................
-    foot_left = [[Paragraph('CTA. PERNOS JHUNIOR SRL',
+    foot_left = [[Paragraph('CTA. CORPORACION PERNOS JUNIOR S.R.L.',
                             styles["narrow_left"])],
                  [Paragraph('Banco de Crédito en Soles: 405-98168061-0-44',
                             styles["narrow_left"])],
@@ -1494,7 +1494,7 @@ def quotation_pdf(request, pk=None):
                  ]
 
     foot_left_detail = Table(foot_left, colWidths=[_bts * 50 / 100])
-    foot_right = [[Paragraph('PERNO CENTRO JUNIOR',
+    foot_right = [[Paragraph('CORPORACION PERNOS JUNIOR S.R.L.',
                              styles["narrow_center"])],
                   [Paragraph('RUC: 20600854535',
                              styles["narrow_center"])],
