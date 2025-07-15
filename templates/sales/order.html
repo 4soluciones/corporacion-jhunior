@@ -1144,7 +1144,7 @@
                                 giveEnterKey();
                                 
                                 // Usar la nueva función de impresión
-                                procesarYEnviarDocumento(response, {
+                                /*procesarYEnviarDocumento(response, {
                                     printerName: "CAJA",
                                     authToken: "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
                                     baseUrl: window.location.origin,
@@ -1153,8 +1153,8 @@
                                     console.log("✅ Impresión completada:", result);
                                 }).catch(error => {
                                     console.error("❌ Error en impresión:", error);
-                                });
-                                //printSocket(codeText);
+                                });*/
+                                printSocket(codeText);
                             } else {
                                 toastr.error(response.message)
                             }

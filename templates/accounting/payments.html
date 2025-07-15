@@ -280,9 +280,7 @@
                                         <option value="0">Seleccione</option>
                                         {% for u in user_set %}
                                             <option value="{{ u.user_id }}"
-                                                    {% if u.auth_boolean == True %}style="color: #0aa60f" {% endif %}
-                                            >
-                                                {{ u.user_name }} ------ {{ u.auth }}
+                                                    {% if u.auth_boolean == True %}style="color: #0aa60f" {% endif %}>{{ u.user_name }} ------ {{ u.auth }}
                                             </option>
                                         {% endfor %}
                                     </select>
@@ -357,6 +355,89 @@
             ];
         TotalPayment()
 
+        // Manejo de cuotas para pagos a crédito
+        $(document).on('change', 'select.value-type', function() {
+            let row = $(this).closest('tr');
+            let accountCell = row.find('td.item-account');
+            let paymentType = $(this).val();
+
+            if (paymentType === 'C') {
+                // Configurar el select de cuenta para crédito (mismos valores que depósito)
+                let accountSelect = accountCell.find('select.value-account');
+                accountSelect.empty();
+                for (let i = 0; i < bank_set.length; i++) {
+                    accountSelect.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>');
+                }
+                // Seleccionar el primer valor automáticamente
+                if (bank_set.length > 0) {
+                    accountSelect.val(bank_set[0][0]);
+                }
+
+                // Mostrar las cuotas
+                if (accountCell.find('.fees-container').length === 0) {
+                    let feesHtml = `
+                        <div class="mt-2">
+                            <div class="row mb-2">
+                                <div class="col-md-5">
+                                    <input type="date" class="form-control value-fee-date"
+                                           value="{{ date_now }}"
+                                           placeholder="Fecha cuota">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="number" step="0.01" min="0.00"
+                                           class="form-control value-fee-amount"
+                                           placeholder="Monto cuota">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-warning value-add-fee">
+                                        <i class="icon-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="fees-container">
+                            </div>
+                        </div>
+                    `;
+                    accountCell.append(feesHtml);
+                }
+            } else {
+                // Remover las cuotas
+                accountCell.find('.mt-2').remove();
+            }
+        });
+
+        // Agregar nueva cuota
+        $(document).on('click', '.value-add-fee', function() {
+            let feesContainer = $(this).closest('.mt-2').find('.fees-container');
+            let newFeeHtml = `
+                <div class="fee-row mb-2">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <input type="date" class="form-control fee-date"
+                                   value="{{ date_now }}"
+                                   placeholder="Fecha cuota">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="number" step="0.01" min="0.00"
+                                   class="form-control fee-amount"
+                                   placeholder="Monto cuota">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-sm btn-danger remove-fee">
+                                <i class="icon-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            feesContainer.append(newFeeHtml);
+        });
+
+        // Remover cuota
+        $(document).on('click', '.remove-fee', function() {
+            $(this).closest('.fee-row').remove();
+        });
+
 
         function UpdateOrderDetail(od, value) {
             $.ajax({
@@ -416,9 +497,39 @@
                         }
                     }
                 } else if (type === 'C') {
-                    account = '<option value="C">Cuota</option>';
+                    account = '';
+                    for (let i = 0; i < bank_set.length; i++) {
+                        account = account + '<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>';
+                    }
                 } else {
                     account = '<option value="0">Seleccione</option>';
+                }
+
+                let feesHtml = '';
+                if (type === 'C') {
+                    feesHtml = `
+                        <div class="mt-2">
+                            <div class="row mb-2">
+                                <div class="col-md-5">
+                                    <input type="date" class="form-control value-fee-date"
+                                           value="{{ date_now }}"
+                                           placeholder="Fecha cuota">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="number" step="0.01" min="0.00"
+                                           class="form-control value-fee-amount"
+                                           placeholder="Monto cuota">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-warning value-add-fee">
+                                        <i class="icon-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="fees-container">
+                            </div>
+                        </div>
+                    `;
                 }
 
                 await $('tbody#payments_detail').append(
@@ -436,6 +547,11 @@
                     '</td>' +
                     '</tr>'
                 );
+
+                // Agregar el contenedor de cuotas si es crédito
+                if (type === 'C') {
+                    $('tbody#payments_detail tr:last-child td.item-account').append(feesHtml);
+                }
                 CountPayment();
                 TotalPayment()
             })
@@ -539,172 +655,6 @@
             };
         }
 
-        async function setPrintOnline(printerName, pdfBlob, pdfName, authToken, options = {}) {
-            const {
-                endpoint = 'https://apierp.dev/api/print/send/',
-                showLoading = true,
-                loadingElementId = 'loading-666'
-            } = options;
-
-            // 1. Validaciones básicas
-            if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
-                console.error('Error: no se ha proporcionado un Blob de PDF válido.');
-                return Promise.reject(new Error('PDF no válido.'));
-            }
-
-            if (!navigator.onLine) {
-                console.error('Error: no hay conexión de red.');
-                return Promise.reject(new Error('Offline.'));
-            }
-
-            // 2. Mostrar indicador de carga si se solicita
-            if (showLoading) {
-                const loadingEl = document.getElementById(loadingElementId);
-                if (loadingEl) {
-                    loadingEl.style.display = 'block';
-                }
-            }
-
-            try {
-                // 3. Construir datos del formulario
-                const postData = {
-                    setAuthToken: authToken,
-                    setPrinterName: printerName,
-                    setPdfName: pdfName,
-                    setPrint: 1
-                };
-
-                const formData = new FormData();
-                // Enviamos los datos de control en un campo JSON
-                formData.append('invoice', JSON.stringify(postData));
-                // Adjuntamos el blob del PDF
-                formData.append('pdfBlob', pdfBlob, pdfName);
-
-                // 4. Petición POST al endpoint de impresión
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                // 5. Comprobar estado HTTP
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.message || 'Error desconocido en la API.');
-                }
-
-                // 6. Devolver el objeto con la información de la impresión
-                return data;
-
-            } catch (error) {
-                // Manejo de errores
-                console.error('Error al enviar la impresión:', error);
-                throw error;
-            } finally {
-                // 7. Ocultar indicador de carga
-                if (showLoading) {
-                    const loadingEl = document.getElementById(loadingElementId);
-                    if (loadingEl) {
-                        loadingEl.style.display = 'none';
-                    }
-                }
-            }
-        }
-
-        async function procesarYEnviarDocumento(response, options = {}) {
-            const {
-                printerName = "EPSON-CAJA",
-                authToken = "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
-                baseUrl = "",
-                customFileName = null,
-                multiplePrinters = false,
-                printers = []
-            } = options;
-
-            let url = "";
-            let nombreArchivo = customFileName || `comprobante_${response.number}.pdf`;
-
-            // Determinar la URL según el tipo de documento
-            if (response.type_doc === '0') {
-                url = `${baseUrl}/accounting/ticket/${response.number}/`;
-                nombreArchivo = customFileName || `ticket_${response.number}.pdf`;
-            } else {
-                url = `${baseUrl}/accounting/invoice/${response.number}/`;
-                nombreArchivo = customFileName || `factura_${response.number}.pdf`;
-            }
-
-            try {
-                const res = await fetch(url);
-                if (!res.ok) {
-                    throw new Error(`Error HTTP al obtener el documento: ${res.status}`);
-                }
-
-                const pdfBlob = await res.blob();
-
-                // Verificar si se requiere impresión múltiple
-                if (multiplePrinters && printers.length > 0) {
-                    console.log(`🖨️ Imprimiendo en ${printers.length} impresora(s)...`);
-                    
-                    const resultados = [];
-                    
-                    // Imprimir en cada impresora configurada
-                    for (let i = 0; i < printers.length; i++) {
-                        const printer = printers[i];
-                        const fileName = printer.customFileName || `${nombreArchivo}_${i + 1}.pdf`;
-                        
-                        try {
-                            const resultado = await setPrintOnline(
-                                printer.printerName || printerName,
-                                pdfBlob,
-                                fileName,
-                                printer.authToken || authToken,
-                                printer.options || {}
-                            );
-                            
-                            console.log(`✅ Impresión ${i + 1} enviada correctamente a ${printer.printerName || printerName}:`, resultado);
-                            resultados.push({
-                                printer: printer.printerName || printerName,
-                                success: true,
-                                result: resultado
-                            });
-                        } catch (error) {
-                            console.error(`❌ Error en impresión ${i + 1} a ${printer.printerName || printerName}:`, error);
-                            resultados.push({
-                                printer: printer.printerName || printerName,
-                                success: false,
-                                error: error.message
-                            });
-                        }
-                    }
-                    
-                    return {
-                        multiplePrint: true,
-                        results: resultados,
-                        totalPrinters: printers.length,
-                        successfulPrints: resultados.filter(r => r.success).length
-                    };
-                } else {
-                    // Impresión simple (comportamiento original)
-                    const resultado = await setPrintOnline(
-                        printerName,
-                        pdfBlob,
-                        nombreArchivo,
-                        authToken
-                    );
-
-                    console.log("✅ Impresión enviada correctamente:", resultado);
-                    return resultado;
-                }
-
-            } catch (error) {
-                console.error("❌ Error durante el proceso de impresión:", error);
-                throw error;
-            }
-        }
-
 
         function SavePayments() {
             let option = '0'
@@ -763,9 +713,9 @@
                     validate = false
                     return validate
                 }
-                if (type === 'C') {
+                /*if (type === 'C') {
                     payment_type = false
-                }
+                }*/
                 let account = row.find('td.item-account select.value-account').val()
                 if (account === '' || account === '0') {
                     toastr.warning('Seleccione la cuenta en la fila = ' + row.attr('i'))
@@ -787,8 +737,38 @@
                     "type": type,
                     "casing": account,
                     "amount": parseFloat(amount).toFixed(2),
-                    "code": code
+                    "code": code,
+                    "fees": []
                 };
+
+                // Si es crédito, agregar las cuotas
+                if (type === 'C') {
+                    // Agregar la cuota principal
+                    let mainFeeDate = row.find('.value-fee-date').val();
+                    let mainFeeAmount = row.find('.value-fee-amount').val();
+
+                    if (mainFeeDate && mainFeeAmount && parseFloat(mainFeeAmount) > 0) {
+                        PaymentDetail.fees.push({
+                            "date": mainFeeDate,
+                            "amount": parseFloat(mainFeeAmount).toFixed(2)
+                        });
+                    }
+
+                    // Agregar las cuotas adicionales
+                    let feesContainer = row.find('.fees-container');
+                    feesContainer.find('.fee-row').each(function() {
+                        let feeDate = $(this).find('.fee-date').val();
+                        let feeAmount = $(this).find('.fee-amount').val();
+
+                        if (feeDate && feeAmount && parseFloat(feeAmount) > 0) {
+                            PaymentDetail.fees.push({
+                                "date": feeDate,
+                                "amount": parseFloat(feeAmount).toFixed(2)
+                            });
+                        }
+                    });
+                }
+
                 Payment.Detail.push(PaymentDetail);
             })
             if (payment_type === false && option != '0') {
@@ -817,23 +797,20 @@
                     success: function (response) {
                         if (response.success) {
                             if (response.pk) {
+                                {#if (option === '0') {#}
+                                {#    toastr.success('Pago registrado correctamente')#}
+                                {#    window.open("/accounting/ticket/" + response.number + "/", '_blank');#}
+                                {# } else {#}
+                                {#    window.open("/accounting/invoice/" + response.number + "/", '_blank');#}
+                                {# }#}
                                 $('tbody#payments_detail tr').removeClass('bg-danger');
                                 let codeText = response.number + ' ' + 'C';
-                                let type_doc = response.type_doc
-                                // Usar la nueva función de impresión
-                                procesarYEnviarDocumento(response, {
-                                    printerName: "CAJA",
-                                    authToken: "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
-                                    baseUrl: window.location.origin
-                                }).then(result => {
-                                    console.log("✅ Impresión de comprobante completada:", result);
-                                }).catch(error => {
-                                    console.error("❌ Error en impresión de comprobante:", error);
-                                });
-                                //printSocketCash(codeText);
-                                $('#order').val('');
-                                $('#order').focus();
-
+                                printSocketCash(codeText);
+                                //printSocketCashNew(response.number)
+                                {#sendFirebasePrint(response.number, response.hatch)#}
+                                {#SearchOrder(response.number)#}
+                                $('#order').val('')
+                                $('#order').focus()
                             }
                         } else {
                             toastr.error(response.message)
@@ -1048,9 +1025,13 @@
                     object.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>')
                 }
             } else if (val === 'C') {
-                object.append('<option value="C">Cuota</option>')
-            } else {
-                object.append('<option value="0">Seleccione</option>')
+                for (let i = 0; i < bank_set.length; i++) {
+                    object.append('<option value="' + bank_set[i][0] + '">' + bank_set[i][1] + '</option>')
+                }
+                // Seleccionar el primer valor automáticamente
+                if (bank_set.length > 0) {
+                    object.val(bank_set[0][0]);
+                }
             }
 
         });
@@ -1433,7 +1414,6 @@
         }
 
         function Download() {
-            {#console.log("entro")#}
             {#console.log("entro")#}
             {#console.log("_number", _number)#}
             {#console.log("_doc", _doc)#}

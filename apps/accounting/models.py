@@ -98,3 +98,14 @@ class MoneyChange(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class PaymentFees(models.Model):
+    id = models.AutoField(primary_key=True)
+    order = models.ForeignKey('sales.Order', on_delete=models.SET_NULL, null=True, blank=True)
+    payment = models.ForeignKey(Payments, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    amount = models.DecimalField('Importe', max_digits=30, decimal_places=15, default=0)
+
+    def __str__(self):
+        return str(self.id)

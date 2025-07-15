@@ -24,7 +24,7 @@ from django.views.generic import ListView
 
 from apps import sales
 from apps.accounting.api_FACT import send_sunat_4_fact, send_credit_note_fact
-from apps.accounting.models import Casing, Payments, MoneyChange
+from apps.accounting.models import Casing, Payments, MoneyChange, PaymentFees
 from apps.accounting.sunat import send_sunat, credit_note, cancelsunat, query_apis_net_money, send_sunat_to_cancel, \
     credit_note_by_parts, credit_note_pending
 from apps.hrm.models import Subsidiary, Person
@@ -495,6 +495,19 @@ def payment_save(request):
                                             }
                                             payment_obj = Payments.objects.create(**payment_create)
                                             payment_obj.save()
+
+                                            # Si es crédito, guardar las cuotas
+                                            if type_payment == 'C' and 'fees' in d:
+                                                for fee_data in d['fees']:
+                                                    fee_date = fee_data.get('date')
+                                                    fee_amount = fee_data.get('amount')
+                                                    if fee_date and fee_amount:
+                                                        PaymentFees.objects.create(
+                                                            order=order_obj,
+                                                            payment=payment_obj,
+                                                            date=fee_date,
+                                                            amount=decimal.Decimal(fee_amount)
+                                                        )
                                             # if order_obj.doc == '1' or order_obj.doc == '2':
                                             #     for d in order_obj.orderdetail_set.filter(is_state=True,
                                             #                                               is_invoice=True):
@@ -605,7 +618,6 @@ def payment_save(request):
                         'pk': order_obj.id,
                         'message': 'Pagos registrados',
                         'number': order_obj.number,
-                        'type_doc': order_obj.doc
                     }, status=HTTPStatus.OK)
         else:
             return JsonResponse({

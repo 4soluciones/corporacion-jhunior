@@ -346,8 +346,8 @@ def invoice(request, pk=None):
     # -----------------------------------------------------------------------------------------------
     pdf_link_uno = 'Representación impresa de la ' + str(
         order_obj.get_doc_display()).upper() + ', para ver el documento visita'
-    pdf_link_dos = 'https://4soluciones.pse.pe/20600854535'
-    pdf_link_tres = 'Emitido mediante un PROVEEDOR Autorizado por la SUNAT mediante Resolución de Intendencia No.034-005-0005315'
+    pdf_link_dos = 'https://www.tuf4ct.com/cpe'
+    pdf_link_tres = 'Emitido mediante un PROVEEDOR Autorizado por la SUNAT'
     # -----------------------------------------------------------------------------------------------
     style_qr = [
         # ('GRID', (0, 0), (-1, -1), 0.5, colors.blue),   # all columns
@@ -960,9 +960,9 @@ def pdf(request, pk=None):
         qr_left = [
             [Paragraph('Representación impresa de la FACTURA ELECTRÓNICA, para ver el documento visita',
                        styles["narrow_left"])],
-            [Paragraph('https://4soluciones.pse.pe/' + str(subsidiary_obj.ruc), styles["narrow_left"])],
+            [Paragraph('https://www.tuf4ct.com/cpe ', styles["narrow_left"])],
             [Paragraph(
-                'Emitido mediante un PROVEEDOR Autorizado por la SUNAT mediante Resolución de Intendencia No.034-005-0005315',
+                'Emitido mediante un PROVEEDOR Autorizado por la SUNAT',
                 styles["narrow_left"])],
             [Paragraph('', styles["narrow_left"])],
             [Paragraph('', styles["narrow_left"])],
@@ -999,13 +999,22 @@ def pdf(request, pk=None):
     payment_num = 0
     row_payment = [('N°', 'FORMA PAGO', 'FECHA', 'MONEDA', 'TOTAL')]
     for p in order_obj.payments_set.filter(subsidiary=subsidiary_obj).order_by('id'):
-        payment_num = payment_num + 1
-        payment_text = str(p.get_payment_display()).upper()
         if p.payment == 'C':
-            payment_text = 'CREDITO: CUOTA ' + str(payment_num)
-        payment_date = str(p.date_payment)
-        payment_amount = str(round(p.amount, 2))
-        row_payment.append((str(payment_num), str(payment_text), payment_date, money, payment_amount))
+            # Si es pago a crédito, recorrer las cuotas del modelo PaymentFees
+            payment_fees = p.paymentfees_set.all().order_by('id')
+            for fee in payment_fees:
+                payment_num = payment_num + 1
+                payment_text = 'CREDITO: CUOTA ' + str(payment_num)
+                payment_date = str(fee.date) if fee.date else str(p.date_payment)
+                payment_amount = str(round(fee.amount, 2))
+                row_payment.append((str(payment_num), str(payment_text), payment_date, money, payment_amount))
+        else:
+            # Para otros tipos de pago, mantener la lógica original
+            payment_num = payment_num + 1
+            payment_text = str(p.get_payment_display()).upper()
+            payment_date = str(p.date_payment)
+            payment_amount = str(round(p.amount, 2))
+            row_payment.append((str(payment_num), str(payment_text), payment_date, money, payment_amount))
     payment_detail = Table(row_payment,
                            colWidths=[_bts * 10 / 100, _bts * 35 / 100, _bts * 15 / 100, _bts * 15 / 100,
                                       _bts * 25 / 100])
