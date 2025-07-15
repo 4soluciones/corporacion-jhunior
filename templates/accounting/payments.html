@@ -539,6 +539,172 @@
             };
         }
 
+        async function setPrintOnline(printerName, pdfBlob, pdfName, authToken, options = {}) {
+            const {
+                endpoint = 'https://apierp.dev/api/print/send/',
+                showLoading = true,
+                loadingElementId = 'loading-666'
+            } = options;
+
+            // 1. Validaciones básicas
+            if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
+                console.error('Error: no se ha proporcionado un Blob de PDF válido.');
+                return Promise.reject(new Error('PDF no válido.'));
+            }
+
+            if (!navigator.onLine) {
+                console.error('Error: no hay conexión de red.');
+                return Promise.reject(new Error('Offline.'));
+            }
+
+            // 2. Mostrar indicador de carga si se solicita
+            if (showLoading) {
+                const loadingEl = document.getElementById(loadingElementId);
+                if (loadingEl) {
+                    loadingEl.style.display = 'block';
+                }
+            }
+
+            try {
+                // 3. Construir datos del formulario
+                const postData = {
+                    setAuthToken: authToken,
+                    setPrinterName: printerName,
+                    setPdfName: pdfName,
+                    setPrint: 1
+                };
+
+                const formData = new FormData();
+                // Enviamos los datos de control en un campo JSON
+                formData.append('invoice', JSON.stringify(postData));
+                // Adjuntamos el blob del PDF
+                formData.append('pdfBlob', pdfBlob, pdfName);
+
+                // 4. Petición POST al endpoint de impresión
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // 5. Comprobar estado HTTP
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Error desconocido en la API.');
+                }
+
+                // 6. Devolver el objeto con la información de la impresión
+                return data;
+
+            } catch (error) {
+                // Manejo de errores
+                console.error('Error al enviar la impresión:', error);
+                throw error;
+            } finally {
+                // 7. Ocultar indicador de carga
+                if (showLoading) {
+                    const loadingEl = document.getElementById(loadingElementId);
+                    if (loadingEl) {
+                        loadingEl.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        async function procesarYEnviarDocumento(response, options = {}) {
+            const {
+                printerName = "CAJA",
+                authToken = "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
+                baseUrl = "",
+                customFileName = null,
+                multiplePrinters = false,
+                printers = []
+            } = options;
+
+            let url = "";
+            let nombreArchivo = customFileName || `comprobante_${response.number}.pdf`;
+
+            // Determinar la URL según el tipo de documento
+            if (response.type_doc === '0') {
+                url = `${baseUrl}/accounting/ticket/${response.number}/`;
+                nombreArchivo = customFileName || `ticket_${response.number}.pdf`;
+            } else {
+                url = `${baseUrl}/accounting/invoice/${response.number}/`;
+                nombreArchivo = customFileName || `factura_${response.number}.pdf`;
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    throw new Error(`Error HTTP al obtener el documento: ${res.status}`);
+                }
+
+                const pdfBlob = await res.blob();
+
+                // Verificar si se requiere impresión múltiple
+                if (multiplePrinters && printers.length > 0) {
+                    console.log(`🖨️ Imprimiendo en ${printers.length} impresora(s)...`);
+                    
+                    const resultados = [];
+                    
+                    // Imprimir en cada impresora configurada
+                    for (let i = 0; i < printers.length; i++) {
+                        const printer = printers[i];
+                        const fileName = printer.customFileName || `${nombreArchivo}_${i + 1}.pdf`;
+                        
+                        try {
+                            const resultado = await setPrintOnline(
+                                printer.printerName || printerName,
+                                pdfBlob,
+                                fileName,
+                                printer.authToken || authToken,
+                                printer.options || {}
+                            );
+                            
+                            console.log(`✅ Impresión ${i + 1} enviada correctamente a ${printer.printerName || printerName}:`, resultado);
+                            resultados.push({
+                                printer: printer.printerName || printerName,
+                                success: true,
+                                result: resultado
+                            });
+                        } catch (error) {
+                            console.error(`❌ Error en impresión ${i + 1} a ${printer.printerName || printerName}:`, error);
+                            resultados.push({
+                                printer: printer.printerName || printerName,
+                                success: false,
+                                error: error.message
+                            });
+                        }
+                    }
+                    
+                    return {
+                        multiplePrint: true,
+                        results: resultados,
+                        totalPrinters: printers.length,
+                        successfulPrints: resultados.filter(r => r.success).length
+                    };
+                } else {
+                    // Impresión simple (comportamiento original)
+                    const resultado = await setPrintOnline(
+                        printerName,
+                        pdfBlob,
+                        nombreArchivo,
+                        authToken
+                    );
+
+                    console.log("✅ Impresión enviada correctamente:", resultado);
+                    return resultado;
+                }
+
+            } catch (error) {
+                console.error("❌ Error durante el proceso de impresión:", error);
+                throw error;
+            }
+        }
+
 
         function SavePayments() {
             let option = '0'
@@ -651,20 +817,23 @@
                     success: function (response) {
                         if (response.success) {
                             if (response.pk) {
-                                {#if (option === '0') {#}
-                                {#    toastr.success('Pago registrado correctamente')#}
-                                {#    window.open("/accounting/ticket/" + response.number + "/", '_blank');#}
-                                {# } else {#}
-                                {#    window.open("/accounting/invoice/" + response.number + "/", '_blank');#}
-                                {# }#}
                                 $('tbody#payments_detail tr').removeClass('bg-danger');
                                 let codeText = response.number + ' ' + 'C';
-                                printSocketCash(codeText);
-                                //printSocketCashNew(response.number)
-                                {#sendFirebasePrint(response.number, response.hatch)#}
-                                {#SearchOrder(response.number)#}
-                                $('#order').val('')
-                                $('#order').focus()
+                                let type_doc = response.type_doc
+                                // Usar la nueva función de impresión
+                                procesarYEnviarDocumento(response, {
+                                    printerName: "CAJA",
+                                    authToken: "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
+                                    baseUrl: window.location.origin
+                                }).then(result => {
+                                    console.log("✅ Impresión de comprobante completada:", result);
+                                }).catch(error => {
+                                    console.error("❌ Error en impresión de comprobante:", error);
+                                });
+                                //printSocketCash(codeText);
+                                $('#order').val('');
+                                $('#order').focus();
+
                             }
                         } else {
                             toastr.error(response.message)

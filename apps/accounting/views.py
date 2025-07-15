@@ -605,6 +605,7 @@ def payment_save(request):
                         'pk': order_obj.id,
                         'message': 'Pagos registrados',
                         'number': order_obj.number,
+                        'type_doc': order_obj.doc
                     }, status=HTTPStatus.OK)
         else:
             return JsonResponse({
