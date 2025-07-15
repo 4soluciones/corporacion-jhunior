@@ -616,7 +616,7 @@
 
         async function procesarYEnviarDocumento(response, options = {}) {
             const {
-                printerName = "CAJA",
+                printerName = "EPSON-CAJA",
                 authToken = "4cHiLX0q5e6H4ioGKQ3C0RVTrMB8PLNfvogTjLbyLH8",
                 baseUrl = "",
                 customFileName = null,
@@ -1433,6 +1433,7 @@
         }
 
         function Download() {
+            {#console.log("entro")#}
             {#console.log("entro")#}
             {#console.log("_number", _number)#}
             {#console.log("_doc", _doc)#}
