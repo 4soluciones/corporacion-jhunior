@@ -35,8 +35,11 @@ def utc_to_local(utc_dt):
 
 @api_view(['GET'])
 def get_ticket_sale(request, orderNumber):
+    order_obj = None
     try:
-        order_obj = Order.objects.get(number=orderNumber)
+        order_set = Order.objects.filter(number=orderNumber, type='V')
+        if order_set.exists():
+            order_obj = order_set.last()
     except Order.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -73,7 +76,7 @@ def get_ticket_sale(request, orderNumber):
 def get_payment_cash(request, orderNumber):
     order_obj = None
     try:
-        order_set = Order.objects.filter(number=orderNumber)
+        order_set = Order.objects.filter(number=orderNumber, type='V')
         if order_set.exists():
             order_obj = order_set.last()
     except Order.DoesNotExist:
