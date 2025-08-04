@@ -123,7 +123,7 @@ pdfmetrics.registerFont(TTFont('Dot-line', 'Dotline-LA7g.ttf'))
 pdfmetrics.registerFont(TTFont('Dot-line-Light', 'DotlineLight-XXeo.ttf'))
 pdfmetrics.registerFont(TTFont('Jd-Lcd-Rounded', 'JdLcdRoundedRegular-vXwE.ttf'))
 
-logo = "static/assets/images/logo_corporation.png"
+logo = "static/assets/pdfimg/logo_corporation.png"
 watermark = "static/assets/images/img/agua.jpg"
 
 
