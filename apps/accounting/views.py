@@ -1752,6 +1752,16 @@ def get_order_type(request):
         init = request.GET.get('init', '')
         end = request.GET.get('end', '')
         all_orders = []
+        totals_by_type = {
+            'tickets': decimal.Decimal('0.00'),
+            'facturas': decimal.Decimal('0.00'),
+            'boletas': decimal.Decimal('0.00'),
+            'pendientes': decimal.Decimal('0.00'),
+            'cotizaciones': decimal.Decimal('0.00'),
+            'notas_credito': decimal.Decimal('0.00'),
+            'anuladas': decimal.Decimal('0.00')
+        }
+        
         if init and end:
             if v == '0':  # TICKETS
                 order_set = Order.objects.filter(create_at__range=(init, end),
@@ -1762,27 +1772,54 @@ def get_order_type(request):
                         'payments_set', queryset=Payments.objects.select_related('casing')
                     )
                 )
+                # Calcular total de tickets
+                for order in order_set:
+                    if order.status != 'N':
+                        totals_by_type['tickets'] += order.total
 
             elif v == '1':  # FACTURAS
                 order_set = Order.objects.filter(create_at__range=(init, end), type='V', doc='1',
                                                  payments__isnull=False).distinct('id')
+                # Calcular total de facturas
+                for order in order_set:
+                    if order.status != 'N':
+                        totals_by_type['facturas'] += order.total
+
             elif v == '2':  # BOLETAS
                 order_set = Order.objects.filter(create_at__range=(init, end), type='V', doc='2',
                                                  payments__isnull=False).distinct('id')
+                # Calcular total de boletas
+                for order in order_set:
+                    if order.status != 'N':
+                        totals_by_type['boletas'] += order.total
+
             elif v == '3':  # PENDIENTES
                 order_set = Order.objects.filter(create_at__range=(init, end), type='V',
                                                  payments__isnull=True).distinct('id')
+                # Calcular total de pendientes
+                for order in order_set:
+                    totals_by_type['pendientes'] += order.total
+
             elif v == '4':  # TODOS
                 order_set = Order.objects.filter(create_at__range=(init, end), type='V').order_by('-number')
 
                 for order in order_set:
                     if order.condition in ['PA', 'A']:
                         condition = 'ANULADA'
+                        totals_by_type['anuladas'] += order.total
                     else:
                         if order.status == 'N':
                             condition = 'EMITIDO'
+                            totals_by_type['notas_credito'] += order.total
                         else:
                             condition = order.get_status_display()
+                            # Calcular total por tipo de documento
+                            if order.doc == '0':
+                                totals_by_type['tickets'] += order.total
+                            elif order.doc == '1':
+                                totals_by_type['facturas'] += order.total
+                            elif order.doc == '2':
+                                totals_by_type['boletas'] += order.total
 
                     order_data = {
                         'id': order.id,
@@ -1812,13 +1849,22 @@ def get_order_type(request):
 
             elif v == '5':  # COTIZACIONES
                 order_set = Order.objects.filter(create_at__range=(init, end), type='T').order_by('number')
+                # Calcular total de cotizaciones
+                for order in order_set:
+                    totals_by_type['cotizaciones'] += order.total
             else:
                 order_set = []
+            
+            # Redondear todos los totales
+            for key in totals_by_type:
+                totals_by_type[key] = round(totals_by_type[key], 2)
+                
             tpl = loader.get_template('accounting/invoice_issued_grid.html')
             context = ({
                 'order_set': order_set.order_by('id'),
                 'orders_dict': all_orders,
-                'type_search': v
+                'type_search': v,
+                'totals_by_type': totals_by_type
             })
             return JsonResponse({
                 'grid': tpl.render(context, request),

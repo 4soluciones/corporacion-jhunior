@@ -9,7 +9,7 @@
         <th>Pago</th>
         <th>Información Cliente</th>
         <th>Total</th>
-        <th>Descargar</th>
+        <th class="no-export">Descargar</th>
     </tr>
     </thead>
     <tbody id="order_list">
@@ -43,7 +43,7 @@
                     {{ o.total|safe }}
                 {% endif %}
             </td>
-            <td class="align-middle p-1">
+            <td class="align-middle p-1 noExport">
                 <button type="button"  onclick="{% if o.type == 'T' %}DownloadPDFQuotation({{ o.id }}){% else %}DownloadPDF({{ o.id }}){% endif %}" class="btn btn-sm btn-warning"><i
                         class="icon-cloud-download"></i></button>
             </td>
@@ -81,7 +81,7 @@
                     {{ o.total|safe }}
                 {% endif %}
             </td>
-            <td class="align-middle p-1">
+            <td class="align-middle p-1 noExport">
                 <button type="button"  onclick="{% if o.type == 'T' %}DownloadPDFQuotation({{ o.id }}){% else %}DownloadPDF({{ o.id }}){% endif %}" class="btn btn-sm btn-warning"><i
                         class="icon-cloud-download"></i></button>
             </td>
@@ -89,23 +89,94 @@
         {% endfor %}
     {% endif %}
     </tbody>
+    <tfoot class="table-sm">
+        <!-- Total del tipo seleccionado -->
+        <tr class="text-center fw-bold">
+            <td colspan="6" class="text-end">
+
+            </td>
+            <td colspan="1" class="text-end">
+                {% if type_search == '0' %}
+                    <span class="text-white">TOTAL TICKETS:</span>
+                {% elif type_search == '1' %}
+                    <span class="text-white">TOTAL FACTURAS:</span>
+                {% elif type_search == '2' %}
+                    <span class="text-white">TOTAL BOLETAS:</span>
+                {% elif type_search == '3' %}
+                    <span class="text-white">TOTAL PENDIENTES:</span>
+                {% elif type_search == '5' %}
+                    <span class="text-white">TOTAL COTIZACIONES:</span>
+                {% elif type_search == '4' %}
+                    <span class="text-white">TOTAL GENERAL:</span>
+                {% endif %}
+            </td>
+            <td class="text-right fw-bold p-1">
+                {% if type_search == '0' %}
+                    <span class="text-white">{{ totals_by_type.tickets|safe }}</span>
+                {% elif type_search == '1' %}
+                    <span class="text-white">{{ totals_by_type.facturas|safe }}</span>
+                {% elif type_search == '2' %}
+                    <span class="text-white">{{ totals_by_type.boletas|safe }}</span>
+                {% elif type_search == '3' %}
+                    <span class="text-white">{{ totals_by_type.pendientes|safe }}</span>
+                {% elif type_search == '5' %}
+                    <span class="text-white">{{ totals_by_type.cotizaciones|safe }}</span>
+                {% elif type_search == '4' %}
+                    {% with total_general=totals_by_type.tickets|add:totals_by_type.facturas|add:totals_by_type.boletas|add:totals_by_type.pendientes|add:totals_by_type.cotizaciones|add:totals_by_type.anuladas %}
+                        {% with final_total=total_general|add:totals_by_type.notas_credito %}
+                            <span class="text-white">{{ final_total|safe }}</span>
+                        {% endwith %}
+                    {% endwith %}
+                {% endif %}
+            </td>
+            <td class="no-export"></td>
+        </tr>
+    </tfoot>
 </table>
 <script type="text/javascript">
-    {#    $(document).ready(function() {#}
-    {#    $('#table-order').DataTable( {#}
-    {#        dom: 'Bfrtip',#}
-    {#        buttons: [#}
-    {#            'copy', 'csv', 'excel', 'pdf', 'print'#}
-    {#        ]#}
-    {#    } );#}
-    {# } );#}
+    {# Configuración de DataTables con exportación a Excel (.xls) e inclusión del footer #}
     $(document).ready(function () {
         $("#example1").DataTable({
             //"ordering": false,
             "order": [[0, 'desc']],
             "aLengthMenu": [1000],
-            "responsive": true, "lengthChange": false, "autoWidth": false,
-            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+            "responsive": true, 
+            "lengthChange": false, 
+            "autoWidth": false,
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    text: 'Copiar',
+                    footer: true
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    footer: true,
+                    title: 'Reporte de Comprobantes',
+                    extension: '.xls',
+                    columns: ':not(.noExport)',
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'csv',
+                    text: 'CSV',
+                    footer: true
+                },
+                {
+                    extend: 'pdf',
+                    text: 'PDF',
+                    footer: true
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir',
+                    footer: true
+                }
+            ]
         }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
     });
 </script>
