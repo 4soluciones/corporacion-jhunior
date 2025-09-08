@@ -1494,22 +1494,22 @@ def quotation_pdf(request, pk=None):
     # ...............................................................................
     foot_left = [[Paragraph('CTA. CORPORACION PERNOS JUNIOR S.R.L.',
                             styles["narrow_left"])],
-                 [Paragraph('Banco de Crédito en Soles: 405-98168061-0-44',
+                 [Paragraph('Banco de Crédito en Soles: 405-7222645-0-17',
                             styles["narrow_left"])],
-                 [Paragraph('CCI: 002 405 198168061044 91',
+                 [Paragraph('CCI: 002 405 007222645017 98',
                             styles["narrow_left"])],
                  [Paragraph('',
                             styles["narrow_left"])],
                  ]
 
     foot_left_detail = Table(foot_left, colWidths=[_bts * 50 / 100])
-    foot_right = [[Paragraph('CORPORACION PERNOS JUNIOR S.R.L.',
+    foot_right = [[Paragraph('CTA. CORPORACION PERNOS JUNIOR S.R.L.',
                              styles["narrow_center"])],
-                  [Paragraph('RUC: 20600854535',
+                  [Paragraph('RUC: 20614357194',
                              styles["narrow_center"])],
-                  [Paragraph('JR. CARABAYA 208 BARRIO MANCO CAPAC – JULIACA',
+                  [Paragraph('Av. El Sol N° 767 Urb. Las Mercedes (Interseccion con la Av. Circunvalación)',
                              styles["narrow_center"])],
-                  [Paragraph('051-326838 - 948242727',
+                  [Paragraph('051 622543 - 946413793',
                              styles["narrow_center"])],
                   ]
 
