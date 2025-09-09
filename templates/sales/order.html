@@ -83,8 +83,9 @@
                                 <th class="p-1" style="width: 1%">#</th>
                                 <th class="p-2" style="width: 5%; font-size: 8px;">Codigo</th>
                                 <th class="p-2" style="width: 7%; font-size: 8px;">Cantidad</th>
-                                <th class="p-2" style="width: 39%">Descripción</th>
+                                <th class="p-2" style="width: 30%">Descripción</th>
                                 <th class="p-2" style="width: 9%">Stock</th>
+                                <th class="p-2 text-dark" style="width: 9%">Stock Sunat</th>
                                 <th class="p-2" style="width: 8%">Medidas</th>
                                 <th class="p-2" style="width: 6%">Mayor</th>
                                 <th class="p-2" style="width: 8%">Precio</th>
@@ -380,8 +381,7 @@
                                         let d = ValidateCode(p[i].id)
                                     } else {
                                     }
-                                    //console.log(p[i].id)
-                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m)
+                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m, 0, p[i].stock, p[i].invoice_stock)
                                 }
                                 Focus()
                             } else {
@@ -392,7 +392,6 @@
                             toastr.error("error");
                         }
                     });
-                    {#AddRowOrder(0, result.pk, result.code, result.name, result.measure)#}
                     $('#search-product').val('')
                     $('#search-code').val('')
                 }
@@ -408,7 +407,7 @@
             }
         }
 
-        function AddRowOrder(i, pk, product, code, name, measure, y, m, order, stock) {
+        function AddRowOrder(i, pk, product, code, name, measure, y, m, order, stock, invoice_stock) {
             $('tbody#order-detail').append(
                 '<tr class="p-0" product="' + product + '" pk="' + pk + '" unit="0" niu="0" i="' + i + '" q="0" y="' + y + '" order="' + 0 + '" "style="width: 100%">' +
                 '<td  class="align-middle item-authorization p-1 text-center" style="width: 3%">' +
@@ -420,8 +419,9 @@
                 '<td  class="align-middle item-number pl-0 pr-0 text-center" style="width: 1%">' +
                 '<td class="align-middle item-code pt-3 text-center" style="width: 5%" >' + code + '</td>' +
                 '<td class="align-middle item-quantity p-1 text-center" style="width: 7%">' + '<input type="text" placeholder="0.00" class="form-control value-quantity" value=""/>' + '</td>' +
-                '<td class="align-middle item-description p-1 text-justify" style="width: 39%; white-space: normal; word-wrap: break-word">' + '<p>' + name + '</p>' + '</td>' +
+                '<td class="align-middle item-description p-1 text-justify" style="width: 30%; white-space: normal; word-wrap: break-word">' + '<p>' + name + '</p>' + '</td>' +
                 '<td class="align-middle item-stock p-1 text-center" style="width: 9%">' + stock + '</td>' +
+                '<td class="align-middle item-stock p-1 text-center" style="width: 9%">' + invoice_stock + '</td>' +
                 '<td class="align-middle item-measure p-1 text-center" style="width: 8%">' + measure + '</td>' +
                 '<td class="align-middle item-elderly p-1 text-right" style="width: 6%">' + parseFloat(m).toFixed(4) + '</td>' +
                 '<td class="align-middle item-price p-1 text-right" style="width: 8%">' + parseFloat('0.00').toFixed(4) + '</td>' +
@@ -753,12 +753,12 @@
                                 for (let i = 0; i < p.length; i++) {
                                     if (i === 0 && p.length > 1) {
                                         let s = ValidateCode(p[i].id)
-                                        if (s == false) {
+                                        if (s === false) {
                                             break
                                         }
                                     }
                                     //console.log("p[i].id", p[i].id)
-                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m, order = "", p[i].stock)
+                                    AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m, order = "", p[i].stock, p[i].invoice_stock)
                                 }
                                 Focus()
                                 $('#search-code').val('')

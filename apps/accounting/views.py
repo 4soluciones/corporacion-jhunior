@@ -508,18 +508,18 @@ def payment_save(request):
                                                             date=fee_date,
                                                             amount=decimal.Decimal(fee_amount)
                                                         )
-                                            # if order_obj.doc == '1' or order_obj.doc == '2':
-                                            #     for d in order_obj.orderdetail_set.filter(is_state=True,
-                                            #                                               is_invoice=True):
-                                            #         kardex_set = Kardex.objects.filter(product=d.product)
-                                            #         if kardex_set.exists():
-                                            #             kardex_ouput(product=d.product, quantity=d.quantity,
-                                            #                          order_detail_obj=d,
-                                            #                          type_document=str('0' + order_obj.doc),
-                                            #                          type_operation='01')
-                                            #         else:
-                                            #             kardex_initial(product=d.product, stock=d.quantity,
-                                            #                            price_unit=d.price, order_detail_obj=d)
+                                            if order_obj.doc == '1' or order_obj.doc == '2':
+                                                for d in order_obj.orderdetail_set.filter(is_state=True,
+                                                                                          is_invoice=True):
+                                                    kardex_set = Kardex.objects.filter(product=d.product)
+                                                    if kardex_set.exists():
+                                                        kardex_ouput(product=d.product, quantity=d.quantity,
+                                                                     order_detail_obj=d,
+                                                                     type_document=str('0' + order_obj.doc),
+                                                                     type_operation='01')
+                                                    else:
+                                                        kardex_initial(product=d.product, stock=d.quantity,
+                                                                       price_unit=d.price, order_detail_obj=d)
                                 else:
                                     return JsonResponse({
                                         'success': False,
@@ -1966,10 +1966,10 @@ def save_credit_note(request):
                             order_detail_obj.save()
                             kardex_set = Kardex.objects.filter(product=order_detail_obj.product)
                             input_stock(order_detail_obj)
-                            # if kardex_set.exists():
-                            #     kardex_input(product=order_detail_obj.product, quantity=order_detail_obj.quantity,
-                            #                  total_cost=order_detail_obj.amount(), order_detail_obj=order_detail_obj,
-                            #                  type_document='07', type_operation='06')
+                            if kardex_set.exists():
+                                kardex_input(product=order_detail_obj.product, quantity=order_detail_obj.quantity,
+                                             total_cost=order_detail_obj.amount(), order_detail_obj=order_detail_obj,
+                                             type_document='07', type_operation='06')
 
                     return JsonResponse({
                         'success': True,

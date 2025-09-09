@@ -5,11 +5,39 @@
 {% endblock title %}
 
 {% block body %}
+    <!-- Barra de herramientas de gestión -->
+    {% if user.type == 'A' %}
+    <div class="card mt-3 mb-2">
+        <div class="card-body py-2">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="mb-0 text-white font-weight-bold">
+                        <i class="zmdi zmdi-settings mr-2"></i>Gestión de Productos
+                    </h6>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div class="btn-group" role="group">
+                        <button type="button" onclick="showModal('')" class="btn btn-primary btn-sm" title="Nuevo Producto">
+                            <i class="icon-magnifier-add mr-1"></i>Nuevo Producto
+                        </button>
+                        <a href="{% url 'sales:brands' %}" class="btn btn-success btn-sm" title="Gestionar Marcas">
+                            <i class="zmdi zmdi-cloud-done mr-1"></i>Marcas
+                        </a>
+                        <a href="{% url 'sales:familys' %}" class="btn btn-warning btn-sm" title="Gestionar Familias">
+                            <i class="zmdi zmdi-cloud-outline-alt mr-1"></i>Familias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card mt-3 h-100">
         <div class="card-header">
             <div class="row d-flex">
                 <div class="form-group col-sm-1 col-md-1 m-0 p-1 align-self-center text-center">
-                    <button type="button" onclick="showModal('')" class="btn btn-light btn-round px-5"><i
+                    <button type="button" onclick="showModal('')" class="btn btn-light btn-round px-5" title="Nuevo Producto"><i
                             class="icon-magnifier-add"></i>
                     </button>
                 </div>

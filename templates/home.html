@@ -177,12 +177,7 @@
             <li class="sidebar-header">PRODUCTOS</li>
             {% if user.type == 'A' %}
                 <li><a href="{% url 'sales:products' %}"><i class="zmdi zmdi-cloud text-danger"></i>
-                    <span>Producto</span></a>
-                </li>
-                <li><a href="{% url 'sales:brands' %}"><i class="zmdi zmdi-cloud-done text-success"></i> <span>Marca Producto</span></a>
-                </li>
-                <li><a href="{% url 'sales:familys' %}"><i class="zmdi zmdi-cloud-outline-alt text-warning"></i>
-                    <span>Familia Producto</span></a>
+                    <span>Ver Productos</span></a>
                 </li>
             {% endif %}
             {% if user.type == 'C' or user.type == 'A' %}
@@ -266,6 +261,11 @@
                 </li>
                 <li>
                     <a href="{% url 'sales:products' %}">
+                        <i class="zmdi zmdi-card"></i> <span>Kardex Interno</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'sales:get_kardex_by_product' %}">
                         <i class="zmdi zmdi-card"></i> <span>Kardex Sunat</span>
                     </a>
                 </li>

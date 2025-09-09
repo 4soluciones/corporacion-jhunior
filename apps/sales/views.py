@@ -1231,6 +1231,7 @@ def get_products(request):
                         'm': m,
                         'y': 0,
                         'stock': product.stock,
+                        'invoice_stock': product.invoice_stock,
                         'min': product.minimum
                     }
                 )
@@ -1249,7 +1250,8 @@ def get_products(request):
                                         'measure': p.measure(),
                                         'm': get_mayor(p),
                                         'y': 1,
-                                        'stock': p.stock
+                                        'stock': p.stock,
+                                        'invoice_stock': product.invoice_stock,
                                     }
                                 )
                     else:
@@ -2510,21 +2512,21 @@ def pass_purchase(request):
             for d in order_obj.orderdetail_set.filter(is_state=True).order_by('id'):
                 if d:
                     input_stock(d)
-                    # if order_obj.doc in ['1', '2']:
-                    #     if not Kardex.objects.filter(order_detail=d).exists():
-                    #         kardex_set = Kardex.objects.filter(product=d.product)
-                    #         if kardex_set.exists():
-                    #             type_document = '00'
-                    #             if order_obj.doc == '1':
-                    #                 type_document = str('0' + order_obj.doc)
-                    #             elif order_obj.doc == '2':
-                    #                 type_document = '03'
-                    #             kardex_input(product=d.product, quantity=d.quantity, total_cost=d.amount(),
-                    #                          order_detail_obj=d, type_document=type_document,
-                    #                          type_operation='02')
-                    #         else:
-                    #             kardex_initial(product=d.product, stock=d.quantity, price_unit=d.price,
-                    #                            order_detail_obj=d)
+                    if order_obj.doc in ['1', '2']:
+                        if not Kardex.objects.filter(order_detail=d).exists():
+                            kardex_set = Kardex.objects.filter(product=d.product)
+                            if kardex_set.exists():
+                                type_document = '00'
+                                if order_obj.doc == '1':
+                                    type_document = str('0' + order_obj.doc)
+                                elif order_obj.doc == '2':
+                                    type_document = '03'
+                                kardex_input(product=d.product, quantity=d.quantity, total_cost=d.amount(),
+                                             order_detail_obj=d, type_document=type_document,
+                                             type_operation='02')
+                            else:
+                                kardex_initial(product=d.product, stock=d.quantity, price_unit=d.price,
+                                               order_detail_obj=d)
             if order_obj:
                 order_obj.status = 'R'
                 order_obj.save()
@@ -2544,10 +2546,10 @@ def cancel_purchase(request):
                     # d.operation = 'S'   VALORES QUE DEBERIAN ESTAR REVISAR
                     # d.save()
 
-                    # kardex_set = Kardex.objects.filter(product=d.product)
-                    # if kardex_set.exists():
-                    #     kardex_ouput(product=d.product, quantity=d.quantity, order_detail_obj=d,
-                    #                  type_document=str('0' + order_obj.doc), type_operation='05')
+                    kardex_set = Kardex.objects.filter(product=d.product)
+                    if kardex_set.exists():
+                        kardex_ouput(product=d.product, quantity=d.quantity, order_detail_obj=d,
+                                     type_document=str('0' + order_obj.doc), type_operation='05')
 
             if order_obj:
                 order_obj.status = 'A'
@@ -3361,10 +3363,10 @@ def update_invoice_stock_product(request):
 
 def fill_kardex_invoice(request):
     if request.method == 'GET':
-        date_initial = '2022-11-01'
-        date_final = '2022-12-31'
-        # products_set = Product.objects.all()
-        products_set = Product.objects.filter(id=5403)
+        date_initial = '2025-01-01'
+        date_final = '2025-12-31'
+        products_set = Product.objects.all()
+        # products_set = Product.objects.filter(id=5403)
         for p in products_set:
             # sales_details = OrderDetail.objects.filter(Q(product=p,
             #                                              create_at__range=(date_initial, date_final),
