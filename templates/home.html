@@ -169,11 +169,11 @@
             {#                </a>#}
             {#            </li>#}
 
-            {#            <li>#}
-            {#                <a href="{% url 'user:users' %}">#}
-            {#                    <i class="zmdi zmdi-account-circle"></i> <span>Usuarios</span>#}
-            {#                </a>#}
-            {#            </li>#}
+            <li>
+                <a href="{% url 'user:users' %}">
+                    <i class="zmdi zmdi-account-circle"></i> <span>Usuarios</span>
+                </a>
+            </li>
             <li class="sidebar-header">PRODUCTOS</li>
             {% if user.type == 'A' %}
                 <li><a href="{% url 'sales:products' %}"><i class="zmdi zmdi-cloud text-danger"></i>
