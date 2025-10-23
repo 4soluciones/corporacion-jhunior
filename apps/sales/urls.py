@@ -99,4 +99,7 @@ urlpatterns = [
     # TEST SOCKET
     path('test_socket/', login_required(test_socket), name='test_socket'),
 
+    # REPORTES
+    path('best_selling_products/', login_required(best_selling_products), name='best_selling_products'),
+
 ]

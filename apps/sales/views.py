@@ -3510,3 +3510,104 @@ def test_socket(request):
     if request.method == 'GET':
         return render(request, 'sales/test_socket.html', {
         })
+
+
+def best_selling_products(request):
+    """
+    Vista para mostrar el reporte de productos más vendidos
+    """
+    from django.db.models import Sum, Count, F
+    from django.db.models.functions import Coalesce
+    
+    # Obtener parámetros de filtro
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    limit = int(request.GET.get('limit', 20))
+    
+    # Construir filtros base
+    filters = {
+        'order__type': 'V',  # Solo ventas
+        'order__status__in': ['R', 'E'],  # Realizadas o emitidas
+        'operation': 'S',  # Solo salidas
+        'is_state': True,
+        'is_considered': True
+    }
+    
+    # Agregar filtros de fecha si se proporcionan
+    if date_from:
+        filters['order__create_at__gte'] = date_from
+    if date_to:
+        filters['order__create_at__lte'] = date_to
+    
+    # Consulta para obtener productos más vendidos
+    best_selling = OrderDetail.objects.filter(**filters).values(
+        'product__id',
+        'product__name',
+        'product__code',
+        'product__family__name',
+        'product__brand__name',
+        'product__stock'
+    ).annotate(
+        total_quantity=Sum('quantity'),
+        total_sales=Sum(F('quantity') * F('price')),
+        total_orders=Count('order', distinct=True),
+        avg_price=Sum(F('quantity') * F('price')) / Sum('quantity')
+    ).order_by('-total_quantity')[:limit]
+    
+    # Estadísticas generales
+    total_products = best_selling.count()
+    total_quantity_sold = sum(item['total_quantity'] or 0 for item in best_selling)
+    total_sales_amount = sum(item['total_sales'] or 0 for item in best_selling)
+    
+    # Calcular precio promedio
+    if total_quantity_sold > 0:
+        average_price = total_sales_amount / total_quantity_sold
+    else:
+        average_price = 0
+    
+    # Top 5 productos por cantidad
+    top_5_quantity = best_selling[:5]
+    
+    # Top 5 productos por valor de venta
+    top_5_value = OrderDetail.objects.filter(**filters).values(
+        'product__id',
+        'product__name',
+        'product__code'
+    ).annotate(
+        total_sales=Sum(F('quantity') * F('price'))
+    ).order_by('-total_sales')[:5]
+    
+    # Estadísticas por familia
+    family_stats = OrderDetail.objects.filter(**filters).values(
+        'product__family__name'
+    ).annotate(
+        total_quantity=Sum('quantity'),
+        total_sales=Sum(F('quantity') * F('price')),
+        product_count=Count('product', distinct=True)
+    ).order_by('-total_quantity')
+    
+    # Estadísticas por marca
+    brand_stats = OrderDetail.objects.filter(**filters).values(
+        'product__brand__name'
+    ).annotate(
+        total_quantity=Sum('quantity'),
+        total_sales=Sum(F('quantity') * F('price')),
+        product_count=Count('product', distinct=True)
+    ).order_by('-total_quantity')
+    
+    context = {
+        'best_selling': best_selling,
+        'total_products': total_products,
+        'total_quantity_sold': total_quantity_sold,
+        'total_sales_amount': total_sales_amount,
+        'average_price': average_price,
+        'top_5_quantity': top_5_quantity,
+        'top_5_value': top_5_value,
+        'family_stats': family_stats,
+        'brand_stats': brand_stats,
+        'date_from': date_from,
+        'date_to': date_to,
+        'limit': limit
+    }
+    
+    return render(request, 'sales/best_selling_products.html', context)
