@@ -1362,11 +1362,13 @@ def get_person_by_document(request):
             if document == '1' and number != '1':
                 r = api_net.get_person(number)
                 if r.get('success') is True:
-                    name = r.get('nombres')
+                    name = r.get('nombre')
                     paternal = r.get('apellidoPaterno')
                     maternal = r.get('apellidoMaterno')
                     address = r.get('direccion')
+                    full_name = r.get('nombres')
                     names = str(name + ' ' + paternal + ' ' + maternal).upper()
+                    # names = str(full_name).upper()
                     if names is not None and len(names) > 0:
                         person_obj = Person(
                             document=document,
