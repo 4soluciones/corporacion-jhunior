@@ -102,11 +102,13 @@ class ApisNetPe:
     #     return context
 
     def get_person(self, dni: str) -> Optional[dict]:
-        url = 'https://api.apis.net.pe/v2/dni?numero=' + dni
+        # url = 'https://api.apis.net.pe/v2/dni?numero=' + dni
+        url = 'https://api.decolecta.com/v1/reniec/dni?numero=' + dni
 
         headers = {
             "Content-Type": 'application/json',
-            "Authorization": 'Bearer apis-token-1685.amWUXQRSlBEjqsVJYTy0zH-jDSGL5Mmy'
+            # "Authorization": 'Bearer apis-token-1685.amWUXQRSlBEjqsVJYTy0zH-jDSGL5Mmy'
+            "Authorization": 'Bearer sk_9208.RYV679GaMxTuXFUiSElimKi0YSPYCgKD'
         }
         response = requests.get(url, headers=headers)
 
@@ -115,12 +117,16 @@ class ApisNetPe:
 
             context = {
                 'success': True,
-                'nombre': result.get("nombre"),
+                'nombre': result.get("first_name"),
+                # 'nombre': result.get("nombre"),
                 'tipoDocumento': result.get("tipoDocumento"),
                 'numeroDocumento': result.get('numeroDocumento'),
-                'apellidoPaterno': result.get('apellidoPaterno'),
-                'apellidoMaterno': result.get('apellidoMaterno'),
-                'nombres': result.get('nombres'),
+                # 'apellidoPaterno': result.get('apellidoPaterno'),
+                'apellidoPaterno': result.get('first_last_name'),
+                'apellidoMaterno': result.get('second_last_name'),
+                # 'apellidoMaterno': result.get('apellidoMaterno'),
+                # 'nombres': result.get('nombres'),
+                'nombres': result.get('full_name'),
                 'direccion': result.get('direccion'),
             }
         else:
