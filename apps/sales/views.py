@@ -1215,7 +1215,7 @@ def get_products(request):
         code = request.GET.get('code', '')
         is_corporate = request.GET.get('is_corporate', '')
         if code:
-            p_set = Product.objects.filter(code=code)
+            p_set = Product.objects.filter(code=code, is_state=True)
             product_dic = []
             if p_set.exists():
                 product = p_set.first()
@@ -1259,10 +1259,17 @@ def get_products(request):
                             'success': False,
                             'message': 'El codigo no se encuentra registrado'
                         }, status=HTTPStatus.OK)
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'warning': True,
+                    'message': 'El producto no se encuentra registrado o no está activo'
+                }, status=HTTPStatus.OK)
         else:
             return JsonResponse({
                 'success': False,
-                'message': 'El codigo no se encuentra registrado'
+                'warning': True,
+                'message': 'El producto no se encuentra registrado o no está activo'
             }, status=HTTPStatus.OK)
 
         return JsonResponse({

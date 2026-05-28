@@ -384,6 +384,8 @@
                                     AddRowOrder(i + 1, 0, p[i].id, p[i].code, p[i].name, p[i].measure, p[i].y, p[i].m, 0, p[i].stock, p[i].invoice_stock)
                                 }
                                 Focus()
+                            } else if (response.warning) {
+                                toastr.warning(response.message);
                             } else {
                                 toastr.error(response.message);
                             }
@@ -762,6 +764,8 @@
                                 }
                                 Focus()
                                 $('#search-code').val('')
+                            } else if (response.warning) {
+                                toastr.warning(response.message);
                             } else {
                                 toastr.error(response.message);
                             }
